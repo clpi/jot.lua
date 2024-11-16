@@ -1,31 +1,32 @@
 --[[
     file: link
     title: Find link/target in the buffer
-    description: Utility module to handle link/link targets in the buffer
+    description: Utility M to handle link/link targets in the buffer
     internal: true
     ---
 
-This module provides utility functions that are used to find link and their targets in the buffer.
+This M provides utility functions that are used to find link and their targets in the buffer.
 --]]
 
 local dorm = require("dorm")
-local lib, mod = dorm.lib, dorm.mod
+local lib, mod, u = dorm.lib, dorm.mod, dorm.utils
 
-local module = mod.create("link")
+local M = mod.create("link")
+u.ns("dorm-link")
 
-module.setup = function()
-    return {
-        success = true,
-    }
+M.setup = function()
+  return {
+    success = true,
+  }
 end
 
 ---@class base.link
-module.public = {
-    -- TS query strings for different link targets
-    ---@param link_type "generic" | "definition" | "footnote" | string
-    get_link_target_query_string = function(link_type)
-        return lib.match(link_type)({
-            generic = [[
+M.public = {
+  -- TS query strings for different link targets
+  ---@param link_type "generic" | "definition" | "footnote" | string
+  get_link_target_query_string = function(link_type)
+    return lib.match(link_type)({
+      generic = [[
                 [(_
                   [(strong_carryover_set
                      (strong_carryover
@@ -42,8 +43,8 @@ module.public = {
                    (paragraph) @title)]
             ]],
 
-            [{ "definition", "footnote" }] = string.format(
-                [[
+      [{ "definition", "footnote" }] = string.format(
+        [[
                 (%s_list
                     (strong_carryover_set
                           (strong_carryover
@@ -68,10 +69,10 @@ module.public = {
                         (multi_%s_prefix)
                           title: (paragraph_segment) @title)])
                 ]],
-                lib.reparg(link_type, 5)
-            ),
-            _ = string.format(
-                [[
+        lib.reparg(link_type, 5)
+      ),
+      _ = string.format(
+        [[
                     (%s
                       [(strong_carryover_set
                          (strong_carryover
@@ -86,10 +87,36 @@ module.public = {
                       (%s_prefix)
                       title: (paragraph_segment) @title)
                 ]],
-                lib.reparg(link_type, 2)
-            ),
-        })
-    end,
+        lib.reparg(link_type, 2)
+      ),
+    })
+  end,
 }
 
-return module
+M.load = function()
+  mod.await("cmd", function(cmd)
+    cmd.add_commands_from_table({
+      ["preview"] = {
+        subcommands = {
+          update = {
+            args = 0,
+            name = "link.new"
+          },
+          insert = {
+            name = "link.backlinks",
+            args = 0,
+          },
+        },
+        name = "link"
+      }
+    })
+  end)
+end
+M.events.subscribed = {
+  cmd = {
+    ["link.new"] = true,
+    ["link.backlinks"] = true,
+  },
+}
+
+return M

@@ -1,23 +1,23 @@
 local d = require "dorm"
 
-local M = d.mod.create("preview")
+local M = d.mod.create("resources")
 
 
 M.load = function()
   mod.await("cmd", function(cmd)
     cmd.add_commands_from_table({
-      ["preview"] = {
+      ["resources"] = {
         subcommands = {
           update = {
             args = 0,
-            name = "preview.update"
+            name = "resources.update"
           },
           insert = {
-            name = "preview.insert",
+            name = "resources.insert",
             args = 0,
           },
         },
-        name = "preview"
+        name = "resources"
       }
     })
   end)
@@ -51,8 +51,8 @@ M.events = {}
 
 M.events.subscribed = {
   cmd = {
-    ["preview.insert"] = true,
-    ["preview.update"] = true,
+    ["resources.insert"] = true,
+    ["resources.update"] = true,
   },
 }
 

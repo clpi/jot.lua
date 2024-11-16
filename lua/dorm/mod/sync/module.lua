@@ -1,9 +1,9 @@
 local d = require("dorm")
 local lib, mod = d.lib, d.mod
 
-local module = mod.create("sync")
+local M = mod.create("sync")
 
-module.load = function()
+M.load = function()
   mod.await("cmd", function(cmd)
     cmd.add_commands_from_table({
       ["sync"] = {
@@ -25,7 +25,7 @@ end
 
 
 
-module.setup = function()
+M.setup = function()
   return {
     success = true,
     requires = {
@@ -35,27 +35,27 @@ module.setup = function()
   }
 end
 
-module.public = {
+M.public = {
 
 }
 
-module.config.private = {
+M.config.private = {
 
 }
-module.config.public = {
+M.config.public = {
 
 }
-module.private = {
+M.private = {
 
 }
-module.events = {}
+M.events = {}
 
 
-module.events.subscribed = {
+M.events.subscribed = {
   cmd = {
     ["sync.insert"] = true,
     ["sync.update"] = true,
   },
 }
 
-return module
+return M

@@ -1,14 +1,20 @@
+U = {}
+
+local api = vim.api
+U.ns = api.nvim_create_namespace
+U.win_valid = api.nvim_win_is_valid
+U.buf_ext = api.nvim_bug_get_extmarks
+
 local configuration = require("dorm.config")
 local log = require("dorm.util.log")
 
-local utils = {}
 local version = vim.version() -- TODO: Move to a more local scope
 
 --- A version agnostic way to call the neovim treesitter query parser
 --- @param language string # Language to use for the query
 --- @param query_string string # Query in s-expr syntax
 --- @return vim.treesitter.Query # Parsed query
-function utils.ts_parse_query(language, query_string)
+function U.ts_parse_query(language, query_string)
   if vim.treesitter.query.parse then
     return vim.treesitter.query.parse(language, query_string)
   else
@@ -19,7 +25,7 @@ end
 
 --- An OS agnostic way of querying the current user
 --- @return string username
-function utils.get_username()
+function U.get_username()
   local current_os = configuration.os_info
 
   if not current_os then
@@ -38,7 +44,7 @@ end
 --- Returns an array of strings, the array being a list of languages that dorm can inject.
 ---@param values boolean If set to true will return an array of strings, if false will return a key-value table.
 ---@return string[]|table<string, { type: "treesitter"|"syntax"|"null" }>
-function utils.get_language_list(values)
+function U.get_language_list(values)
   local regex_files = {}
   local ts_files = {}
 
@@ -76,7 +82,7 @@ end
 --- Gets a list of shorthands for a given language.
 --- @param reverse_lookup boolean Whether to create a reverse lookup for the table.
 --- @return LanguageList
-function utils.get_language_shorthands(reverse_lookup)
+function U.get_language_shorthands(reverse_lookup)
   ---@class LanguageList
   local langs = {
     ["bash"] = { "sh", "zsh" },
@@ -117,7 +123,7 @@ end
 --- @param minor number The minor release of Neovim.
 --- @param patch number The patch number (in case you need it).
 --- @return boolean # Whether Neovim is running at the same or a higher version than the one given.
-function utils.is_minimum_version(major, minor, patch)
+function U.is_minimum_version(major, minor, patch)
   if major ~= version.major then
     return major < version.major
   end
@@ -133,7 +139,7 @@ end
 --- Parses a version string like "0.4.2" and provides back a table like { major = <number>, minor = <number>, patch = <number> }
 --- @param version_string string The input string.
 --- @return table? # The parsed version string, or `nil` if a failure occurred during parsing.
-function utils.parse_version_string(version_string)
+function U.parse_version_string(version_string)
   if not version_string then
     return
   end
@@ -174,14 +180,14 @@ end
 --- Custom dorm notifications. Wrapper around `vim.notify`.
 --- @param msg string Message to send.
 --- @param log_level integer? Log level in `vim.log.levels`.
-function utils.notify(msg, log_level)
+function U.notify(msg, log_level)
   vim.notify(msg, log_level, { title = "dorm" })
 end
 
 --- Opens up an array of files and runs a callback for each opened file.
 --- @param files (string|PathlibPath)[] An array of files to open.
 --- @param callback fun(buffer: integer, filename: string) The callback to invoke for each file.
-function utils.read_files(files, callback)
+function U.read_files(files, callback)
   for _, file in ipairs(files) do
     file = tostring(file)
     local bufnr = vim.uri_to_bufnr(vim.uri_from_fname(file))
@@ -197,12 +203,12 @@ function utils.read_files(files, callback)
 end
 
 -- following https://gist.github.com/kylechui/a5c1258cd2d86755f97b10fc921315c3
-function utils.set_operatorfunc(f)
-  utils._dorm_operatorfunc = f
-  vim.go.operatorfunc = "v:lua.require'dorm'.utils._dorm_operatorfunc"
+function U.set_operatorfunc(f)
+  U._dorm_operatorfunc = f
+  vim.go.operatorfunc = "v:lua.require'dorm'.U._dorm_operatorfunc"
 end
 
-function utils.wrap_dotrepeat(callback)
+function U.wrap_dotrepeat(callback)
   return function(...)
     if vim.api.nvim_get_mode().mode == "i" then
       callback(...)
@@ -210,7 +216,7 @@ function utils.wrap_dotrepeat(callback)
     end
 
     local args = { ... }
-    utils.set_operatorfunc(function()
+    U.set_operatorfunc(function()
       callback(unpack(args))
     end)
     vim.cmd("normal! g@l")
@@ -221,7 +227,7 @@ end
 --- @param str string The string to limit.
 --- @param col_limit integer `str` will be cut so that when displayed, the display length does not exceed this limit.
 --- @return string # Substring of input str
-function utils.truncate_by_cell(str, col_limit)
+function U.truncate_by_cell(str, col_limit)
   if str and str:len() == vim.api.nvim_strwidth(str) then
     return vim.fn.strcharpart(str, 0, col_limit)
   end
@@ -234,4 +240,4 @@ function utils.truncate_by_cell(str, col_limit)
   return short
 end
 
-return utils
+return U

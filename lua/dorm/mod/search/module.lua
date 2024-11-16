@@ -1,5 +1,6 @@
 local d = require("dorm")
-local lib, mod = d.lib, d.mod
+
+local lib, mod, cfg = d.lib, d.mod, d.config
 
 local module = mod.create("search")
 
