@@ -125,6 +125,7 @@ module.config.public = {
   ---@type table<string, PathlibPath>
   workspaces = {
     default = require("pathlib").cwd(),
+    base = require("pathlib").cwd(),
   },
   -- The name for the index file.
   --

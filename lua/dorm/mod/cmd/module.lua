@@ -96,6 +96,7 @@ module.load = function()
   -- If the user passes no arguments or too few, we'll query them for the remainder using select_next_cmd_arg.
   vim.api.nvim_create_user_command("Dorm", module.private.command_callback, {
     desc = "The dorm command",
+    force = true,
     -- bang = true,
     nargs = "*",
     complete = module.private.generate_completions,

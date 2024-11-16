@@ -252,7 +252,7 @@ module.private = {
                                 end
 
                                 -- If it's a .dorm file, also ensure it is a day entry
-                                if dtype == "file" and string.match(dname, "%d%d%.dorm") then
+                                if dtype == "file" and string.match(dname, "%d%d%.md") then
                                     -- Split the file name
                                     local file = vim.split(dname, ".", { plain = true })
 
@@ -291,7 +291,7 @@ module.private = {
                 -- If it is a .dorm file, but it's not any user generated file.
                 -- The match is here to avoid handling files made by the user, like a template file, or
                 -- the toc file
-                if type == "file" and string.match(name, "%d+-%d+-%d+%.dorm") then
+                if type == "file" and string.match(name, "%d+-%d+-%d+%.md") then
                     -- Split yyyy-mm-dd to a table
                     local file = vim.split(name, ".", { plain = true })
                     local parts = vim.split(file[1], "-")
@@ -395,7 +395,7 @@ module.config.public = {
     strategy = "nested",
 
     -- The name of the template file to use when running `:Dorm notes template`.
-    template_name = "template.dorm",
+    template_name = "template.md",
 
     -- Whether to apply the template file to new notes entries.
     use_template = true,
@@ -409,8 +409,8 @@ module.config.public = {
 
 module.config.private = {
     strategies = {
-        flat = "%Y-%m-%d.dorm",
-        nested = "%Y" .. config.pathsep .. "%m" .. config.pathsep .. "%d.dorm",
+        flat = "%Y-%m-%d.md",
+        nested = "%Y" .. config.pathsep .. "%m" .. config.pathsep .. "%d.md",
     },
 }
 

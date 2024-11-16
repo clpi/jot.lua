@@ -27,13 +27,20 @@ local mod = dorm.mod
 
 return mod.create_meta(
 -- "treesitter",
+
     "base",
+    "encrypt",
     "autocmd",
     "notes",
     "maps",
     "cmd",
     "store",
     "code",
+    "metadata",
+    "capture",
+    "template",
+    "run",
+    "search",
     "todo",
     "ui",
     "calendar",

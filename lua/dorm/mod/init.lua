@@ -31,8 +31,7 @@ local utils = require("dorm.util")
 --- @field ["ui.text_popup"] Mi.text_popup
 
 --- Defines both a public and private configuration for a dorm module.
---- Public configurations may be tweaked by the user from the `dorm.setup()` function,
---- whereas private configurations are for internal use only.
+--- Public configurations may be tweaked by the user from the `dorm.setup()` function,  whereas private configurations are for internal use only.
 --- @class (exact) dorm.module.configuration
 --- @field custom? table         Internal table that tracks the differences (changes) between the base `public` table and the new (altered) `public` table. It contains only the tables that the user has altered in their own configuration.
 --- @field public private? table Internal configuration variables that may be tweaked by the developer.

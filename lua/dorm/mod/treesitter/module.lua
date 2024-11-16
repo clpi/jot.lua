@@ -87,7 +87,7 @@ module.load = function()
     -- luacheck: pop
 
     vim.api.nvim_create_autocmd("BufEnter", {
-      pattern = "*.dorm",
+      pattern = "*.md",
       once = true,
       callback = function()
         module.public.parser_path = vim.api.nvim_get_runtime_file("parser/dorm.so", false)[1]
@@ -97,7 +97,7 @@ module.load = function()
         end
 
         if module.config.public.install_parsers then
-          require("nvim-treesitter.install").commands.TSInstallSync["run!"]("markdown", "dorm_meta")
+          require("nvim-treesitter.install").commands.TSInstallSync["run!"]("markdown", "markdown_inilne")
           module.public.parser_path = vim.api.nvim_get_runtime_file("parser/dorm.so", false)[1]
         else
           assert(
