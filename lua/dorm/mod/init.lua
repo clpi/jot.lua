@@ -837,4 +837,25 @@ function Mod.send_event(recipient, event)
   end
 end
 
+--- Load all modules in the `lua/dorm/mod` directory.
+function Mod.load_modules()
+  local dir = "lua/dorm/mod"
+  local handle = vim.loop.fs_scandir(dir)
+  if not handle then
+    return
+  end
+
+  while true do
+    local name, type = vim.loop.fs_scandir_next(handle)
+    if not name then
+      break
+    end
+
+    if type == "file" and name:match("module%.lua$") then
+      local module_name = name:gsub("%.lua$", "")
+      Mod.load_module(module_name)
+    end
+  end
+end
+
 return Mod
