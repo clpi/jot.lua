@@ -23,6 +23,7 @@
     lazy    = false,
     version = false,
     config  = true,
+    opts = {},
 }
 ```
 
