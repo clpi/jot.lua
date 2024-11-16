@@ -28,6 +28,13 @@ function dorm.setup(cfg)
   cfg = cfg or {
     load = {
       base = {},
+      workspace = {
+        config = {
+          workspaces = {
+            dorm = "~/dorm"
+          }
+        }
+      }
     },
   }
 
