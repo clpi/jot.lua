@@ -1,8 +1,8 @@
-# dorm.lua
+# word.lua
 
 ## Intro
 
-`dorm.lua` is a simple ORM for Lua. It is designed to be simple to use and
+`word.lua` is a simple ORM for Lua. It is designed to be simple to use and
 
 ## Is it for you?
 

@@ -3,4 +3,4 @@ authors = ["Chris Pecunies"]
 language = "en"
 multilingual = false
 src = "src"
-title = "The dorm.lua book"
+title = "The word.lua book"

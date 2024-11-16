@@ -1,0 +1,36 @@
+*word.lua.txt*  word.lua
+
+Author:  Chris Pecunies
+
+INTRODUCTION                                                           *word.lua*
+================================================================================
+
+`word.lua` is a plugin to bring the extensibility of org-mode to neovim without
+leaving the gold standard markdown file format.
+
+
+ABOUT                                                                 *word-about*
+================================================================================
+
+To be filled out
+
+TODO                                                                  *word-todo*
+================================================================================
+
+- [ ] Separate commands and mods `(11/15 22:43)` 
+- [ ] Docgen `(11/15 22:43)` 
+- [ ] Easy linking of files by title, and easy colloqial hierarchy `(11/1522:43)`
+- [ ] Easy tagging of tracked todos, easy disparate categ. of todos
+
+LINKS                                                                *word-links*
+================================================================================
+
+Grab the latest version or report a bug on GitHub:
+
+https://github.com/clpi/word.lua
+
+Or visit the website:
+
+https://word.clp.is
+
+vim:tw=80:colorcolumn=81:et:ft=help:norl:

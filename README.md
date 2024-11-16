@@ -1,4 +1,4 @@
-# dorm - the _familiar_, organized future for neovim
+# word - the _familiar_, organized future for neovim
 
 <a href="https://neovim.io"> ![Neovim](https://img.shields.io/badge/Neovim%200.10+-brightgreen?style=for-the-badge) </a>
 <a href="/LICENSE"> ![License](https://img.shields.io/badge/license-GPL%20v3-brightgreen?style=for-the-badge)</a>
@@ -7,7 +7,7 @@
 
 ## Introduction
 
-- **dorm** is a plugin meant to bring the awesome extensibility of emacs [org-mode] or [neorg] without needing to switch from the gold standard [markdown], or from the best editor [neovim].
+- **word** is a plugin meant to bring the awesome extensibility of emacs [org-mode] or [neorg] without needing to switch from the gold standard [markdown], or from the best editor [neovim].
 
 - we want to be able to take notes like developers, without shutting ourselves out of the entire ecosystem built around markdown.
 
@@ -23,7 +23,7 @@
 
 ```lua
 {
-    "clpi/dorm.lua",
+    "clpi/word.lua",
     lazy    = false,
     version = false,
     config  = true,
@@ -36,9 +36,9 @@
 ### plug.vim
 
 ```vim
-Plug "clpi/dorm.lua", {
+Plug "clpi/word.lua", {
     \ "branch" : "main",
-    \ "do"     : ":lua require('dorm').setup()"
+    \ "do"     : ":lua require('word').setup()"
     \ }
 ```
 
@@ -57,7 +57,7 @@ use {
   },
   tag = "*",
   config = function()
-      require("dorm").setup()
+      require("word").setup()
   end,
 }
 ```
@@ -78,8 +78,8 @@ check back!
 
 thank you and keep updated!
 
-- [The Dorm book](https://dorm.cli.st)
-- [dorm.lua on luarocks](https://luarocks.org/modules/clpi/dorm.lua)
+- [The word book](https://word.cli.st)
+- [word.lua on luarocks](https://luarocks.org/modules/clpi/word.lua)
 
 <!-- <div align="center"> -->
 
