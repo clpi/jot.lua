@@ -12,18 +12,18 @@
 --- | "linux"
 --- | "bsd"
 
---- @alias word.configuration.module { config?: table }
+--- @alias word.configuration.init { config?: table }
 
 --- @class (exact) word.configuration.user
 --- @field hook? fun(manual: boolean, arguments?: string)    A user-defined function that is invoked whenever word starts up. May be used to e.g. set custom keybindings.
 --- @field lazy_loading? boolean                             Whether to defer loading the word base until after the user has entered a `.word` file.
---- @field load table<string, word.configuration.module>    A list of mod to load, alongside their configurations.
+--- @field load table<string, word.configuration.init>    A list of mod to load, alongside their configurations.
 --- @field logger? word.log.configuration                   A configuration table for the logger.
 
 --- @class (exact) word.configuration
 --- @field arguments table<string, string>                   A list of arguments provided to the `:wordStart` function in the form of `key=value` pairs. Only applicable when `user_config.lazy_loading` is `true`.
 --- @field manual boolean?                                   Used if word was manually loaded via `:wordStart`. Only applicable when `user_config.lazy_loading` is `true`.
---- @field mod table<string, word.configuration.module> Acts as a copy of the user's configuration that may be modified at runtime.
+--- @field mod table<string, word.configuration.init> Acts as a copy of the user's configuration that may be modified at runtime.
 --- @field word_version string                               The version of the file format to be used throughout word. Used internally.
 --- @field os_info OperatingSystem                           The operating system that word is currently running under.
 --- @field pathsep "\\"|"/"                                  The operating system that word is currently running under.

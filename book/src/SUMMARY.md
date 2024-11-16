@@ -16,7 +16,7 @@ Welcome to the `word.lua` book. I hope this helps!
 
 4. [Extending](./extend.md)
   1. [Plugins](./extend/plugins.md)
-  2. [Modules](./extend/modules.md)
+  2. [inits](./extend/inits.md)
   3. [Keymaps](./extend/keymaps.md)
   4. [Autocmds](./extend/autocmd.md)
 

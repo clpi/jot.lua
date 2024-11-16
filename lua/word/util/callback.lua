@@ -2,7 +2,7 @@
 --- Defines user C - ways for the user to directly interact with word and respond on certain events.
 --- @brief ]]
 
---- @module "word.mod"
+--- @init "word.mod"
 
 --- @class word.C
 C = {

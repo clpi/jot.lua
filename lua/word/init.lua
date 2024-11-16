@@ -16,7 +16,7 @@ local word = {
 
 local config, log, mod, utils = word.config, word.log, word.mod, word.utils
 
---- @module "word.config"
+--- @init "word.config"
 
 --- Initializes word. Parses the supplied user configuration, initializes all selected mod and adds filetype checking for `.word`.
 --- @param cfg word.configuration.user? A table that reflects the structure of `config.user_config`.
@@ -76,19 +76,19 @@ function word.setup(cfg)
     })
   end
 
-  -- Call Mod.load_modules to load all modules
-  mod.load_modules()
+  -- Call Mod.load_inits to load all inits
+  mod.load_inits()
 end
 
 --- This function gets called upon entering a .word file and loads all of the user-defined mod.
 --- @param manual boolean If true then the environment was kickstarted manually by the user.
 --- @param arguments string? A list of arguments in the format of "key=value other_key=other_value".
 function word.org_file_entered(manual, arguments)
-  -- Extract the module list from the user config
-  local module_list = config.user_config and config.user_config.load or {}
+  -- Extract the init list from the user config
+  local init_list = config.user_config and config.user_config.load or {}
 
   -- If we have already started word or if we haven't defined any mod to load then bail
-  if config.started or not module_list or vim.tbl_isempty(module_list) then
+  if config.started or not init_list or vim.tbl_isempty(init_list) then
     return
   end
 
@@ -108,25 +108,25 @@ function word.org_file_entered(manual, arguments)
     end
   end
 
-  -- Go through each defined module and grab its config
-  for name, module in pairs(module_list) do
+  -- Go through each defined init and grab its config
+  for name, init in pairs(init_list) do
     -- Apply the config
-    config.mod[name] = vim.tbl_deep_extend("force", config.mod[name] or {}, module.config or {})
+    config.mod[name] = vim.tbl_deep_extend("force", config.mod[name] or {}, init.config or {})
   end
 
   -- After all config are merged proceed to actually load the mod
-  local load_module = mod.load_module
-  for name, _ in pairs(module_list) do
+  local load_init = mod.load_init
+  for name, _ in pairs(init_list) do
     -- If it could not be loaded then halt
-    if not load_module(name) then
+    if not load_init(name) then
       log.warn("Recovering from error...")
       mod.loaded_mod[name] = nil
     end
   end
 
-  -- Goes through each loaded module and invokes word_post_load()
-  for _, module in pairs(mod.loaded_mod) do
-    module.word_post_load()
+  -- Goes through each loaded init and invokes word_post_load()
+  for _, init in pairs(mod.loaded_mod) do
+    init.word_post_load()
   end
 
   -- Set this variable to prevent word from loading twice

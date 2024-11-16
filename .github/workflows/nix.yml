@@ -1,0 +1,17 @@
+name: nix
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+jobs:
+  steps: 
+    - name: empty
+      run: echo "empty
+    # - uses: actions/checkout@v3
+    # - run: date +%F > todays-date
+    # - name: restore from todays cache
+    #   uses: actions/cache@v3
+    #   with:
+    #     path: _neovim
+    #     key: ${{ runner.os }}-${{ matrix.rev }}-${{ hashFiles('todays-date') }}

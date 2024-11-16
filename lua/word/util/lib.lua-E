@@ -372,7 +372,7 @@ function lib.title(str)
   for word in str:gmatch("[^%s]+") do
     local lower = Word:sub(2):lower()
 
-    table.insert(result, Word:sub(1, 1):upper() .. lower)
+    table.insert(result, word:sub(1, 1):upper() .. lower)
   end
   return table.concat(result, " ")
 end

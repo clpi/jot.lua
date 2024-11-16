@@ -1,0 +1,12 @@
+name: docgen (oneday)
+
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+
+jobs:
+  steps:
+    - name: empty
+      run: echo "empty"

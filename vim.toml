@@ -1,0 +1,18 @@
+[selene]
+base = "lua51"
+name = "vim"
+
+[vim]
+any = true
+
+[jit]
+any = true
+
+[a]
+any = true
+
+[[describe.args]]
+type = "string"
+
+[[describe.args]]
+type = "function"

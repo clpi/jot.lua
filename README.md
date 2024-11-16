@@ -79,7 +79,7 @@ check back!
 thank you and keep updated!
 
 - [The word book](https://word.cli.st)
-- [word.lua on luarocks](https://luarocks.org/modules/clpi/word.lua)
+- [word.lua on luarocks](https://luarocks.org/inits/clpi/word.lua)
 
 <!-- <div align="center"> -->
 
