@@ -5,9 +5,9 @@ version = MODREV .. SPECREV
 
 description = {
   summary = "Extensibility for everyone",
-  labels = { "neovim", "notes", "markdown" },
+  labels = { "wiki", "plugin", "neovim", "notes", "markdown" },
   homepage = "https://github.com/clpi/word.lua",
-  license = "GPL-3.0",
+  license = "MIT",
 }
 
 dependencies = {
