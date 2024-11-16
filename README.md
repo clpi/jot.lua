@@ -1,9 +1,13 @@
-# dorm - a _familiar_, organized future for neovim
+# dorm - the _familiar_, organized future for neovim
 
 <a href="https://neovim.io"> ![Neovim](https://img.shields.io/badge/Neovim%200.10+-brightgreen?style=for-the-badge) </a>
 <a href="/LICENSE"> ![License](https://img.shields.io/badge/license-GPL%20v3-brightgreen?style=for-the-badge)</a>
+---
+`for neovim 0.10+`
 
-## About
+[toc]
+
+## Introduction
 
 - **dorm** is a plugin meant to bring the awesome extensibility of emacs [org-mode] or [neorg] without needing to switch from the gold standard [markdown], or from the best editor [neovim].
 
