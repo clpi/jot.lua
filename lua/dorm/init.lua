@@ -66,6 +66,9 @@ function dorm.setup(cfg)
       end,
     })
   end
+
+  -- Call Mod.load_modules to load all modules
+  mod.load_modules()
 end
 
 --- This function gets called upon entering a .dorm file and loads all of the user-defined mod.
