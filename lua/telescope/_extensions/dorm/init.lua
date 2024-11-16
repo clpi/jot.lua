@@ -15,13 +15,14 @@ local has_dorm, dorm = pcall(require, "dorm")
 
 local M = {}
 
+
 function M.setup_keys()
   local map = vim.api.nvim_set_keymap
   local opt = { noremap = true, silent = true }
   map("n", ",vv", "<cmd>lua require('telescope._extensions.dorm').custom_picker()<CR>", opt)
 end
 
-function M.root()
+function M.custom_picker()
   pic.new({}, {
     prompt_title = "dorm",
     sorter = srt.get_generic_fuzzy_sorter(),
@@ -54,10 +55,11 @@ end
 function M.setup()
   tel.register_extension({
     exports = {
-      notes = M.root()
+      notes = M.custom_picker()
 
     }
   })
+  tel.load_extension("dorm")
 end
 
 return M

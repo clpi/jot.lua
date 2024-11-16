@@ -1,0 +1,23 @@
+*dorm.txt*  dorm.lua
+
+Author:  Chris Pecunies
+
+INTRODUCTION                                                           *dorm.lua*
+================================================================================
+
+`dorm.lua` is a plugin to bring the extensibility of org-mode to neovim without
+leaving the gold standard markdown file format.
+
+
+ABOUT                                                                *dorm-about*
+================================================================================
+
+Grab the latest version or report a bug on GitHub:
+
+https://github.com/clpi/dorm.lua
+
+Or visit the website:
+
+https://dorm.clp.is
+
+vim:tw=80:colorcolumn=81:et:ft=help:norl:

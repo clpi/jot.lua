@@ -146,4 +146,5 @@ function dorm.is_loaded()
   return config.started
 end
 
+-- require("telescope").load_extension("dorm")
 return dorm
