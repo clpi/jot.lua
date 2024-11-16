@@ -1,5 +1,7 @@
 # Summary
 
+Welcome to the `word.lua` book. I hope this helps!
+
 1. [Intro](./intro.md)
 2. [Philosophy](./philosophy.md)
 
@@ -22,5 +24,6 @@
   3. [Blog](./publish/blog.md)
   3. [Digital garden](./publish/digital_garden.md)
 
-6. [Final thoughts](./final_thoughts.md)
-6. [Credits](./credits.md)
+7. [Final thoughts](./final_thoughts.md)
+8. [Roadmap](./roadmap.md)
+9. [Credits](./credits.md)
