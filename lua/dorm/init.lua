@@ -5,6 +5,7 @@
 local dorm = {
   callbacks = require("dorm.util.callback"),
   config = require("dorm.config"),
+  ui = require("dorm.ui"),
   log = require("dorm.util.log"),
   mod = require("dorm.mod"),
   utils = require("dorm.util"),
