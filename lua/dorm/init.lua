@@ -8,7 +8,7 @@ local dorm = {
   log = require("dorm.util.log"),
   mod = require("dorm.mod"),
   utils = require("dorm.util"),
-  lib = require("lua-utils"),
+  lib = require("dorm.util.lib")
 }
 
 local config, log, mod, utils = dorm.config, dorm.log, dorm.mod, dorm.utils
@@ -84,7 +84,7 @@ function dorm.org_file_entered(manual, arguments)
     config.user_config.hook(manual, arguments)
   end
 
-  -- If dorm was loaded manually (through `:dormStart`) then set this flag to true
+  -- If dorm was loaded manually (through `:DormStart`) then set this flag to true
   config.manual = manual
 
   -- If the user has supplied any dorm environment variables

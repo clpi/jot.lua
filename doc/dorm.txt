@@ -9,7 +9,18 @@ INTRODUCTION                                                           *dorm.lua
 leaving the gold standard markdown file format.
 
 
-ABOUT                                                                *dorm-about*
+ABOUT                                                                 *dorm-about*
+================================================================================
+
+To be filled out
+
+TODO                                                                  *dorm-todo*
+================================================================================
+
+- [ ] Separate commands and mods `(11/15 22:43)` 
+- [ ] Docgen `(11/15 22:43)` 
+
+LINKS                                                                *dorm-links*
 ================================================================================
 
 Grab the latest version or report a bug on GitHub:

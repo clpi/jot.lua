@@ -28,7 +28,7 @@ local utils = require("dorm.util")
 --- @field ["ui"] ui
 --- @field ["calendar.views.monthly"] calendar.views.monthly
 --- @field ["ui.selection_popup"] ui.selection_popup
---- @field ["ui.text_popup"] ui.text_popup
+--- @field ["ui.text_popup"] Mi.text_popup
 
 --- Defines both a public and private configuration for a dorm module.
 --- Public configurations may be tweaked by the user from the `dorm.setup()` function,
@@ -63,13 +63,13 @@ local utils = require("dorm.util")
 --- @field replaced? boolean If `true`, this means the module is a replacement for a base module. This flag is set automatically whenever `setup().replaces` is set to a value.
 --- @field on_event fun(event: dorm.event) A callback that is invoked any time an event the module has subscribed to has fired.
 
-local mod = {}
+local Mod = {}
 
 --- Returns a new dorm module, exposing all the necessary function and variables.
 --- @param name string The name of the new module. Make sure this is unique. The recommended naming convention is `category.module_name` or `category.subcategory.module_name`.
 --- @param imports? string[] A list of imports to attach to the module. Import data is requestable via `module.required`. Use paths relative to the current module.
 --- @return dorm.module
-function mod.create(name, imports)
+function Mod.create(name, imports)
   ---@type dorm.module
   local new_module = {
     setup = function()
@@ -167,12 +167,12 @@ function mod.create(name, imports)
     for _, import in ipairs(imports) do
       local fullpath = table.concat({ name, import }, ".")
 
-      if not mod.load_module(fullpath) then
+      if not Mod.load_module(fullpath) then
         log.error("Unable to load import '" .. fullpath .. "'! An error occured (see traceback below):")
         assert(false) -- Halt execution, no recovering from this error...
       end
 
-      new_module.imported[fullpath] = mod.loaded_mod[fullpath]
+      new_module.imported[fullpath] = Mod.loaded_mod[fullpath]
     end
   end
 
@@ -188,8 +188,8 @@ end
 --- @param name string The name of the new metamodule. Make sure this is unique. The recommended naming convention is `category.module_name` or `category.subcategory.module_name`.
 --- @param ... string A list of module names to load.
 --- @return dorm.module
-function mod.create_meta(name, ...)
-  local module = mod.create(name)
+function Mod.create_meta(name, ...)
+  local module = Mod.create(name)
 
   module.config.public.enable = { ... }
 
@@ -220,7 +220,7 @@ function mod.create_meta(name, ...)
 
     -- Go through every module that we have defined in the metamodule and load it!
     for _, modname in ipairs(module.config.public.enable) do
-      mod.load_module(modname)
+      Mod.load_module(modname)
     end
   end
 
@@ -231,21 +231,21 @@ end
 -- We need to find a way to make these functions easier to maintain
 
 --- Tracks the amount of currently loaded mod.
-mod.loaded_module_count = 0
+Mod.loaded_module_count = 0
 
 --- The table of currently loaded mod
 --- @type { [string]: dorm.module }
-mod.loaded_mod = {}
+Mod.loaded_mod = {}
 
 --- Loads and enables a module
 --- Loads a specified module. If the module subscribes to any events then they will be activated too.
 --- @param module dorm.module The actual module to load.
 --- @return boolean # Whether the module successfully loaded.
-function mod.load_module_from_table(module)
+function Mod.load_module_from_table(module)
   log.info("Loading module with name", module.name)
 
   -- If our module is already loaded don't try loading it again
-  if mod.loaded_mod[module.name] then
+  if Mod.loaded_mod[module.name] then
     log.trace("Module", module.name, "already loaded. Omitting...")
     return true
   end
@@ -287,12 +287,12 @@ function mod.load_module_from_table(module)
 
   -- If the return value of module.setup() tells us to hotswap with another module then cache the module we want to replace with
   if loaded_module.replaces and loaded_module.replaces ~= "" then
-    module_to_replace = vim.deepcopy(mod.loaded_mod[loaded_module.replaces])
+    module_to_replace = vim.deepcopy(Mod.loaded_mod[loaded_module.replaces])
   end
 
   -- Add the module into the list of loaded mod
   -- The reason we do this here is so other mod don't recursively require each other in the dependency loading loop below
-  mod.loaded_mod[module.name] = module
+  Mod.loaded_mod[module.name] = module
 
   -- If the module "wants" any other mod then verify they are loaded
   if loaded_module.wants and not vim.tbl_isempty(loaded_module.wants) then
@@ -303,7 +303,7 @@ function mod.load_module_from_table(module)
       log.trace("Verifying", required_module)
 
       -- This would've always returned false had we not added the current module to the loaded module list earlier above
-      if not mod.is_module_loaded(required_module) then
+      if not Mod.is_module_loaded(required_module) then
         if config.user_config.load[required_module] then
           log.trace(
             "Wanted module",
@@ -311,7 +311,7 @@ function mod.load_module_from_table(module)
             "isn't loaded but can be as it's defined in the user's config. Loading..."
           )
 
-          if not mod.load_module(required_module) then
+          if not Mod.load_module(required_module) then
             log.error(
               "Unable to load wanted module for",
               module.name,
@@ -319,7 +319,7 @@ function mod.load_module_from_table(module)
             )
 
             -- Make sure to clean up after ourselves if the module failed to load
-            mod.loaded_mod[module.name] = nil
+            Mod.loaded_mod[module.name] = nil
             return false
           end
         else
@@ -332,13 +332,13 @@ function mod.load_module_from_table(module)
           )
 
           -- Make sure to clean up after ourselves if the module failed to load
-          mod.loaded_mod[module.name] = nil
+          Mod.loaded_mod[module.name] = nil
           return false
         end
       end
 
       -- Create a reference to the dependency's public table
-      module.required[required_module] = mod.loaded_mod[required_module].public
+      module.required[required_module] = Mod.loaded_mod[required_module].public
     end
   end
 
@@ -351,8 +351,8 @@ function mod.load_module_from_table(module)
       log.trace("Loading submodule", required_module)
 
       -- This would've always returned false had we not added the current module to the loaded module list earlier above
-      if not mod.is_module_loaded(required_module) then
-        if not mod.load_module(required_module) then
+      if not Mod.is_module_loaded(required_module) then
+        if not Mod.load_module(required_module) then
           log.error(
             ("Unable to load module %s, required dependency %s did not load successfully"):format(
               module.name,
@@ -361,7 +361,7 @@ function mod.load_module_from_table(module)
           )
 
           -- Make sure to clean up after ourselves if the module failed to load
-          mod.loaded_mod[module.name] = nil
+          Mod.loaded_mod[module.name] = nil
           return false
         end
       else
@@ -369,7 +369,7 @@ function mod.load_module_from_table(module)
       end
 
       -- Create a reference to the dependency's public table
-      module.required[required_module] = mod.loaded_mod[required_module].public
+      module.required[required_module] = Mod.loaded_mod[required_module].public
     end
   end
 
@@ -389,7 +389,7 @@ function mod.load_module_from_table(module)
       )
 
       -- Make sure to clean up after ourselves if the module failed to load
-      mod.loaded_mod[module.name] = nil
+      Mod.loaded_mod[module.name] = nil
 
       return false
     end
@@ -413,7 +413,7 @@ function mod.load_module_from_table(module)
   log.info("Successfully loaded module", module.name)
 
   -- Keep track of the number of loaded mod
-  mod.loaded_module_count = mod.loaded_module_count + 1
+  Mod.loaded_module_count = Mod.loaded_module_count + 1
 
   -- NOTE(vhyrro): Left here for debugging.
   -- Maybe make controllable with a switch in the future.
@@ -427,7 +427,7 @@ function mod.load_module_from_table(module)
   -- local msg = ("%fms"):format((vim.loop.hrtime() - start) / 1e6)
   -- vim.notify(msg .. " " .. module.name)
 
-  mod.broadcast_event({
+  Mod.broadcast_event({
     type = "module_loaded",
     split_type = { "base", "module_loaded" },
     filename = "",
@@ -451,9 +451,9 @@ end
 --- @param module_name string A path to a module on disk. A path seperator in dorm is '.', not '/'.
 --- @param cfg table? A config that reflects the structure of `dorm.config.user_config.load["module.name"].config`.
 --- @return boolean # Whether the module was successfully loaded.
-function mod.load_module(module_name, cfg)
+function Mod.load_module(module_name, cfg)
   -- Don't bother loading the module from disk if it's already loaded
-  if mod.is_module_loaded(module_name) then
+  if Mod.is_module_loaded(module_name) then
     return true
   end
 
@@ -491,16 +491,16 @@ function mod.load_module(module_name, cfg)
   end
 
   -- Pass execution onto load_module_from_table() and let it handle the rest
-  return mod.load_module_from_table(module)
+  return Mod.load_module_from_table(module)
 end
 
 --- Has the same principle of operation as load_module_from_table(), except it then sets up the parent module's "required" table, allowing the parent to access the child as if it were a dependency.
 --- @param module dorm.module A valid table as returned by mod.create()
 --- @param parent_module string|dorm.module If a string, then the parent is searched for in the loaded mod. If a table, then the module is treated as a valid module as returned by mod.create()
-function mod.load_module_as_dependency_from_table(module, parent_module)
-  if mod.load_module_from_table(module) then
+function Mod.load_module_as_dependency_from_table(module, parent_module)
+  if Mod.load_module_from_table(module) then
     if type(parent_module) == "string" then
-      mod.loaded_mod[parent_module].required[module.name] = module.public
+      Mod.loaded_mod[parent_module].required[module.name] = module.public
     elseif type(parent_module) == "table" then
       parent_module.required[module.name] = module.public
     end
@@ -511,9 +511,9 @@ end
 --- @param module_name string A path to a module on disk. A path seperator in dorm is '.', not '/'
 --- @param parent_module string The name of the parent module. This is the module which the dependency will be attached to.
 --- @param cfg? table A config that reflects the structure of dorm.config.user_config.load["module.name"].config
-function mod.load_module_as_dependency(module_name, parent_module, cfg)
-  if mod.load_module(module_name, cfg) and mod.is_module_loaded(parent_module) then
-    mod.loaded_mod[parent_module].required[module_name] = mod.get_module_config(module_name)
+function Mod.load_module_as_dependency(module_name, parent_module, cfg)
+  if Mod.load_module(module_name, cfg) and Mod.is_module_loaded(parent_module) then
+    Mod.loaded_mod[parent_module].required[module_name] = Mod.get_module_config(module_name)
   end
 end
 
@@ -521,46 +521,46 @@ end
 --- @generic T
 --- @param module_name `T` The name of the module to retrieve.
 --- @return T?
-function mod.get_module(module_name)
-  if not mod.is_module_loaded(module_name) then
+function Mod.get_module(module_name)
+  if not Mod.is_module_loaded(module_name) then
     log.trace("Attempt to get module with name", module_name, "failed - module is not loaded.")
     return
   end
 
-  return mod.loaded_mod[module_name].public
+  return Mod.loaded_mod[module_name].public
 end
 
 --- Returns the module.config.public table if the module is loaded
 --- @param module_name string The name of the module to retrieve (module must be loaded)
 --- @return table?
-function mod.get_module_config(module_name)
-  if not mod.is_module_loaded(module_name) then
+function Mod.get_module_config(module_name)
+  if not Mod.is_module_loaded(module_name) then
     log.trace("Attempt to get module config with name", module_name, "failed - module is not loaded.")
     return
   end
 
-  return mod.loaded_mod[module_name].config.public
+  return Mod.loaded_mod[module_name].config.public
 end
 
 --- Returns true if module with name module_name is loaded, false otherwise
 --- @param module_name string The name of an arbitrary module
 --- @return boolean
-function mod.is_module_loaded(module_name)
-  return mod.loaded_mod[module_name] ~= nil
+function Mod.is_module_loaded(module_name)
+  return Mod.loaded_mod[module_name] ~= nil
 end
 
 --- Reads the module's public table and looks for a version variable, then converts it from a string into a table, like so: `{ major = <number>, minor = <number>, patch = <number> }`.
 --- @param module_name string The name of a valid, loaded module.
 --- @return table? parsed_version
-function mod.get_module_version(module_name)
+function Mod.get_module_version(module_name)
   -- If the module isn't loaded then don't bother retrieving its version
-  if not mod.is_module_loaded(module_name) then
+  if not Mod.is_module_loaded(module_name) then
     log.trace("Attempt to get module version with name", module_name, "failed - module is not loaded.")
     return
   end
 
   -- Grab the version of the module
-  local version = mod.get_module(module_name).version
+  local version = Mod.get_module(module_name).version
 
   -- If it can't be found then error out
   if not version then
@@ -574,9 +574,9 @@ end
 --- Executes `callback` once `module` is a valid and loaded module, else the callback gets instantly executed.
 --- @param module_name string The name of the module to listen for.
 --- @param callback fun(module_public_table: dorm.module.public) The callback to execute.
-function mod.await(module_name, callback)
-  if mod.is_module_loaded(module_name) then
-    callback(assert(mod.get_module(module_name)))
+function Mod.await(module_name, callback)
+  if Mod.is_module_loaded(module_name) then
+    callback(assert(Mod.get_module(module_name)))
     return
   end
 
@@ -655,7 +655,7 @@ end
 --        If type == 'some_plugin.events.my_event', this function will return { 'some_plugin', 'my_event' }
 --- @param type string The full path of a module event
 --- @return string[]?
-function mod.split_event_type(type)
+function Mod.split_event_type(type)
   local start_str, end_str = type:find("%.events%.")
 
   local split_event_type = { type:sub(0, start_str - 1), type:sub(end_str + 1) }
@@ -672,15 +672,15 @@ end
 --- @param module dorm.module A reference to the module invoking the function
 --- @param type string A full path to a valid event type (e.g. `module.events.some_event`)
 --- @return dorm.event?
-function mod.get_event_template(module, type)
+function Mod.get_event_template(module, type)
   -- You can't get the event template of a type if the type isn't loaded
-  if not mod.is_module_loaded(module.name) then
+  if not Mod.is_module_loaded(module.name) then
     log.info("Unable to get event of type", type, "with module", module.name)
     return
   end
 
   -- Split the event type into two
-  local split_type = mod.split_event_type(type)
+  local split_type = Mod.split_event_type(type)
 
   if not split_type then
     log.warn("Unable to get event template for event", type, "and module", module.name)
@@ -690,14 +690,14 @@ function mod.get_event_template(module, type)
   log.trace("Returning", split_type[2], "for module", split_type[1])
 
   -- Return the defined event from the specific module
-  return mod.loaded_mod[module.name].events.defined[split_type[2]]
+  return Mod.loaded_mod[module.name].events.defined[split_type[2]]
 end
 
 --- Creates a deep copy of the `mod.base_event` event and returns it with a custom type and referrer.
 --- @param module dorm.module A reference to the module invoking the function.
 --- @param name string A relative path to a valid event template.
 --- @return dorm.event
-function mod.define_event(module, name)
+function Mod.define_event(module, name)
   -- Create a copy of the base event and override the values with ones specified by the user
 
   local new_event = {
@@ -731,12 +731,12 @@ end
 --- @param content table|any? The content of the event, can be anything from a string to a table to whatever you please.
 --- @param ev? table The original event data.
 --- @return dorm.event? # New event.
-function mod.create_event(module, type, content, ev)
+function Mod.create_event(module, type, content, ev)
   -- Get the module that contains the event
-  local module_name = mod.split_event_type(type)[1]
+  local module_name = Mod.split_event_type(type)[1]
 
   -- Retrieve the template from module.events.defined
-  local event_template = mod.get_event_template(mod.loaded_mod[module_name] or { name = "" }, type)
+  local event_template = Mod.get_event_template(Mod.loaded_mod[module_name] or { name = "" }, type)
 
   if not event_template then
     log.warn("Unable to create event of type", type, ". Returning nil...")
@@ -751,7 +751,7 @@ function mod.create_event(module, type, content, ev)
   new_event.referrer = module.name
 
   -- Override all the important values
-  new_event.split_type = assert(mod.split_event_type(type))
+  new_event.split_type = assert(Mod.split_event_type(type))
   new_event.filename = vim.fn.expand("%:t") --[[@as string]]
   new_event.filehead = vim.fn.expand("%:p:h") --[[@as string]]
 
@@ -778,7 +778,7 @@ end
 --- Sends an event to all subscribed mod. The event contains the filename, filehead, cursor position and line content as a bonus.
 --- @param event dorm.event An event, usually created by `mod.create_event()`.
 --- @param callback function? A callback to be invoked after all events have been asynchronously broadcast
-function mod.broadcast_event(event, callback)
+function Mod.broadcast_event(event, callback)
   -- Broadcast the event to all mod
   if not event.split_type then
     log.error("Unable to broadcast event of type", event.type, "- invalid event name")
@@ -786,10 +786,10 @@ function mod.broadcast_event(event, callback)
   end
 
   -- Let the callback handler know of the event
-  callbacks.handle_callbacks(event)
+  callbacks.handle(event)
 
   -- Loop through all the mod
-  for _, current_module in pairs(mod.loaded_mod) do
+  for _, current_module in pairs(Mod.loaded_mod) do
     -- If the current module has any subscribed events and if it has a subscription bound to the event's module name then
     if current_module.events.subscribed and current_module.events.subscribed[event.split_type[1]] then
       -- Check whether we are subscribed to the event type
@@ -812,9 +812,9 @@ end
 --- Instead of broadcasting to all loaded mod, `send_event()` only sends to one module.
 --- @param recipient string The name of a loaded module that will be the recipient of the event.
 --- @param event dorm.event An event, usually created by `mod.create_event()`.
-function mod.send_event(recipient, event)
+function Mod.send_event(recipient, event)
   -- If the recipient is not loaded then there's no reason to send an event to it
-  if not mod.is_module_loaded(recipient) then
+  if not Mod.is_module_loaded(recipient) then
     log.warn("Unable to send event to module", recipient, "- the module is not loaded.")
     return
   end
@@ -823,19 +823,19 @@ function mod.send_event(recipient, event)
   event.broadcast = false
 
   -- Let the callback handler know of the event
-  callbacks.handle_callbacks(event)
+  callbacks.handle(event)
 
   -- Get the recipient module and check whether it's subscribed to our event
-  local mod = mod.loaded_mod[recipient]
+  local mod = Mod.loaded_mod[recipient]
 
   if mod.events.subscribed and mod.events.subscribed[event.split_type[1]] then
     local evt = mod.events.subscribed[event.split_type[1]][event.split_type[2]]
 
     -- If it is then trigger the module's on_event() function
     if evt ~= nil and evt == true then
-      mod.on_event(event)
+      Mod.on_event(event)
     end
   end
 end
 
-return mod
+return Mod

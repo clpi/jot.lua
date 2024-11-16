@@ -88,7 +88,7 @@ module.public = {
     end,
 
     ---Creates a new horizontal split at the bottom of the screen
-    ---@param  name string the name of the buffer contained within the split (will have dorm:// prepended to it)
+    ---@param  name string the name of the buffer contained within the split (will have Dorm:// prepended to it)
     ---@param  config table? a table of <option> = <value> keypairs signifying buffer-local options for the buffer contained within the split
     ---@param  height number? the height of the new split
     ---@return number?, number? #Both the buffer ID and window ID
@@ -99,7 +99,7 @@ module.public = {
             height = { height, "number", true },
         })
 
-        local bufname = "dorm://" .. name
+        local bufname = "Dorm://" .. name
 
         if vim.fn.bufexists(bufname) == 1 then ---@diagnostic disable-line
             log.error("Buffer '" .. name .. "' already exists")
@@ -119,7 +119,7 @@ module.public = {
             bufhidden = "hide",
             buftype = "nofile",
             buflisted = false,
-            filetype = "dorm",
+            filetype = "markdown",
         }
 
         vim.api.nvim_buf_set_name(buf, bufname)
@@ -170,10 +170,10 @@ module.public = {
             bufhidden = "hide",
             buftype = "nofile",
             buflisted = false,
-            filetype = "dorm",
+            filetype = "markdown",
         }
 
-        vim.api.nvim_buf_set_name(buf, "dorm://" .. name)
+        vim.api.nvim_buf_set_name(buf, "Dorm://" .. name)
 
         local win_options = {
             vertical = true,
@@ -214,7 +214,7 @@ module.public = {
             return
         end
 
-        local namespace = vim.api.nvim_create_namespace("dorm://display/" .. name)
+        local namespace = vim.api.nvim_create_namespace("Dorm://display/" .. name)
 
         local buf = (function()
             name = "display/" .. name

@@ -5,16 +5,16 @@
     summary: Easily track a notes within dorm.
     ---
 The notes module exposes a total of six commands.
-The first three, `:dorm notes today|yesterday|tomorrow`, allow you to access entries
+The first three, `:Dorm notes today|yesterday|tomorrow`, allow you to access entries
 for a given time relative to today. A file will be opened with the respective date as a `.dorm` file.
 
-The fourth command, `:dorm notes custom`, allows you to specify a custom date as an argument.
+The fourth command, `:Dorm notes custom`, allows you to specify a custom date as an argument.
 The date must be formatted according to the `YYYY-mm-dd` format, e.g. `2023-01-01`.
 
-The `:dorm notes template` command creates a template file which will be used as the base whenever
+The `:Dorm notes template` command creates a template file which will be used as the base whenever
 a new notes entry is created.
 
-Last but not least, the `:dorm notes toc open|update` commands open or create/update a Table of Contents
+Last but not least, the `:Dorm notes toc open|update` commands open or create/update a Table of Contents
 file found in the root of the notes. This file contains link to all other notes entries, alongside
 their titles.
 --]]
@@ -394,7 +394,7 @@ module.config.public = {
     -- that returns a lua string with the same format.
     strategy = "nested",
 
-    -- The name of the template file to use when running `:dorm notes template`.
+    -- The name of the template file to use when running `:Dorm notes template`.
     template_name = "template.dorm",
 
     -- Whether to apply the template file to new notes entries.

@@ -72,7 +72,7 @@ end
 
 module.load = function()
     vim.api.nvim_create_autocmd("Filetype", {
-        pattern = "dorm",
+        pattern = "markdown",
         desc = "Attaches the TODO introspector to any dorm buffer.",
         callback = function(ev)
             local buf = ev.buf
@@ -91,7 +91,7 @@ end
 --- Errors if the target buffer is not a dorm buffer.
 ---@param buffer number #The buffer ID to attach to.
 function module.public.attach_introspector(buffer)
-    if not vim.api.nvim_buf_is_valid(buffer) or vim.bo[buffer].filetype ~= "dorm" then
+    if not vim.api.nvim_buf_is_valid(buffer) or vim.bo[buffer].filetype ~= "markdown" then
         error(string.format("Could not attach to buffer %d, buffer is not a dorm file!", buffer))
     end
 

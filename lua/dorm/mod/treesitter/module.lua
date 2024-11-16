@@ -67,19 +67,19 @@ module.load = function()
 
     local parser_configs = require("nvim-treesitter.parsers").get_parser_configs()
 
-    parser_configs.dorm = {
-      install_info = module.config.public.parser_configs.dorm,
-    }
+    -- parser_configs.dorm = {
+    -- install_info = module.config.public.parser_configs.dorm,
+    -- }
 
-    parser_configs.dorm_meta = {
-      install_info = module.config.public.parser_configs.dorm_meta,
-    }
+    -- parser_configs.dorm_meta = {
+    -- install_info = module.config.public.parser_configs.dorm_meta,
+    -- }
 
     modules.await("cmd", function(dormcmd)
       dormcmd.add_commands_from_table({
-        ["sync-parsers"] = {
+        ["sync"] = {
           args = 0,
-          name = "sync-parsers",
+          name = "sync",
         },
       })
     end)
@@ -97,12 +97,12 @@ module.load = function()
         end
 
         if module.config.public.install_parsers then
-          require("nvim-treesitter.install").commands.TSInstallSync["run!"]("dorm", "dorm_meta")
+          require("nvim-treesitter.install").commands.TSInstallSync["run!"]("markdown", "dorm_meta")
           module.public.parser_path = vim.api.nvim_get_runtime_file("parser/dorm.so", false)[1]
         else
           assert(
             false,
-            "dorm's parser is not installed! Run `:dorm sync-parsers` to install it, then restart Neovim."
+            "dorm's parser is not installed! Run `:Dorm sync-parsers` to install it, then restart Neovim."
           )
         end
       end,
@@ -139,26 +139,26 @@ module.config.public = {
   --  with your personal configuration.
   configure_parsers = true,
   --- If true will automatically install dorm parsers if they are not present.
-  install_parsers = true,
+  -- install_parsers = true,
   --- Configurations for each parser as required by `nvim-treesitter`.
   --  If you would like to tweak your parser configs you may do so here.
-  parser_configs = {
-    -- Configuration for the mainline dorm parser.
-    dorm = {
-      url = "https://github.com/nvim-dorm/tree-sitter-dorm",
-      files = { "src/parser.c", "src/scanner.cc" },
-      branch = "main",
-      revision = "6348056b999f06c2c7f43bb0a5aa7cfde5302712",
-    },
-    -- Configuration for the metadata parser (used to parse the contents
-    -- of `@document.meta` blocks).
-    dorm_meta = {
-      url = "https://github.com/nvim-dorm/tree-sitter-dorm-meta",
-      files = { "src/parser.c" },
-      branch = "main",
-      revision = "a479d1ca05848d0b51dd25bc9f71a17e0108b240",
-    },
-  },
+  -- parser_configs = {
+  -- Configuration for the mainline dorm parser.
+  -- dorm = {
+  --   url = "https://github.com/nvim-dorm/tree-sitter-dorm",
+  --   files = { "src/parser.c", "src/scanner.cc" },
+  --   branch = "main",
+  --   revision = "6348056b999f06c2c7f43bb0a5aa7cfde5302712",
+  -- },
+  -- Configuration for the metadata parser (used to parse the contents
+  -- of `@document.meta` blocks).
+  -- dorm_meta = {
+  --   url = "https://github.com/nvim-dorm/tree-sitter-dorm-meta",
+  --   files = { "src/parser.c" },
+  --   branch = "main",
+  --   revision = "a479d1ca05848d0b51dd25bc9f71a17e0108b240",
+  -- },
+  -- },
 }
 
 ---@class treesitter
@@ -180,7 +180,7 @@ module.public = {
     if not document_root then
       return
     end
-    local next_match_query = utils.ts_parse_query("dorm", query_string)
+    local next_match_query = utils.ts_parse_query("markdown", query_string)
     for id, node in next_match_query:iter_captures(document_root, 0, line_number - 1, -1) do
       if next_match_query.captures[id] == "next-segment" then
         local start_line, start_col = node:range()
@@ -213,7 +213,7 @@ module.public = {
     if not document_root then
       return
     end
-    local previous_match_query = utils.ts_parse_query("dorm", query_string)
+    local previous_match_query = utils.ts_parse_query("markdown", query_string)
     local final_node = nil
 
     for id, node in previous_match_query:iter_captures(document_root, 0, 0, line_number) do
@@ -251,7 +251,7 @@ module.public = {
     end
 
     if not opts.ft then
-      opts.ft = "dorm"
+      opts.ft = "markdown"
     end
 
     -- Do we need to go through each tree? lol
@@ -269,7 +269,7 @@ module.public = {
   get_all_nodes_in_file = function(node_type, path, filetype)
     path = vim.fs.normalize(path)
     if not filetype then
-      filetype = "dorm"
+      filetype = "markdown"
     end
 
     local contents = io.open(path, "r"):read("*a")
@@ -309,7 +309,7 @@ module.public = {
   ---@param callback function
   ---@param ts_tree any #Optional syntax tree ---@diagnostic disable-line -- TODO: type error workaround <pysan3>
   tree_map = function(callback, ts_tree)
-    local tree = ts_tree or vim.treesitter.get_parser(0, "dorm"):parse()[1]
+    local tree = ts_tree or vim.treesitter.get_parser(0, "markdown"):parse()[1]
 
     local root = tree:root()
 
@@ -321,7 +321,7 @@ module.public = {
   ---@param callback function Executes with each node as parameter, can return false to stop recursion
   ---@param ts_tree any #Optional syntax tree ---@diagnostic disable-line -- TODO: type error workaround <pysan3>
   tree_map_rec = function(callback, ts_tree)
-    local tree = ts_tree or vim.treesitter.get_parser(0, "dorm"):parse()[1]
+    local tree = ts_tree or vim.treesitter.get_parser(0, "markdown"):parse()[1]
 
     local root = tree:root()
 
@@ -488,7 +488,7 @@ module.public = {
       return iterate(parent)
     end
 
-    vim.treesitter.get_parser(buf, "dorm"):for_each_tree(function(tree)
+    vim.treesitter.get_parser(buf, "markdown"):for_each_tree(function(tree)
       -- Iterate over all top-level children and attempt to find a match
       return iterate(tree:root()) ---@diagnostic disable-line -- TODO: type error workaround <pysan3>
     end)
@@ -506,7 +506,7 @@ module.public = {
     end
 
     if not opts.ft then
-      opts.ft = "dorm"
+      opts.ft = "markdown"
     end
 
     -- Do we need to go through each tree? lol
@@ -652,7 +652,7 @@ module.public = {
   ---@param filetype string? #The filetype of the buffer or the string with code
   ---@return TSNode? #The root node of the document
   get_document_root = function(src, filetype)
-    filetype = filetype or "dorm"
+    filetype = filetype or "markdown"
 
     local parser
     if type(src) == "string" then
@@ -804,7 +804,7 @@ module.public = {
     end
 
     local dorm_query = utils.ts_parse_query(
-      "dorm",
+      "markdown",
       [[
                 (document
                   (ranged_verbatim_tag
@@ -878,7 +878,7 @@ module.public = {
   ---@param start number? #The start line for the query
   ---@param finish number? #The end line for the query
   execute_query = function(query_string, callback, source, start, finish)
-    local query = utils.ts_parse_query("dorm", query_string)
+    local query = utils.ts_parse_query("markdown", query_string)
     local dorm_parser, iter_src = module.public.get_ts_parser(source)
 
     if not dorm_parser then
@@ -912,14 +912,14 @@ module.public = {
         source = vim.uri_to_bufnr(vim.uri_from_fname(source))
       else
         iter_src = io.open(source, "r"):read("*a")
-        dorm_parser = vim.treesitter.get_string_parser(iter_src, "dorm")
+        dorm_parser = vim.treesitter.get_string_parser(iter_src, "markdown")
       end
     end
     if type(source) == "number" then
       if source == 0 then
         source = vim.api.nvim_get_current_buf()
       end
-      dorm_parser = vim.treesitter.get_parser(source, "dorm")
+      dorm_parser = vim.treesitter.get_parser(source, "markdown")
       iter_src = source
     end
 
@@ -953,7 +953,7 @@ local function install_dorm_ts()
 
     -- install dorm parsers
     local ok, err = pcall(function()
-      install.commands.TSInstallSync["run!"]("dorm")
+      install.commands.TSInstallSync["run!"]("markdown")
     end)
 
     -- no matter what, restore the defaults back
@@ -965,12 +965,12 @@ local function install_dorm_ts()
       error(err)
     end
   else
-    install.commands.TSInstallSync["run!"]("dorm")
+    install.commands.TSInstallSync["run!"]("markdown")
   end
 end
 
 module.on_event = function(event)
-  if event.split_type[2] == "sync-parsers" then
+  if event.split_type[2] == "sync" then
     local ok, err = pcall(install_dorm_ts)
 
     if not ok then
@@ -984,7 +984,7 @@ end
 
 module.events.subscribed = {
   ["cmd"] = {
-    ["sync-parsers"] = true,
+    ["sync"] = true,
   },
 }
 

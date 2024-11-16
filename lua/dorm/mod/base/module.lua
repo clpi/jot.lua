@@ -27,14 +27,15 @@ local mod = dorm.mod
 
 return mod.create_meta(
 -- "treesitter",
-  "base",
-  "autocmd",
-  "notes",
-  "keys",
-  "cmd",
-  "store",
-  "code",
-  "todo",
-  "ui",
-  "calendar"
+    "base",
+    "autocmd",
+    "notes",
+    "maps",
+    "cmd",
+    "store",
+    "code",
+    "todo",
+    "ui",
+    "calendar",
+    "link"
 )

@@ -1,11 +1,11 @@
 --- @brief [[
---- Defines user callbacks - ways for the user to directly interact with dorm and respond on certain events.
+--- Defines user C - ways for the user to directly interact with dorm and respond on certain events.
 --- @brief ]]
 
 --- @module "dorm.mod"
 
---- @class dorm.callbacks
-local callbacks = {
+--- @class dorm.C
+C = {
   ---@type table<string, { [1]: fun(event: dorm.event, content: table|any), [2]?: fun(event: dorm.event): boolean }>
   callback_list = {},
 }
@@ -14,21 +14,21 @@ local callbacks = {
 --- @param event_name string The full path to the event we want to listen on.
 --- @param callback fun(event: dorm.event, content: table|any) The function to call whenever our event gets triggered.
 --- @param content_filter? fun(event: dorm.event): boolean # A filtering function to test if a certain event meets our expectations.
-function callbacks.on_event(event_name, callback, content_filter)
+function C.on_event(event_name, callback, content_filter)
   -- If the table doesn't exist then create it
-  callbacks.callback_list[event_name] = callbacks.callback_list[event_name] or {}
+  C.callback_list[event_name] = C.callback_list[event_name] or {}
   -- Insert the callback and content filter
-  table.insert(callbacks.callback_list[event_name], { callback, content_filter })
+  table.insert(C.callback_list[event_name], { callback, content_filter })
 end
 
---- Used internally by dorm to call all callbacks with an event.
+--- Used internally by dorm to call all C with an event.
 --- @param event dorm.event An event as returned by `mod.create_event()`
 --- @see mod.create_event
-function callbacks.handle_callbacks(event)
-  -- Query the list of registered callbacks
-  local callback_entry = callbacks.callback_list[event.type]
+function C.handle(event)
+  -- Query the list of registered C
+  local callback_entry = C.callback_list[event.type]
 
-  -- If the callbacks exist then
+  -- If the C exist then
   if callback_entry then
     -- Loop through every callback
     for _, callback in ipairs(callback_entry) do
@@ -41,4 +41,4 @@ function callbacks.handle_callbacks(event)
   end
 end
 
-return callbacks
+return C

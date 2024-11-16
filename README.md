@@ -1,4 +1,4 @@
-# dorm - a familiar, organized future for neovim
+# dorm - a _familiar_, organized future for neovim
 
 <a href="https://neovim.io"> ![Neovim](https://img.shields.io/badge/Neovim%200.10+-brightgreen?style=for-the-badge) </a>
 <a href="/LICENSE"> ![License](https://img.shields.io/badge/license-GPL%20v3-brightgreen?style=for-the-badge)</a>
@@ -43,7 +43,6 @@ Plug "clpi/dorm.lua", {
 use {
   "clp",
   rocks = {
-        "lua-utils.nvim",
         "nvim-nio",
         "nui.nvim",
         "plenary.nvim",
@@ -56,13 +55,24 @@ use {
 }
 ```
 
+## Config
+
+check back!
+
 ## Usage
+
+check back!
+
+## Support
 
 check back!
 
 ## Credits
 
 thank you and keep updated!
+
+- [The Dorm book](https://dorm.cli.st)
+- [dorm.lua on luarocks](https://luarocks.org/modules/clpi/dorm.lua)
 
 <!-- <div align="center"> -->
 

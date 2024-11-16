@@ -1,10 +1,10 @@
 --[[
     file: cmd-Module
-    title: Does the Heavy Lifting for the `:dorm` Command
-    summary: This module deals with handling everything related to the `:dorm` command.
+    title: Does the Heavy Lifting for the `:Dorm` Command
+    summary: This module deals with handling everything related to the `:Dorm` command.
     internal: true
     ---
-This internal module handles everything there is for the `:dorm` command to function.
+This internal module handles everything there is for the `:Dorm` command to function.
 
 Different mod can define their own commands, completions and conditions on when they'd
 like these commands to be avaiable.
@@ -33,7 +33,7 @@ module.examples = {
           args = 1,     -- Setting this variable instead would be the equivalent of min_args = 1 and max_args = 1
           -- This command is only avaiable within `.dorm` files.
           -- This can also be a function(bufnr, is_in_an_dorm_file)
-          condition = "dorm",
+          condition = "markdown",
 
           subcommands = { -- Defines subcommands
             -- Repeat the definition cycle again
@@ -92,10 +92,11 @@ module.examples = {
 }
 
 module.load = function()
-  -- Define the :dorm command with autocompletion taking any number of arguments (-nargs=*)
+  -- Define the :Dorm command with autocompletion taking any number of arguments (-nargs=*)
   -- If the user passes no arguments or too few, we'll query them for the remainder using select_next_cmd_arg.
   vim.api.nvim_create_user_command("Dorm", module.private.command_callback, {
     desc = "The dorm command",
+    -- bang = true,
     nargs = "*",
     complete = module.private.generate_completions,
   })
@@ -125,13 +126,16 @@ module.config.public = {
     "return",
   },
 }
-
 ---@class base.cmd
 module.public = {
   -- The table containing all the functions. This can get a tad complex so I recommend you read the wiki entry
   dorm_commands = {
     module = {
       subcommands = {
+        -- new = {
+        --   args = 1,
+        --   name = "module.new",
+        -- },
         load = {
           args = 1,
           name = "module.load",
@@ -184,7 +188,7 @@ module.public = {
     mod.load_module_from_table(ret)
   end,
 
-  --- Rereads data from all mod and rebuild the list of available autocompletions and commands
+  --- Rereads data from all mod and rebuild the list of available autocompletimodulemoduleons and commands
   sync = function()
     -- Loop through every loaded module and set up all their commands
     for _, mod in pairs(mod.loaded_mod) do
@@ -207,7 +211,7 @@ module.private = {
     local args = data.fargs
 
     local current_buf = vim.api.nvim_get_current_buf()
-    local is_dorm = vim.bo[current_buf].filetype == "dorm"
+    local is_dorm = vim.bo[current_buf].filetype == "markdown"
 
     local function check_condition(condition)
       if condition == nil then
@@ -239,14 +243,14 @@ module.private = {
 
       if not ref then
         log.error(
-          ("Error when executing `:dorm %s` - such a command does not exist!"):format(
+          ("Error when executing `:Dorm %s` - such a command does not exist!"):format(
             table.concat(vim.list_slice(args, 1, i), " ")
           )
         )
         return
       elseif not check_condition(ref.condition) then
         log.error(
-          ("Error when executing `:dorm %s` - the command is currently disabled. Some commands will only become available under certain conditions, e.g. being within a `.dorm` file!")
+          ("Error when executing `:Dorm %s` - the command is currently disabled. Some commands will only become available under certain conditions, e.g. being within a `.dorm` file!")
           :format(
             table.concat(vim.list_slice(args, 1, i), " ")
           )
@@ -270,12 +274,12 @@ module.private = {
     end
 
     if #args == 0 or argument_count < ref.min_args then
-      local completions = module.private.generate_completions(_, table.concat({ "dorm ", data.args, " " }))
+      local completions = module.private.generate_completions(_, table.concat({ "Dorm ", data.args, " " }))
       module.private.select_next_cmd_arg(data.args, completions)
       return
     elseif argument_count > ref.max_args then
       log.error(
-        ("Error when executing `:dorm %s` - too many arguments supplied! The command expects %s argument%s.")
+        ("Error when executing `:Dorm %s` - too many arguments supplied! The command expects %s argument%s.")
         :format(
           data.args,
           ref.max_args == 0 and "no" or ref.max_args,
@@ -287,7 +291,7 @@ module.private = {
 
     if not ref.name then
       log.error(
-        ("Error when executing `:dorm %s` - the ending command didn't have a `name` variable associated with it! This is an implementation error on the developer's side, so file a report to the author of the module.")
+        ("Error when executing `:Dorm %s` - the ending command didn't have a `name` variable associated with it! This is an implementation error on the developer's side, so file a report to the author of the module.")
         :format(
           data.args
         )
@@ -310,7 +314,7 @@ module.private = {
     )
   end,
 
-  --- This function returns all available commands to be used for the :dorm command
+  --- This function returns all available commands to be used for the :Dorm command
   ---@param _ nil #Placeholder variable
   ---@param command string #Supplied by nvim itself; the full typed out command
   generate_completions = function(_, command)
@@ -389,7 +393,7 @@ module.private = {
       end
     end
 
-    -- TODO: Fix `:dorm m <tab>` giving invalid completions
+    -- TODO: Fix `:Dorm m <tab>` giving invalid completions
     local keys = ref and vim.tbl_keys(ref.subcommands or {})
         or (
           vim.tbl_filter(function(key)
@@ -454,7 +458,7 @@ module.on_event = function(event)
       size = { width = "50%", height = "80%" },
       enter = true,
       buf_options = {
-        filetype = "dorm",
+        filetype = "markdown",
         modifiable = true,
         readonly = false,
       },
@@ -491,6 +495,7 @@ end
 
 module.events.subscribed = {
   ["cmd"] = {
+    -- ["module.new"] = true,
     ["module.load"] = true,
     ["module.list"] = true,
   },

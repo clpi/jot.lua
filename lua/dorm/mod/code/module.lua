@@ -10,7 +10,7 @@ where the configuration is annotated and described in a `.dorm` document, and th
 is thrown out into a file that can then be normally consumed by e.g. an application.
 
 The `code` module currently provides a single command:
-- `:dorm code current-file` - performs all possible tangling operations on the current file
+- `:Dorm code current-file` - performs all possible tangling operations on the current file
 
 ### Usage Tutorial
 By base, *zero* code blocks are coded. You must provide where you'd like to code each code

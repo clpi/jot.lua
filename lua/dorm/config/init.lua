@@ -21,8 +21,8 @@
 --- @field logger? dorm.log.configuration                   A configuration table for the logger.
 
 --- @class (exact) dorm.configuration
---- @field arguments table<string, string>                   A list of arguments provided to the `:dormStart` function in the form of `key=value` pairs. Only applicable when `user_config.lazy_loading` is `true`.
---- @field manual boolean?                                   Used if dorm was manually loaded via `:dormStart`. Only applicable when `user_config.lazy_loading` is `true`.
+--- @field arguments table<string, string>                   A list of arguments provided to the `:DormStart` function in the form of `key=value` pairs. Only applicable when `user_config.lazy_loading` is `true`.
+--- @field manual boolean?                                   Used if dorm was manually loaded via `:DormStart`. Only applicable when `user_config.lazy_loading` is `true`.
 --- @field mod table<string, dorm.configuration.module> Acts as a copy of the user's configuration that may be modified at runtime.
 --- @field dorm_version string                               The version of the file format to be used throughout dorm. Used internally.
 --- @field os_info OperatingSystem                           The operating system that dorm is currently running under.
