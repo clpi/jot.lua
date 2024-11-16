@@ -1,6 +1,45 @@
 [book]
+title = "The word.lua book"
+description = "Goes over the word.lua extension for neovim"
 authors = ["Chris Pecunies"]
 language = "en"
 multilingual = false
 src = "src"
-title = "The word.lua book"
+
+# [output.css]
+# additional-css = ["book.css"]
+
+
+[rust]
+edition = "2018"
+
+[build]
+build-dir = "book"
+create-missing = true
+use-default-preprocessors = true
+extra-watch-dirs = []
+
+[output.html]
+mathjax-support = true
+default-theme = "ayu"
+preferred-dark-theme = 'ayu'
+copy-fonts = true
+# additional-js = "book.js"
+smart-punctuation = true
+no-section-label = false
+git-repository-url = 'github.com/clpi/word.lua'
+edit-url-template = "https://github.com/clpi/word.lua/edit/master/book/{path}"
+input-404 = "404.md"
+
+[output.html.search]
+enable = true
+expand = true
+limit-results = 50
+
+
+[output.html.playground]
+editable = true
+
+[output.html.fold]
+enable = true
+level = 0
