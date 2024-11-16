@@ -1,6 +1,5 @@
 {
   description = "dorm.lua";
-
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
   };
