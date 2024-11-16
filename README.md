@@ -2,7 +2,6 @@
 
 <a href="https://neovim.io"> ![Neovim](https://img.shields.io/badge/Neovim%200.10+-brightgreen?style=for-the-badge) </a>
 <a href="/LICENSE"> ![License](https://img.shields.io/badge/license-GPL%20v3-brightgreen?style=for-the-badge)</a>
-<a href="https://dotfyle.com/plugins/nvim-dorm/dorm"> ![Usage](https://dotfyle.com/plugins/nvim-dorm/dorm/shield?style=for-the-badge) </a>
 
 ## About
 
@@ -24,6 +23,7 @@
     config  = true,
 }
 ```
+
 ---
 
 ### plug.vim
@@ -34,18 +34,20 @@ Plug "clpi/dorm.lua", {
     \ "do"     : ":lua require('dorm').setup()"
     \ }
 ```
+
 ---
+
 ### packer.nvim
 
 ```lua
 use {
   "clp",
-  rocks = { 
-        "lua-utils.nvim", 
-        "nvim-nio", 
-        "nui.nvim", 
-        "plenary.nvim", 
-        "pathlib.nvim" 
+  rocks = {
+        "lua-utils.nvim",
+        "nvim-nio",
+        "nui.nvim",
+        "plenary.nvim",
+        "pathlib.nvim"
   },
   tag = "*",
   config = function()
