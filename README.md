@@ -13,6 +13,10 @@
 
 - it's a work in progress with an initial project structure based on the structure of neorg, and will be updated regularly
 
+## Requirements
+
+- [neovim 0.10+](https://neovim.io)
+
 ## Install
 
 ### lazy.nvim
