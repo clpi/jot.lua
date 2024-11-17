@@ -44,6 +44,11 @@ As for some basic info about `word.lua`:
 
 ---
 
-7. [Final thoughts](./final_thoughts.md)
-8. [Roadmap](./roadmap.md)
-9. [Credits](./credits.md)
+7. [Support](./support.md)
+  1. [Issues](./contributing/issues.md)
+  2. [Contributing](./contributing/discussions.md)
+  3. [Sponsorship](./contributing/sponsorship.md)
+2. [Contributing](./contributing/intro.md)
+1. [Final thoughts](./final_thoughts.md)
+3. [Roadmap](./roadmap.md)
+4. [Credits](./credits.md)
