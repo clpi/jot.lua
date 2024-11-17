@@ -7,3 +7,10 @@
 ## Is it for you?
 
 ## Is it better than the alternatives?
+
+## Other resources
+
+- [GitHub](https://github.com/clpi/word.lua)
+- [Sourcehut](https://git.sr.ht/~clpi/word.lua)
+- [Luarocks](https://luarocks.org/modules/clpi/word.lua)
+- [Dotfyle](https://dotfyle.com/plugins/clpi/word.lua)

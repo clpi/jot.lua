@@ -30,6 +30,9 @@ return mod.create_meta(
 
   "base",
   "encrypt",
+  "agenda",
+  "job",
+  "tag",
   "autocmd",
   "notes",
   "maps",
@@ -37,6 +40,7 @@ return mod.create_meta(
   "store",
   "code",
   "export",
+  -- "icon",
   "preview",
   "pick",
   -- "icon",

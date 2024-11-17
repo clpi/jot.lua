@@ -35,7 +35,7 @@ init.public = {
     local custom_workspace_path = filepath:match("^%$([^/\\]*)[/\\]")
     if custom_workspace_path then
       ---@type base.workspace
-      local workspace = mod.get_init("workspace")
+      local ws = mod.get_init("workspace")
       if not workspace then
         log.error(table.concat({
           "Unable to jump to link with custom workspace: `default.workspace` is not loaded.",
@@ -45,15 +45,15 @@ init.public = {
       end
       -- If the user has given an empty workspace name (i.e. `$/myfile`)
       if custom_workspace_path:len() == 0 then
-        filepath = workspace.get_current_workspace()[2] / filepath:relative_to(Path("$"))
+        filepath = ws.get_current_workspace()[2] / filepath:relative_to(Path("$"))
       else -- If the user provided a workspace name (i.e. `$my-workspace/myfile`)
-        local workspace = workspace.get_workspace(custom_workspace_path)
+        local workspace = ws.get_workspace(custom_workspace_path)
         if not workspace then
           local msg = "Unable to expand path: workspace '%s' does not exist"
           log.warn(string.format(msg, custom_workspace_path))
           return
         end
-        filepath = workspace / filepath:relative_to(Path("$" .. custom_workspace_path))
+        filepath = ws / filepath:relative_to(Path("$" .. custom_workspace_path))
       end
     elseif filepath:is_relative() then
       relative = true

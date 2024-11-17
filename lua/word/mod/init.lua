@@ -14,18 +14,18 @@ local utils = require("word.util")
 --- @alias word.init.public { version: string, [any]: any }
 
 --- @class (exact) word.init.resolver
---- @field ["autocmd"] autocmd
---- @field ["completion"] completion
---- @field ["conceal"] conceal
---- @field ["workspace"] workspace
---- @field ["hl"] hl
---- @field ["notes"] notes
---- @field ["keys"] keys
---- @field ["link"] link
---- @field ["cmd"] cmd
---- @field ["code"] code
---- @field ["todo"] todo
---- @field ["ui"] ui
+--- @field autocmd autocmd
+--- @field completion completion
+--- @field conceal conceal
+--- @field workspace workspace
+--- @field hl hl
+--- @field notes notes
+--- @field keys keys
+--- @field link link
+--- @field cmd cmd
+--- @field code code
+--- @field todo todo
+--- @field ui ui
 --- @field ["calendar.views.monthly"] calendar.views.monthly
 --- @field ["ui.selection_popup"] ui.selection_popup
 --- @field ["ui.text_popup"] Mi.text_popup
@@ -432,7 +432,7 @@ function Mod.load_init_from_table(init)
     filename = "",
     filehead = "",
     cursor_position = { 0, 0 },
-    referrer = "base",
+    referrer = "",
     line_content = "",
     content = init,
     broadcast = true,

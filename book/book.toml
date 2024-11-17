@@ -32,8 +32,6 @@ edit-url-template = "https://github.com/clpi/word.lua/edit/master/book/{path}"
 git-repository-icon = "fa-github"
 input-404 = "404.md"
 
-[output.linkcheck]
-
 [preprocessor.pagetoc]
 
 [output.html.search]

@@ -61,7 +61,7 @@ plug.vim
 Plug "nvim-telescope/telescope.nvim"
 Plug 'MunifTanjim/nui.nvim'
 Plug "clpi/word.lua", {
-    \ "branch" : "main",
+    \ "branch" : "master",
     \ "do"     : ":lua require('word').setup()"
     \ }
 ```
@@ -107,7 +107,7 @@ packer.nvim
 
 ```lua
 use {
-  "clp",
+  "clp/word.lua",
   rocks = {
         "nvim-telescope/telescope.nvim",
         "nvim-nio",
@@ -154,9 +154,9 @@ special thanks goes to [nvim-neorg/neorg](https://github.com/nvim-neorg/neorg) f
 
 thank you and keep updated!
 
-- [The word book](https://word.cli.st)
-- [word.lua on luarocks](https://luarocks.org/inits/clpi/word.lua)
-- [word.lua on dotfyle](https://dotfyle.com/plugins/clpi/word.lua)
+- [The `word.lua` book](https://word.cli.st)
+- [`word.lua` on luarocks](https://luarocks.org/inits/clpi/word.lua)
+- [`word.lua` on dotfyle](https://dotfyle.com/plugins/clpi/word.lua)
 
 <!-- <div align="center"> -->
 <p align="right">(<a href="#readme-top">back to top</a>)</p>

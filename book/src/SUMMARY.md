@@ -1,54 +1,41 @@
 # Summary
 
-Welcome to the `word.lua` book. I hope this helps!
+Welcome -- to the `word.lua` book. I hope this helps!
 
-1. [Intro](./intro.md)
-2. [Philosophy](./philosophy.md)
+- [Intro](./intro.md)
+- [Philosophy](./philosophy.md)
 
----
+- [About](./about.md)
+  - [Options](./about/options.md)
+  - [Commands](./about/commands.md)
+  - [Autocommands](./about/autocommands.md)
 
-As for some basic info about `word.lua`:
+- [Configuring](./config.md)
+  - [Setting up](./config/setting-up.md)
+  - [Basic](./config/basic.md)
+  - [Advanced](./config/advanced.md)
 
-3. [About](./about.md)
-  1. [Options](./about/options.md)
-  2. [Commands](./about/commands.md)
-  3. [Autocommands](./about/autocommands.md)
+- [Extending](./extend.md)
+  - [Plugins](./extend/plugins.md)
+  - [inits](./extend/inits.md)
+  - [Keymaps](./extend/keymaps.md)
+  - [Autocmds](./extend/autocmd.md)
 
----
+- [Customizing](./customizing.md)
+  - [Themes](./customizing/themes.md)
+  - [Highlights](./customizing/highlights.md)
 
-4. [Configuring](./config.md)
-  1. [Setting up](./config/setting-up.md)
-  2. [Basic](./config/basic.md)
-  3. [Advanced](./config/advanced.md)
+- [Publishing](./publish.md)
+  - [Frameworks](./publish/frameworks.md)
+  - [Blog](./publish/blog.md)
+  - [Digital garden](./publish/digital_garden.md)
 
----
+- [Support](./support.md)
+  - [Issues](./contributing/issues.md)
+  - [Contributing](./contributing/discussions.md)
+  - [Sponsorship](./contributing/sponsorship.md)
 
-5. [Extending](./extend.md)
-  1. [Plugins](./extend/plugins.md)
-  2. [inits](./extend/inits.md)
-  3. [Keymaps](./extend/keymaps.md)
-  4. [Autocmds](./extend/autocmd.md)
-
----
-
-6. [Customizing](./customizing.md)
-  2. [Themes](./customizing/themes.md)
-  2. [Highlights](./customizing/highlights.md)
-
----
-
-6. [Publishing](./publish.md)
-  3. [Frameworks](./publish/frameworks.md)
-  3. [Blog](./publish/blog.md)
-  3. [Digital garden](./publish/digital_garden.md)
-
----
-
-7. [Support](./support.md)
-  1. [Issues](./contributing/issues.md)
-  2. [Contributing](./contributing/discussions.md)
-  3. [Sponsorship](./contributing/sponsorship.md)
-2. [Contributing](./contributing/intro.md)
-1. [Final thoughts](./final_thoughts.md)
-3. [Roadmap](./roadmap.md)
-4. [Credits](./credits.md)
+- [Contributing](./contributing/intro.md)
+- [Final thoughts](./final_thoughts.md)
+- [Roadmap](./roadmap.md)
+- [Credits](./credits.md)

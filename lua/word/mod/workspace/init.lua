@@ -81,7 +81,7 @@ init.load = function()
 
   workspace_utils = init.required["workspace.utils"]
 
-  vim.keymap.set("", "<Plug>(word.workspace.new-note)", init.public.new_note)
+  -- vim.keymap.set("<c-\\><c-\\>", "<Plug>(word.workspace.new-note)", init.public.new_note)
 
   -- Used to detect when we've entered a buffer with a potentially different cwd
   init.required["autocmd"].enable_autocommand("BufEnter", true)

@@ -1,10 +1,10 @@
 --[[
     file: notes
-    title: Dear diary...
-    description: The notes init allows you to take personal notes with zero friction.
+    title: Dear notes...
+    description: The notes M allows you to take personal notes with zero friction.
     summary: Easily track a notes within word.
     ---
-The notes init exposes a total of six commands.
+The notes M exposes a total of six commands.
 The first three, `:word notes today|yesterday|tomorrow`, allow you to access entries
 for a given time relative to today. A file will be opened with the respective date as a `.word` file.
 
@@ -22,485 +22,475 @@ their titles.
 local word = require("word")
 local config, lib, log, mod = word.config, word.lib, word.log, word.mod
 
-local init = mod.create("notes")
+local M = mod.create("notes")
 
-init.examples = {
-    ["Changing TOC format to divide year in quarters"] = function()
-        -- In your ["notes"] options, change toc_format to a function like this:
 
-        require("word").setup({
-            load = {
-                -- ...
-                ["notes"] = {
-                    config = {
-                        -- ...
-                        toc_format = function(entries)
-                            -- Convert the entries into a certain format
-
-                            local output = {}
-                            local current_year
-                            local current_quarter
-                            local last_quarter
-                            local current_month
-                            for _, entry in ipairs(entries) do
-                                -- Don't print the year if it hasn't changed
-                                if not current_year or current_year < entry[1] then
-                                    current_year = entry[1]
-                                    current_month = nil
-                                    table.insert(output, "* " .. current_year)
-                                end
-
-                                -- Check to which quarter the current month corresponds to
-                                if entry[2] <= 3 then
-                                    current_quarter = 1
-                                elseif entry[2] <= 6 then
-                                    current_quarter = 2
-                                elseif entry[2] <= 9 then
-                                    current_quarter = 3
-                                else
-                                    current_quarter = 4
-                                end
-
-                                -- If the current month corresponds to another quarter, print it
-                                if current_quarter ~= last_quarter then
-                                    table.insert(output, "** Quarter " .. current_quarter)
-                                    last_quarter = current_quarter
-                                end
-
-                                -- Don't print the month if it hasn't changed
-                                if not current_month or current_month < entry[2] then
-                                    current_month = entry[2]
-                                    table.insert(output, "*** Month " .. current_month)
-                                end
-
-                                -- Prints the file link
-                                table.insert(output, "   " .. entry[4] .. string.format("[%s]", entry[5]))
-                            end
-
-                            return output
-                        end,
-                        -- ...
-                    },
-                },
-            },
-        })
-    end,
-}
-
-init.setup = function()
-    return {
-        success = true,
-        requires = {
-            "workspace",
-            "treesitter",
-        },
-    }
+M.setup = function()
+  return {
+    success = true,
+    requires = {
+      "workspace",
+      "treesitter",
+    },
+  }
 end
 
-init.private = {
-    --- Opens a diary entry at the given time
-    ---@param time? number #The time to open the notes entry at as returned by `os.time()`
-    ---@param custom_date? string #A YYYY-mm-dd string that specifies a date to open the diary at instead
-    open_diary = function(time, custom_date)
-        -- TODO(vhyrro): Change this to use word dates!
-        local workspace = init.config.public.workspace or init.required["workspace"].get_current_workspace()[1]
-        local folder_name = init.config.public.notes_folder
-        local template_name = init.config.public.template_name
 
-        if custom_date then
-            local year, month, day = custom_date:match("^(%d%d%d%d)-(%d%d)-(%d%d)$")
+M.private = {
+  --- Opens a notes entry at the given time
+  ---@param time? number #The time to open the notes entry at as returned by `os.time()`
+  ---@param custom_date? string #A YYYY-mm-dd string that specifies a date to open the notes at instead
+  open_notes = function(time, custom_date)
+    -- TODO(vhyrro): Change this to use word dates!
+    local modw = M.required["workspace"]
+    local workspace = M.config.public.workspace or modw.get_current_workspace()[1]
+    local workspace_path = modw.get_workspace(workspace)
+    local folder_name = M.config.public.notes_folder
+    local template_name = M.config.public.template_name
 
-            if not year or not month or not day then
-                log.error("Wrong date format: use YYYY-mm-dd")
-                return
+    if custom_date then
+      local year, month, day = custom_date:match("^(%d%d%d%d)-(%d%d)-(%d%d)$")
+
+      if not year or not month or not day then
+        log.error("Wrong date format: use YYYY-mm-dd")
+        return
+      end
+
+      time = os.time({
+        year = year,
+        month = month,
+        day = day,
+      })
+    end
+
+    local path = os.date(
+      type(M.config.public.strategy) == "function" and M.config.public.strategy(os.date("*t", time))
+      or M.config.public.strategy,
+      time
+    )
+
+
+    local notes_file_exists =
+        modw.file_exists(workspace_path .. "/" .. folder_name .. config.pathsep .. path)
+
+    modw.create_file(folder_name .. config.pathsep .. path, workspace)
+
+    modw.create_file(folder_name .. config.pathsep .. path, workspace)
+
+    if
+        not notes_file_exists
+        and M.config.public.use_template
+        and modw.file_exists(workspace_path .. "/" .. folder_name .. "/" .. template_name)
+    then
+      vim.cmd("$read " .. workspace_path .. "/" .. folder_name .. "/" .. template_name .. "| w")
+    end
+  end,
+
+  --- Opens a notes entry for tomorrow's date
+  notes_tomorrow = function()
+    M.private.open_notes(os.time() + 24 * 60 * 60)
+  end,
+
+  --- Opens a notes entry for yesterday's date
+  notes_yesterday = function()
+    M.private.open_notes(os.time() - 24 * 60 * 60)
+  end,
+
+  --- Opens a notes entry for today's date
+  notes_today = function()
+    M.private.open_notes()
+  end,
+
+  --- Creates a template file
+  create_template = function()
+    local workspace = M.config.public.workspace
+    local folder_name = M.config.public.notes_folder
+    local template_name = M.config.public.template_name
+
+    M.required.workspace.create_file(
+      folder_name .. config.pathsep .. template_name,
+      workspace or M.required.workspace.get_current_workspace()[1]
+    )
+  end,
+
+  --- Opens the toc file
+  open_toc = function()
+    local workspace = M.config.public.workspace or modw.get_current_workspace()[1]
+    local index = mod.get_M_config("workspace").index
+    local folder_name = M.config.public.notes_folder
+
+    -- If the toc exists, open it, if not, create it
+    if M.required.workspace.file_exists(folder_name .. config.pathsep .. index) then
+      M.required.workspace.open_file(workspace, folder_name .. config.pathsep .. index)
+    else
+      M.private.create_toc()
+    end
+  end,
+
+  --- Creates or updates the toc file
+  create_toc = function()
+    local workspace = M.config.public.workspace or modw.get_current_workspace()[1]
+    local index = mod.get_M_config("workspace").index
+    local workspace_path = modw.get_workspace(workspace)
+    local workspace_name_for_link = M.config.public.workspace or ""
+    local folder_name = M.config.public.notes_folder
+
+    -- Each entry is a table that contains tables like { yy, mm, dd, link, title }
+    local toc_entries = {}
+
+    -- Get a filesystem handle for the files in the notes folder
+    -- path is for each subfolder
+    local get_fs_handle = function(path)
+      path = path or ""
+      local handle =
+          vim.loop.fs_scandir(workspace_path .. config.pathsep .. folder_name .. config.pathsep .. path)
+
+      if type(handle) ~= "userdata" then
+        error(lib.lazy_string_concat("Failed to scan directory '", workspace, path, "': ", handle))
+      end
+
+      return handle
+    end
+
+    -- Gets the title from the metadata of a file, must be called in a vim.schedule
+    local get_title = function(file)
+      local buffer = vim.fn.bufadd(workspace_path .. config.pathsep .. folder_name .. config.pathsep .. file)
+      local meta = modw.get_document_metadata(buffer)
+      return meta.title
+    end
+
+    vim.loop.fs_scandir(workspace_path .. config.pathsep .. folder_name .. config.pathsep, function(err, handle)
+      assert(not err, lib.lazy_string_concat("Unable to generate TOC for directory '", folder_name, "' - ", err))
+
+      while true do
+        -- Name corresponds to either a YYYY-mm-dd.word file, or just the year ("nested" strategy)
+        local name, type = vim.loop.fs_scandir_next(handle) ---@diagnostic disable-line -- TODO: type error workaround <pysan3>
+
+        if not name then
+          break
+        end
+
+        -- Handle nested entries
+        if type == "directory" then
+          local years_handle = get_fs_handle(name)
+          while true do
+            -- mname is the month
+            local mname, mtype = vim.loop.fs_scandir_next(years_handle)
+
+            if not mname then
+              break
             end
 
-            time = os.time({
-                year = year,
-                month = month,
-                day = day,
+            if mtype == "directory" then
+              local months_handle = get_fs_handle(name .. config.pathsep .. mname)
+              while true do
+                -- dname is the day
+                local dname, dtype = vim.loop.fs_scandir_next(months_handle)
+
+                if not dname then
+                  break
+                end
+
+                -- If it's a .word file, also ensure it is a day entry
+                if dtype == "file" and string.match(dname, "%d%d%.md") then
+                  -- Split the file name
+                  local file = vim.split(dname, ".", { plain = true })
+
+                  vim.schedule(function()
+                    -- Get the title from the metadata, else, it just base to the name of the file
+                    local title = get_title(
+                      name .. config.pathsep .. mname .. config.pathsep .. dname
+                    ) or file[1]
+
+                    -- Insert a new entry
+                    table.insert(toc_entries, {
+                      tonumber(name),
+                      tonumber(mname),
+                      tonumber(file[1]),
+                      "{:$"
+                      .. workspace_name_for_link
+                      .. config.pathsep
+                      .. M.config.public.notes_folder
+                      .. config.pathsep
+                      .. name
+                      .. config.pathsep
+                      .. mname
+                      .. config.pathsep
+                      .. file[1]
+                      .. ":}",
+                      title,
+                    })
+                  end)
+                end
+              end
+            end
+          end
+        end
+
+        -- Handles flat entries
+        -- If it is a .word file, but it's not any user generated file.
+        -- The match is here to avoid handling files made by the user, like a template file, or
+        -- the toc file
+        if type == "file" and string.match(name, "%d+-%d+-%d+%.md") then
+          -- Split yyyy-mm-dd to a table
+          local file = vim.split(name, ".", { plain = true })
+          local parts = vim.split(file[1], "-")
+
+          -- Convert the parts into numbers
+          for k, v in pairs(parts) do
+            parts[k] = tonumber(v) ---@diagnostic disable-line -- TODO: type error workaround <pysan3>
+          end
+
+          vim.schedule(function()
+            -- Get the title from the metadata, else, it just base to the name of the file
+            local title = get_title(name) or parts[3]
+
+            -- And insert a new entry that corresponds to the file
+            table.insert(toc_entries, {
+              parts[1],
+              parts[2],
+              parts[3],
+              "{:$"
+              .. workspace_name_for_link
+              .. config.pathsep
+              .. M.config.public.notes_folder
+              .. config.pathsep
+              .. file[1]
+              .. ":}",
+              title,
             })
+          end)
         end
+      end
 
-        local path = os.date(
-            type(init.config.public.strategy) == "function" and init.config.public.strategy(os.date("*t", time))
-            or init.config.public.strategy,
-            time
-        )
+      vim.schedule(function()
+        -- Gets a base format for the entries
+        local format = M.config.public.toc_format
+            or function(entries)
+              local months_text = require("word.mod.notes.util").months
+              -- Convert the entries into a certain format to be written
+              local output = {}
+              local current_year
+              local current_month
+              for _, entry in ipairs(entries) do
+                -- Don't print the year and month if they haven't changed
+                if not current_year or current_year < entry[1] then
+                  current_year = entry[1]
+                  current_month = nil
+                  table.insert(output, "* " .. current_year)
+                end
+                if not current_month or current_month < entry[2] then
+                  current_month = entry[2]
+                  table.insert(output, "** " .. months_text[current_month])
+                end
 
-        local workspace_path = init.required["workspace"].get_workspace(workspace)
+                -- Prints the file link
+                table.insert(output, "   " .. entry[4] .. string.format("[%s]", entry[5]))
+              end
 
-        local notes_file_exists =
-            init.required["workspace"].file_exists(workspace_path .. "/" .. folder_name .. config.pathsep .. path)
-
-        init.required["workspace"].create_file(folder_name .. config.pathsep .. path, workspace)
-
-        init.required["workspace"].create_file(folder_name .. config.pathsep .. path, workspace)
-
-        if
-            not notes_file_exists
-            and init.config.public.use_template
-            and init.required["workspace"].file_exists(workspace_path .. "/" .. folder_name .. "/" .. template_name)
-        then
-            vim.cmd("$read " .. workspace_path .. "/" .. folder_name .. "/" .. template_name .. "| w")
-        end
-    end,
-
-    --- Opens a diary entry for tomorrow's date
-    diary_tomorrow = function()
-        init.private.open_diary(os.time() + 24 * 60 * 60)
-    end,
-
-    --- Opens a diary entry for yesterday's date
-    diary_yesterday = function()
-        init.private.open_diary(os.time() - 24 * 60 * 60)
-    end,
-
-    --- Opens a diary entry for today's date
-    diary_today = function()
-        init.private.open_diary()
-    end,
-
-    --- Creates a template file
-    create_template = function()
-        local workspace = init.config.public.workspace
-        local folder_name = init.config.public.notes_folder
-        local template_name = init.config.public.template_name
-
-        init.required["workspace"].create_file(
-            folder_name .. config.pathsep .. template_name,
-            workspace or init.required["workspace"].get_current_workspace()[1]
-        )
-    end,
-
-    --- Opens the toc file
-    open_toc = function()
-        local workspace = init.config.public.workspace or init.required["workspace"].get_current_workspace()[1]
-        local index = mod.get_init_config("workspace").index
-        local folder_name = init.config.public.notes_folder
-
-        -- If the toc exists, open it, if not, create it
-        if init.required["workspace"].file_exists(folder_name .. config.pathsep .. index) then
-            init.required["workspace"].open_file(workspace, folder_name .. config.pathsep .. index)
-        else
-            init.private.create_toc()
-        end
-    end,
-
-    --- Creates or updates the toc file
-    create_toc = function()
-        local workspace = init.config.public.workspace or init.required["workspace"].get_current_workspace()[1]
-        local index = mod.get_init_config("workspace").index
-        local workspace_path = init.required["workspace"].get_workspace(workspace)
-        local workspace_name_for_link = init.config.public.workspace or ""
-        local folder_name = init.config.public.notes_folder
-
-        -- Each entry is a table that contains tables like { yy, mm, dd, link, title }
-        local toc_entries = {}
-
-        -- Get a filesystem handle for the files in the notes folder
-        -- path is for each subfolder
-        local get_fs_handle = function(path)
-            path = path or ""
-            local handle =
-                vim.loop.fs_scandir(workspace_path .. config.pathsep .. folder_name .. config.pathsep .. path)
-
-            if type(handle) ~= "userdata" then
-                error(lib.lazy_string_concat("Failed to scan directory '", workspace, path, "': ", handle))
+              return output
             end
 
-            return handle
-        end
+        modw.create_file(
+          folder_name .. config.pathsep .. index,
+          workspace or modw.get_current_workspace()[1]
+        )
 
-        -- Gets the title from the metadata of a file, must be called in a vim.schedule
-        local get_title = function(file)
-            local buffer = vim.fn.bufadd(workspace_path .. config.pathsep .. folder_name .. config.pathsep .. file)
-            local meta = init.required["treesitter"].get_document_metadata(buffer)
-            return meta.title
-        end
-
-        vim.loop.fs_scandir(workspace_path .. config.pathsep .. folder_name .. config.pathsep, function(err, handle)
-            assert(not err, lib.lazy_string_concat("Unable to generate TOC for directory '", folder_name, "' - ", err))
-
-            while true do
-                -- Name corresponds to either a YYYY-mm-dd.word file, or just the year ("nested" strategy)
-                local name, type = vim.loop.fs_scandir_next(handle) ---@diagnostic disable-line -- TODO: type error workaround <pysan3>
-
-                if not name then
-                    break
-                end
-
-                -- Handle nested entries
-                if type == "directory" then
-                    local years_handle = get_fs_handle(name)
-                    while true do
-                        -- mname is the month
-                        local mname, mtype = vim.loop.fs_scandir_next(years_handle)
-
-                        if not mname then
-                            break
-                        end
-
-                        if mtype == "directory" then
-                            local months_handle = get_fs_handle(name .. config.pathsep .. mname)
-                            while true do
-                                -- dname is the day
-                                local dname, dtype = vim.loop.fs_scandir_next(months_handle)
-
-                                if not dname then
-                                    break
-                                end
-
-                                -- If it's a .word file, also ensure it is a day entry
-                                if dtype == "file" and string.match(dname, "%d%d%.md") then
-                                    -- Split the file name
-                                    local file = vim.split(dname, ".", { plain = true })
-
-                                    vim.schedule(function()
-                                        -- Get the title from the metadata, else, it just base to the name of the file
-                                        local title = get_title(
-                                            name .. config.pathsep .. mname .. config.pathsep .. dname
-                                        ) or file[1]
-
-                                        -- Insert a new entry
-                                        table.insert(toc_entries, {
-                                            tonumber(name),
-                                            tonumber(mname),
-                                            tonumber(file[1]),
-                                            "{:$"
-                                            .. workspace_name_for_link
-                                            .. config.pathsep
-                                            .. init.config.public.notes_folder
-                                            .. config.pathsep
-                                            .. name
-                                            .. config.pathsep
-                                            .. mname
-                                            .. config.pathsep
-                                            .. file[1]
-                                            .. ":}",
-                                            title,
-                                        })
-                                    end)
-                                end
-                            end
-                        end
-                    end
-                end
-
-                -- Handles flat entries
-                -- If it is a .word file, but it's not any user generated file.
-                -- The match is here to avoid handling files made by the user, like a template file, or
-                -- the toc file
-                if type == "file" and string.match(name, "%d+-%d+-%d+%.md") then
-                    -- Split yyyy-mm-dd to a table
-                    local file = vim.split(name, ".", { plain = true })
-                    local parts = vim.split(file[1], "-")
-
-                    -- Convert the parts into numbers
-                    for k, v in pairs(parts) do
-                        parts[k] = tonumber(v) ---@diagnostic disable-line -- TODO: type error workaround <pysan3>
-                    end
-
-                    vim.schedule(function()
-                        -- Get the title from the metadata, else, it just base to the name of the file
-                        local title = get_title(name) or parts[3]
-
-                        -- And insert a new entry that corresponds to the file
-                        table.insert(toc_entries, {
-                            parts[1],
-                            parts[2],
-                            parts[3],
-                            "{:$"
-                            .. workspace_name_for_link
-                            .. config.pathsep
-                            .. init.config.public.notes_folder
-                            .. config.pathsep
-                            .. file[1]
-                            .. ":}",
-                            title,
-                        })
-                    end)
-                end
-            end
-
-            vim.schedule(function()
-                -- Gets a base format for the entries
-                local format = init.config.public.toc_format
-                    or function(entries)
-                        local months_text = {
-                            "January",
-                            "February",
-                            "March",
-                            "April",
-                            "May",
-                            "June",
-                            "July",
-                            "August",
-                            "September",
-                            "October",
-                            "November",
-                            "December",
-                        }
-                        -- Convert the entries into a certain format to be written
-                        local output = {}
-                        local current_year
-                        local current_month
-                        for _, entry in ipairs(entries) do
-                            -- Don't print the year and month if they haven't changed
-                            if not current_year or current_year < entry[1] then
-                                current_year = entry[1]
-                                current_month = nil
-                                table.insert(output, "* " .. current_year)
-                            end
-                            if not current_month or current_month < entry[2] then
-                                current_month = entry[2]
-                                table.insert(output, "** " .. months_text[current_month])
-                            end
-
-                            -- Prints the file link
-                            table.insert(output, "   " .. entry[4] .. string.format("[%s]", entry[5]))
-                        end
-
-                        return output
-                    end
-
-                init.required["workspace"].create_file(
-                    folder_name .. config.pathsep .. index,
-                    workspace or init.required["workspace"].get_current_workspace()[1]
-                )
-
-                -- The current buffer now must be the toc file, so we set our toc entries there
-                vim.api.nvim_buf_set_lines(0, 0, -1, false, format(toc_entries))
-                vim.cmd("w")
-            end)
-        end)
-    end,
+        -- The current buffer now must be the toc file, so we set our toc entries there
+        vim.api.nvim_buf_set_lines(0, 0, -1, false, format(toc_entries))
+        vim.cmd("w")
+      end)
+    end)
+  end,
 }
 
-init.config.public = {
-    -- Which workspace to use for the notes files, the base behaviour
-    -- is to use the current workspace.
-    --
-    -- It is recommended to set this to a static workspace, but the most optimal
-    -- behaviour may vary from workflow to workflow.
-    workspace = nil,
+M.config.public = {
+  -- Which workspace to use for the notes files, the base behaviour
+  -- is to use the current workspace.
+  --
+  -- It is recommended to set this to a static workspace, but the most optimal
+  -- behaviour may vary from workflow to workflow.
+  workspace = nil,
 
-    -- The name for the folder in which the notes files are put.
-    notes_folder = "notes",
+  -- The name for the folder in which the notes files are put.
+  notes_folder = "notes",
 
-    -- The strategy to use to create directories.
-    -- May be "flat" (`2022-03-02.word`), "nested" (`2022/03/02.word`),
-    -- a lua string with the format given to `os.date()` or a lua function
-    -- that returns a lua string with the same format.
-    strategy = "nested",
+  -- The strategy to use to create directories.
+  -- May be "flat" (`2022-03-02.word`), "nested" (`2022/03/02.word`),
+  -- a lua string with the format given to `os.date()` or a lua function
+  -- that returns a lua string with the same format.
+  strategy = "nested",
 
-    -- The name of the template file to use when running `:word notes template`.
-    template_name = "template.md",
+  -- The name of the template file to use when running `:word notes template`.
+  template_name = "template.md",
 
-    -- Whether to apply the template file to new notes entries.
-    use_template = true,
+  -- Whether to apply the template file to new notes entries.
+  use_template = true,
 
-    -- Formatter function used to generate the toc file.
-    -- Receives a table that contains tables like { yy, mm, dd, link, title }.
-    --
-    -- The function must return a table of strings.
-    toc_format = nil,
+  -- Formatter function used to generate the toc file.
+  -- Receives a table that contains tables like { yy, mm, dd, link, title }.
+  --
+  -- The function must return a table of strings.
+  toc_format = nil,
 }
 
-init.config.private = {
-    strategies = {
-        flat = "%Y-%m-%d.md",
-        nested = "%Y" .. config.pathsep .. "%m" .. config.pathsep .. "%d.md",
-    },
+M.config.private = {
+  strategies = {
+    flat = "%Y-%m-%d.md",
+    nested = "%Y" .. config.pathsep .. "%m" .. config.pathsep .. "%d.md",
+  },
 }
 
 ---@class base.notes
-init.public = {
-    version = "0.0.9",
+M.public = {
+  version = "0.0.9",
 }
 
-init.load = function()
-    if init.config.private.strategies[init.config.public.strategy] then
-        init.config.public.strategy = init.config.private.strategies[init.config.public.strategy]
-    end
+M.load = function()
+  if M.config.private.strategies[M.config.public.strategy] then
+    M.config.public.strategy = M.config.private.strategies[M.config.public.strategy]
+  end
 
-    mod.await("cmd", function(cmd)
-        cmd.add_commands_from_table({
-            notes = {
-                min_args = 1,
-                max_args = 2,
-                subcommands = {
-                    tomorrow = { args = 0, name = "notes.tomorrow" },
-                    yesterday = { args = 0, name = "notes.yesterday" },
-                    today = { args = 0, name = "notes.today" },
-                    custom = { max_args = 1, name = "notes.custom" }, -- format :yyyy-mm-dd
-                    template = { args = 0, name = "notes.template" },
-                    toc = {
-                        args = 1,
-                        name = "notes.toc",
-                        subcommands = {
-                            open = { args = 0, name = "notes.toc.open" },
-                            update = { args = 0, name = "notes.toc.update" },
-                        },
-                    },
-                },
+  mod.await("cmd", function(cmd)
+    cmd.add_commands_from_table({
+      notes = {
+        min_args = 1,
+        max_args = 2,
+        subcommands = {
+          tomorrow = { args = 0, name = "notes.tomorrow" },
+          yesterday = { args = 0, name = "notes.yesterday" },
+          today = { args = 0, name = "notes.today" },
+          custom = { max_args = 1, name = "notes.custom" }, -- format :yyyy-mm-dd
+          template = { args = 0, name = "notes.template" },
+          toc = {
+            args = 1,
+            name = "notes.toc",
+            subcommands = {
+              open = { args = 0, name = "notes.toc.open" },
+              update = { args = 0, name = "notes.toc.update" },
             },
-        })
-    end)
+          },
+        },
+      },
+    })
+  end)
 end
 
-init.on_event = function(event)
-    if event.split_type[1] == "cmd" then
-        if event.split_type[2] == "notes.tomorrow" then
-            init.private.diary_tomorrow()
-        elseif event.split_type[2] == "notes.yesterday" then
-            init.private.diary_yesterday()
-        elseif event.split_type[2] == "notes.custom" then
-            if not event.content[1] then
-                local calendar = mod.get_init("calendar")
+M.on_event = function(event)
+  if event.split_type[1] == "cmd" then
+    if event.split_type[2] == "notes.tomorrow" then
+      M.private.notes_tomorrow()
+    elseif event.split_type[2] == "notes.yesterday" then
+      M.private.notes_yesterday()
+    elseif event.split_type[2] == "notes.custom" then
+      if not event.content[1] then
+        local calendar = mod.get_M("calendar")
 
-                if not calendar then
-                    log.error("[ERROR]: `base.calendar` is not loaded! Said init is required for this operation.")
-                    return
+        if not calendar then
+          log.error("[ERROR]: `base.calendar` is not loaded! Said M is required for this operation.")
+          return
+        end
+
+        calendar.select_date({
+          callback = vim.schedule_wrap(function(osdate)
+            M.private.open_notes(
+              nil,
+              string.format("%04d", osdate.year)
+              .. "-"
+              .. string.format("%02d", osdate.month)
+              .. "-"
+              .. string.format("%02d", osdate.day)
+            )
+          end),
+        })
+      else
+        M.private.open_notes(nil, event.content[1])
+      end
+    elseif event.split_type[2] == "notes.today" then
+      M.private.notes_today()
+    elseif event.split_type[2] == "notes.template" then
+      M.private.create_template()
+    elseif event.split_type[2] == "notes.toc.open" then
+      M.private.open_toc()
+    elseif event.split_type[2] == "notes.toc.update" then
+      M.private.create_toc()
+    end
+  end
+end
+
+M.events.subscribed = {
+  cmd = {
+    ["notes.yesterday"] = true,
+    ["notes.tomorrow"] = true,
+    ["notes.today"] = true,
+    ["notes.custom"] = true,
+    ["notes.template"] = true,
+    ["notes.toc.update"] = true,
+    ["notes.toc.open"] = true,
+  },
+}
+
+M.examples = {
+  ["Changing TOC format to divide year in quarters"] = function()
+    -- In your ["notes"] options, change toc_format to a function like this:
+
+    require("word").setup({
+      load = {
+        -- ...
+        ["notes"] = {
+          config = {
+            -- ...
+            toc_format = function(entries)
+              -- Convert the entries into a certain format
+
+              local output = {}
+              local current_year
+              local current_quarter
+              local last_quarter
+              local current_month
+              for _, entry in ipairs(entries) do
+                -- Don't print the year if it hasn't changed
+                if not current_year or current_year < entry[1] then
+                  current_year = entry[1]
+                  current_month = nil
+                  table.insert(output, "* " .. current_year)
                 end
 
-                calendar.select_date({
-                    callback = vim.schedule_wrap(function(osdate)
-                        init.private.open_diary(
-                            nil,
-                            string.format("%04d", osdate.year)
-                            .. "-"
-                            .. string.format("%02d", osdate.month)
-                            .. "-"
-                            .. string.format("%02d", osdate.day)
-                        )
-                    end),
-                })
-            else
-                init.private.open_diary(nil, event.content[1])
-            end
-        elseif event.split_type[2] == "notes.today" then
-            init.private.diary_today()
-        elseif event.split_type[2] == "notes.template" then
-            init.private.create_template()
-        elseif event.split_type[2] == "notes.toc.open" then
-            init.private.open_toc()
-        elseif event.split_type[2] == "notes.toc.update" then
-            init.private.create_toc()
-        end
-    end
-end
+                -- Check to which quarter the current month corresponds to
+                if entry[2] <= 3 then
+                  current_quarter = 1
+                elseif entry[2] <= 6 then
+                  current_quarter = 2
+                elseif entry[2] <= 9 then
+                  current_quarter = 3
+                else
+                  current_quarter = 4
+                end
 
-init.events.subscribed = {
-    ["cmd"] = {
-        ["notes.yesterday"] = true,
-        ["notes.tomorrow"] = true,
-        ["notes.today"] = true,
-        ["notes.custom"] = true,
-        ["notes.template"] = true,
-        ["notes.toc.update"] = true,
-        ["notes.toc.open"] = true,
-    },
+                -- If the current month corresponds to another quarter, print it
+                if current_quarter ~= last_quarter then
+                  table.insert(output, "** Quarter " .. current_quarter)
+                  last_quarter = current_quarter
+                end
+
+                -- Don't print the month if it hasn't changed
+                if not current_month or current_month < entry[2] then
+                  current_month = entry[2]
+                  table.insert(output, "*** Month " .. current_month)
+                end
+
+                -- Prints the file link
+                table.insert(output, "   " .. entry[4] .. string.format("[%s]", entry[5]))
+              end
+
+              return output
+            end,
+            -- ...
+          },
+        },
+      },
+    })
+  end,
+
 }
-
-return init
+return M

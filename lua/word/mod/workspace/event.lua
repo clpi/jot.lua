@@ -1,4 +1,4 @@
-local workspace_utils = require("word.mod.workspace.utils.init")
+local workspace_utils = require("word.mod.workspace.utils")
 local mod = require("word").mod
 local log = require("word").log
 local utils = require("word").utils
@@ -77,7 +77,7 @@ M.events.subscribed = {
   ["workspace"] = {
     workspace_changed = true,
   },
-  ["cmd"] = {
+  cmd = {
     ["workspace.workspace"] = true,
     ["workspace.index"] = true,
   },

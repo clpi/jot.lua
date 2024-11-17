@@ -4,7 +4,7 @@ slint :
   stylua --check .
 
 clean:
-	find --glob '*-E' -x rm
+	fd --glob '*-E' -x rm
 
 llint:
   luacheck .

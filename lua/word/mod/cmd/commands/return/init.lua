@@ -51,7 +51,7 @@ init.on_event = function(event)
 end
 
 init.events.subscribed = {
-  ["cmd"] = {
+  cmd = {
     ["return"] = true,
   },
 }
