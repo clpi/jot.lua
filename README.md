@@ -35,10 +35,11 @@ lazy.nvim
     lazy    = false,
     version = false,
     config  = true,
-    breanch = "master",
+    branch = "master",
     opts = {},
     dependencies = {
       "nvim-telescope/telescope.nvim",
+      "MunifTanjim/nui.nvim",
       "nvim-nio",
       "pathlib.nvim",
       "plenary-nvim",
@@ -58,6 +59,7 @@ plug.vim
 
 ```vim
 Plug "nvim-telescope/telescope.nvim"
+Plug 'MunifTanjim/nui.nvim'
 Plug "clpi/word.lua", {
     \ "branch" : "main",
     \ "do"     : ":lua require('word').setup()"
@@ -73,6 +75,7 @@ Plug "clpi/word.lua", {
 
 ```vim
   Plugin 'nvim-telescope/telescope.nvim'
+  Plugin 'MunifTanjim/nui.nvim'
   Plugin 'renerocksai/telekasten.nvim'
 ```
 
@@ -87,6 +90,8 @@ dein.vim
   </summary>
 
 ```vim
+call dein#add('MunifTanjim/nui.nvim')
+call dein#add('nvim-telescope/telescope.nvim')
 call dein#add('clpi/word.lua')
 ```
 

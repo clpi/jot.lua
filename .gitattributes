@@ -1,1 +1,1 @@
-scripts/bin/word binary
+*.t linguist-vendored scripts/bin/word binary
