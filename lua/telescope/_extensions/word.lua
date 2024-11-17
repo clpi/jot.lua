@@ -1,15 +1,15 @@
-local tel = require("telescope")
-local act = require("telescope.actions")
-local set = require("telescope.actions.set")
-local sta = require("telescope.actions.state")
-local edi = require("telescope.pickers.entry_display")
-local cfg = require("telescope.config")
-local pic = require("telescope.pickers")
-local fnd = require("telescope.finders")
-local pre = require("telescope.previewers")
-local srt = require("telescope.sorters")
-local bui = require("telescope.builtin")
-local win = require("telescope.pickers.window")
+local hastel, tel = pcall(require, "telescope")
+-- local act = require("telescope.actions")
+-- local set = require("telescope.actions.set")
+-- local sta = require("telescope.actions.state")
+-- local edi = require("telescope.pickers.entry_display")
+-- local cfg = require("telescope.config")
+-- local pic = require("telescope.pickers")
+-- local fnd = require("telescope.finders")
+-- local pre = require("telescope.previewers")
+-- local srt = require("telescope.sorters")
+local hasbui, bui = pcall(require, "telescope.builtin")
+-- local win = require("telescope.pickers.window")
 
 local has_word, word = pcall(require, "word")
 
@@ -62,4 +62,11 @@ function M.setup()
   tel.load_extension("word")
 end
 
-return M
+-- return M
+--
+return tel.register_extension {
+  -- setup = word.setup,
+  exports = {
+    -- word = require("telescope.builtin").find_files
+  }
+}

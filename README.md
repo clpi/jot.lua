@@ -8,12 +8,11 @@
 
 ---
 
-`for only neovim currently, not vim`
 `for neovim 0.10+`
 
 ## Introduction
 
-- **word** is a plugin meant to bring the awesome extensibility of emacs [org-mode] or [neorg] without needing to switch from the gold standard [markdown], or from the best editor [neovim].
+**word** is a plugin meant to bring the awesome extensibility of emacs [org-mode] or [neorg] without needing to switch from the gold standard [markdown], or from the best editor [neovim].
 
 - we want to be able to take notes like developers, without shutting ourselves out of the entire ecosystem built around markdown.
 
@@ -21,11 +20,14 @@
 
 ## Requirements
 
-- [neovim 0.10+](https://neovim.io)
+- must have at least [neovim 0.10+](https://neovim.io)
 
-## Install
+## Quickstart
 
-### lazy.nvim
+<details open>
+  <summary>
+lazy.nvim
+  </summary>
 
 ```lua
 {
@@ -33,29 +35,76 @@
     lazy    = false,
     version = false,
     config  = true,
+    breanch = "master",
     opts = {},
+    dependencies = {
+      "nvim-telescope/telescope.nvim",
+      "nvim-nio",
+      "pathlib.nvim",
+      "plenary-nvim",
+    }
 }
 ```
 
+</details>
+
 ---
 
-### plug.vim
+<details>
+
+  <summary>
+plug.vim
+  </summary>
 
 ```vim
+Plug "nvim-telescope/telescope.nvim"
 Plug "clpi/word.lua", {
     \ "branch" : "main",
     \ "do"     : ":lua require('word').setup()"
     \ }
 ```
 
+</details>
+
 ---
 
-### packer.nvim
+<details>
+<summary>Vundle</summary>
+
+```vim
+  Plugin 'nvim-telescope/telescope.nvim'
+  Plugin 'renerocksai/telekasten.nvim'
+```
+
+</details>
+
+---
+
+<details>
+
+  <summary>
+dein.vim
+  </summary>
+
+```vim
+call dein#add('clpi/word.lua')
+```
+
+</details>
+
+---
+
+<details>
+
+  <summary>
+packer.nvim
+  </summary>
 
 ```lua
 use {
   "clp",
   rocks = {
+        "nvim-telescope/telescope.nvim",
         "nvim-nio",
         "nui.nvim",
         "plenary.nvim",
@@ -68,6 +117,8 @@ use {
 }
 ```
 
+</details>
+
 ## Config
 
 check back!
@@ -78,12 +129,13 @@ check back!
 
 ## Todo
 
-- [ ] Bring at least a few scaffolded modules to functionality 
+- [ ] Bring at least a few scaffolded modules to functionality
 - [ ] Automate flake creation through GH Actions
 - [ ] Fix rudimentary commands ported over to bring to base functionality
 - [ ] Once at base functionality, clean up and refactor to bring to a `0.1.0` release
 - [ ] Allow optional choice of telescope or not
 - [ ] Add other package manager support
+- [ ] **Support [blink-cmp] and** [nvim-cmp] and [magazine-cmp] when possible
 
 ## Support
 
@@ -91,7 +143,9 @@ check back!
 
 ## Credits
 
-`word.lua` is a project by [clpi](github.com/clpi) and is licensed under the [MIT](./LICENSE) license.
+`word.lua` is a project by [clpi](github.com/clpi) and is licensed under the [MIT](./LICENSE) license. For information about **contributing**, please consult the [CONTRIBUTING.md](./CONTRIBUTING.md) file.
+
+special thanks goes to [nvim-neorg/neorg](https://github.com/nvim-neorg/neorg) for providing the inspiration and basis of this project.
 
 thank you and keep updated!
 
@@ -100,5 +154,6 @@ thank you and keep updated!
 - [word.lua on dotfyle](https://dotfyle.com/plugins/clpi/word.lua)
 
 <!-- <div align="center"> -->
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 <!-- </div> -->

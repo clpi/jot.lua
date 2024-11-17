@@ -1,12 +1,26 @@
-local MODREV, SPECREV = "scm", "-1"
 rockspec_format = "3.0"
-package = "word"
-version = MODREV .. SPECREV
+package = "word.lua"
+version = "0.1.0"
+source = {
+  url = "git://github.com/clpi/word.lua",
+  tag = nil
+}
 
 description = {
   summary = "Extensibility for everyone",
+  detailed = [[
+    org for markdown for neovim
+  ]],
+  description = [[
+    extensibility of org without the hassle of another syntax
+  ]],
+  homepage = "word.cli.st",
+  maintainer = "github.com/clpi",
   labels = { "wiki", "plugin", "neovim", "notes", "markdown" },
   homepage = "https://github.com/clpi/word.lua",
+  labels = {
+    "wiki", "neovim", "notes", "org", "markdown"
+  },
   license = "MIT",
 }
 
@@ -32,6 +46,11 @@ test_dependencies = {
   "nlua",
   -- Placed here as we plan on removing nvim-treesitter as a dependency soon, but it's still required for various tests.
   "nvim-treesitter == 0.9.2",
+}
+
+test = {
+  type = "command",
+  command = "scripts/test.sh"
 }
 
 build = {

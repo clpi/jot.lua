@@ -2,8 +2,9 @@
 --- This file marks the beginning of the entire plugin. It's here that everything fires up and starts pumping.
 --- @brief ]]
 
-local word = {
+local W = {
   callbacks = require("word.util.callback"),
+  version = require("word.config.version"),
   config = require("word.config"),
   lsp = require("word.lsp"),
   cmd = require("word.cmd"),
@@ -14,7 +15,7 @@ local word = {
   lib = require("word.util.lib")
 }
 
-local config, log, mod, utils = word.config, word.log, word.mod, word.utils
+local config, log, mod, utils = W.config, W.log, W.mod, W.utils
 
 --- @init "word.config"
 
@@ -22,7 +23,7 @@ local config, log, mod, utils = word.config, word.log, word.mod, word.utils
 --- @param cfg word.configuration.user? A table that reflects the structure of `config.user_config`.
 --- @see config.user_config
 --- @see word.configuration.user
-function word.setup(cfg)
+function W.setup(cfg)
   -- Ensure that we are running Neovim 0.10+
   assert(utils.is_minimum_version(0, 10, 0), "word requires at least Neovim version 0.10 to operate!")
 
@@ -33,6 +34,7 @@ function word.setup(cfg)
       workspace = {
         config = {
           workspaces = {
+            default = "~/word",
             word = "~/word"
           }
         }
@@ -48,7 +50,15 @@ function word.setup(cfg)
   -- With the explicit check `load = false` will issue an error.
   if cfg.load == nil then
     cfg.load = {
-      ["base"] = {},
+      base = {},
+      workspace = {
+        config = {
+          workspaces = {
+            default = "~/word",
+            word = "~/word"
+          }
+        }
+      }
     }
   end
 
@@ -60,18 +70,18 @@ function word.setup(cfg)
   -- If the file we have entered has a `.word` extension:
   if vim.fn.expand("%:e") == "word" or not config.user_config.lazy_loading then
     -- Then boot up the environment.
-    word.org_file_entered(false)
+    W.org_file_entered(false)
   else
     -- Else listen for a BufAdd event for `.word` files and fire up the word environment.
     vim.api.nvim_create_user_command("wordStart", function()
       vim.cmd.delcommand("wordStart")
-      word.org_file_entered(true)
+      W.org_file_entered(true)
     end, {})
 
     vim.api.nvim_create_autocmd("BufAdd", {
       pattern = "word",
       callback = function()
-        word.org_file_entered(false)
+        W.org_file_entered(false)
       end,
     })
   end
@@ -83,7 +93,7 @@ end
 --- This function gets called upon entering a .word file and loads all of the user-defined mod.
 --- @param manual boolean If true then the environment was kickstarted manually by the user.
 --- @param arguments string? A list of arguments in the format of "key=value other_key=other_value".
-function word.org_file_entered(manual, arguments)
+function W.org_file_entered(manual, arguments)
   -- Extract the init list from the user config
   local init_list = config.user_config and config.user_config.load or {}
 
@@ -155,9 +165,9 @@ end
 
 --- Returns whether or not word is loaded
 --- @return boolean
-function word.is_loaded()
+function W.is_loaded()
   return config.started
 end
 
 -- require("telescope").load_extension("word")
-return word
+return W

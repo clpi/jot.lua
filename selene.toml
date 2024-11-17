@@ -1,4 +1,10 @@
-std="vim"
+std = "lua51+vim"
+exclude = []
+
+[rules]
+unused_variables = "allow"
+shadowing = "allow"
+mixed_table = "allow"
 
 [lints]
-mixed_table="allow"
+mixed_table = "allow"

@@ -1,14 +1,23 @@
 {
-  description = "word.lua";
-  inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
-  };
+  description = "word.lua, the infinitely extensiblye markdown environment";
 
-  outputs = { self, nixpkgs }: {
+  inputs.nixpkgs.url = "github:NixOS/nixpkgs";
+  inputs.systems.url = "github:nix-systems/default";
 
-    packages.x86_64-linux.hello = nixpkgs.legacyPackages.x86_64-linux.hello;
-
-    packages.x86_64-linux.default = self.packages.x86_64-linux.hello;
-
+  outputs = { self, nixpkgs, systems }: let
+    supportedSystems = nixpkgs.lib.genAttrs (import systems);
+    forEachSystem = function: supportedSystems (system:
+        function nixpkgs.legacyPackages.${system});
+  in {
+   devShells = forEachSystem (pkgs: {
+      default = pkgs.mkShell {
+        packages = [
+          pkgs.stylua
+          pkgs.luaPackages.luacheck
+          pkgs.luajitPackages.vusted
+          pkgs.selene
+        ];
+      };
+    });
   };
 }
