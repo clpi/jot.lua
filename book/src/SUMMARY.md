@@ -7,14 +7,23 @@ Welcome to the `word.lua` book. I hope this helps!
 
 ---
 
-3. [Configuring](./config.md)
+As for some basic info about `word.lua`:
+
+3. [About](./about.md)
+  1. [Options](./about/options.md)
+  2. [Commands](./about/commands.md)
+  3. [Autocommands](./about/autocommands.md)
+
+---
+
+4. [Configuring](./config.md)
   1. [Setting up](./config/setting-up.md)
   2. [Basic](./config/basic.md)
   3. [Advanced](./config/advanced.md)
 
 ---
 
-4. [Extending](./extend.md)
+5. [Extending](./extend.md)
   1. [Plugins](./extend/plugins.md)
   2. [inits](./extend/inits.md)
   3. [Keymaps](./extend/keymaps.md)
@@ -22,8 +31,9 @@ Welcome to the `word.lua` book. I hope this helps!
 
 ---
 
-5. [Customizing](./customizing.md)
-  2. [Themes](./extend/themes.md)
+6. [Customizing](./customizing.md)
+  2. [Themes](./customizing/themes.md)
+  2. [Highlights](./customizing/highlights.md)
 
 ---
 

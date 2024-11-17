@@ -91,6 +91,8 @@ check back!
 
 ## Credits
 
+`word.lua` is a project by [clpi](github.com/clpi) and is licensed under the [MIT](./LICENSE) license.
+
 thank you and keep updated!
 
 - [The word book](https://word.cli.st)
