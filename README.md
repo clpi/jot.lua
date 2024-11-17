@@ -5,6 +5,8 @@
 [![Push to Luarocks](https://github.com/clpi/word.lua/actions/workflows/luarocks.yml/badge.svg)](https://github.com/clpi/word.lua/actions/workflows/luarocks.yml)
 [![Deploy mdBook site to Pages](https://github.com/clpi/word.lua/actions/workflows/book.yml/badge.svg)](https://github.com/clpi/word.lua/actions/workflows/book.yml)
 ---
+
+`for only neovim currently, not vim`
 `for neovim 0.10+`
 
 ## Introduction
@@ -71,6 +73,15 @@ check back!
 ## Usage
 
 check back!
+
+## Todo
+
+- [ ] Bring at least a few scaffolded modules to functionality 
+- [ ] Automate flake creation through GH Actions
+- [ ] Fix rudimentary commands ported over to bring to base functionality
+- [ ] Once at base functionality, clean up and refactor to bring to a `0.1.0` release
+- [ ] Allow optional choice of telescope or not
+- [ ] Add other package manager support
 
 ## Support
 
