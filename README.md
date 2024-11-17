@@ -95,6 +95,7 @@ thank you and keep updated!
 
 - [The word book](https://word.cli.st)
 - [word.lua on luarocks](https://luarocks.org/inits/clpi/word.lua)
+- [word.lua on dotfyle](https://dotfyle.com/plugins/clpi/word.lua)
 
 <!-- <div align="center"> -->
 
