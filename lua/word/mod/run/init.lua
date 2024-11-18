@@ -6,7 +6,8 @@ local M = mod.create("run")
 M.load = function()
   mod.await("cmd", function(cmd)
     cmd.add_commands_from_table({
-      ["run"] = {
+      run = {
+        name = "run",
         subcommands = {
           update = {
             args = 0,
@@ -17,7 +18,10 @@ M.load = function()
             args = 0,
           },
         },
-        name = "run"
+      },
+      stop = {
+        name = "stop",
+        args = 0,
       }
     })
   end)
@@ -31,7 +35,6 @@ M.setup = function()
     requires = {
       "workspace"
     }
-
   }
 end
 
@@ -53,6 +56,7 @@ M.events = {}
 
 M.events.subscribed = {
   cmd = {
+    stop = true,
     ["run.insert"] = true,
     ["run.update"] = true,
   },

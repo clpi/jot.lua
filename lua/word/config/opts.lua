@@ -1,10 +1,9 @@
 M = {}
 
 M.setup_opts = function()
-  local o = vim.opt
-  o.conceallevel = 2
-  o.concealcursor = [[nc]]
-  o.shellslash = true
+  vim.o.conceallevel = 2
+  vim.o.concealcursor = [[nc]]
+  vim.o.shellslash = true
 end
 
 return M

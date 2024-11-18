@@ -1,34 +1,9 @@
---[[
-    file: base
-    summary: Metainit for storing the most necessary mod.
-    internal: true
-    ---
-This file contains all of the most important mod that any user would want
-to have a "just works" experience.
+local Mod = {}
 
-Individual entries can be disabled via the "disable" flag:
-```lua
-load = {
-    ["base"] = {
-        config = {
-            disable = {
-                -- init list goes here
-                "autocmd",
-                "itero",
-            },
-        },
-    },
-}
-```
---]]
+local mod = require("word.mod")
 
-local word = require("word")
-local mod = word.mod
-
-return mod.create_meta(
+Mod.base_modules = mod.create_meta(
 -- "treesitter",
-
-  "base",
   "encrypt",
   "agenda",
   "job",
@@ -52,7 +27,9 @@ return mod.create_meta(
   "capture",
   "template",
   "track",
+  "media",
   "snippets",
+  "time",
   "run",
   "sync",
   "search",
@@ -62,3 +39,5 @@ return mod.create_meta(
   "publish",
   "link"
 )
+
+return Mod

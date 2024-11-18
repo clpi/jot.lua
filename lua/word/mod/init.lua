@@ -5,11 +5,18 @@
 
 -- TODO: What goes below this line until the next notice used to belong to mod.base
 -- We need to find a way to make these constructors easier to maintain and more efficient
+local w = require("word")
 
-local callbacks = require("word.util.callback")
-local config = require("word.config")
+
+local callbacks = w.callbacks
+local config = w.config
 local log = require("word.util.log")
-local utils = require("word.util")
+local utils = w.utils
+local mod = w.mod
+
+
+local Mod = {}
+-- local cmd = require("word.cmd")
 
 --- @alias word.init.public { version: string, [any]: any }
 
@@ -61,113 +68,21 @@ local utils = require("word.util")
 --- @field setup? fun(): word.init.setup? Function that is invoked before any other loading occurs. Should perform preliminary startup tasks.
 --- @field replaced? boolean If `true`, this means the init is a replacement for a base init. This flag is set automatically whenever `setup().replaces` is set to a value.
 --- @field on_event fun(event: word.event) A callback that is invoked any time an event the init has subscribed to has fired.
-
-local Mod = {}
-
 --- Returns a new word init, exposing all the necessary function and variables.
 --- @param name string The name of the new init. Make sure this is unique. The recommended naming convention is `category.init_name` or `category.subcategory.init_name`.
 --- @param imports? string[] A list of imports to attach to the init. Import data is requestable via `init.required`. Use paths relative to the current init.
 --- @return word.init
 function Mod.create(name, imports)
   ---@type word.init
-  local new_init = {
-    setup = function()
-      return { success = true, requires = {}, replaces = nil, replace_merge = false }
-    end,
-
-    load = function() end,
-
-    on_event = function() end,
-
-    word_post_load = function() end,
-
-    name = "base",
-
-    path = "mod.base",
-
-    private = {},
-
-    public = {
-      version = config.word_version,
-    },
-
-    config = {
-      private = {
-        --[[
-                  config_option = false,
-
-                  ["option_group"] = {
-                      sub_option = true
-                  }
-                  --]]
-      },
-
-      public = {
-        --[[
-                  config_option = false,
-
-                  ["option_group"] = {
-                      sub_option = true
-                  }
-                  --]]
-      },
-
-      custom = {},
-    },
-
-    events = {
-      subscribed = { -- The events that the init is subscribed to
-        --[[
-                  ["test"] = { -- The name of the init that has events bound to it
-                      ["test_event"]  = true, -- Subscribes to event test.events.test_event
-
-                      ["other_event"] = true -- Subscribes to event test.events.other_event
-                  }
-                  --]]
-      },
-      defined = { -- The events that the init itself has defined
-        --[[
-                  ["my_event"] = { event_data } -- Creates an event of type category.init.events.my_event
-                  --]]
-      },
-    },
-
-    required = {
-      --[[
-              ["test"] = {
-                  -- Their public API here...
-              },
-
-              ["some_other_plugin"] = {
-                  -- Their public API here...
-              }
-
-              --]]
-    },
-
-    examples = {
-      --[[
-              a_cool_test = function()
-                  print("Some code!")
-              end
-              --]]
-    },
-
-    imported = {
-      --[[
-                  ["my.init.subinit"] = { ... },
-              --]]
-    },
-
-    tests = function() end,
-  }
+  local new_init = require("word.mod.create").default_mod
 
   if imports then
     for _, import in ipairs(imports) do
       local fullpath = table.concat({ name, import }, ".")
 
-      if not Mod.load_init(fullpath) then
-        log.error("Unable to load import '" .. fullpath .. "'! An error occured (see traceback below):")
+      if not Mod.load_mod(fullpath) then
+        require("word.util.log").error("Unable to load import '" ..
+          fullpath .. "'! An error occured (see traceback below):")
         assert(false) -- Halt execution, no recovering from this error...
       end
 
@@ -219,7 +134,7 @@ function Mod.create_meta(name, ...)
 
     -- Go through every init that we have defined in the metainit and load it!
     for _, modname in ipairs(init.config.public.enable) do
-      Mod.load_init(modname)
+      Mod.load_mod(modname)
     end
   end
 
@@ -240,7 +155,7 @@ Mod.loaded_mod = {}
 --- Loads a specified init. If the init subscribes to any events then they will be activated too.
 --- @param init word.init The actual init to load.
 --- @return boolean # Whether the init successfully loaded.
-function Mod.load_init_from_table(init)
+function Mod.load_mod_from_table(init)
   log.info("Loading init with name", init.name)
 
   -- If our init is already loaded don't try loading it again
@@ -262,7 +177,7 @@ function Mod.load_init_from_table(init)
 
   -- We do not expect init.setup() to ever return nil, that's why this check is in place
   if not loaded_init then
-    log.error(
+    require("word.util.log").error(
       "init",
       init.name,
       "does not handle init loading correctly; init.setup() returned nil. Omitting..."
@@ -310,8 +225,8 @@ function Mod.load_init_from_table(init)
             "isn't loaded but can be as it's defined in the user's config. Loading..."
           )
 
-          if not Mod.load_init(required_init) then
-            log.error(
+          if not Mod.load_mod(required_init) then
+            require("word.util.log").error(
               "Unable to load wanted init for",
               init.name,
               "- the init didn't load successfully"
@@ -322,7 +237,7 @@ function Mod.load_init_from_table(init)
             return false
           end
         else
-          log.error(
+          require("word.util.log").error(
             ("Unable to load init %s, wanted dependency %s was not satisfied. Be sure to load the init and its appropriate config too!")
             :format(
               init.name,
@@ -351,8 +266,8 @@ function Mod.load_init_from_table(init)
 
       -- This would've always returned false had we not added the current init to the loaded init list earlier above
       if not Mod.is_init_loaded(required_init) then
-        if not Mod.load_init(required_init) then
-          log.error(
+        if not Mod.load_mod(required_init) then
+          require("word.util.log").error(
             ("Unable to load init %s, required dependency %s did not load successfully"):format(
               init.name,
               required_init
@@ -380,7 +295,7 @@ function Mod.load_init_from_table(init)
     -- Whenever a init gets hotswapped, a special flag is set inside the init in order to signalize that it has been hotswapped before
     -- If this flag has already been set before, then throw an error - there is no way for us to know which hotswapped init should take priority.
     if init_to_replace.replaced then
-      log.error(
+      require("word.util.log").error(
         ("Unable to replace init %s - init replacement clashing detected. This error triggers when a init tries to be replaced more than two times - word doesn't know which replacement to prioritize.")
         :format(
           init_to_replace.name
@@ -397,7 +312,7 @@ function Mod.load_init_from_table(init)
     -- previous init into our new one. This allows for practically seamless hotswapping, as it allows you to retain the data
     -- of the previous init.
     if loaded_init.replace_merge then
-      init = vim.tbl_deep_extend("force", init, {
+      init = utils.extend(init, {
         private = init_to_replace.private,
         config = init_to_replace.config,
         public = init_to_replace.public,
@@ -444,24 +359,24 @@ function Mod.load_init_from_table(init)
   return true
 end
 
---- Unlike `load_init_from_table()`, which loads a init from memory, `load_init()` tries to find the corresponding init file on disk and loads it into memory.
+--- Unlike `load_mod_from_table()`, which loads a init from memory, `load_mod()` tries to find the corresponding init file on disk and loads it into memory.
 --- If the init cannot not be found, attempt to load it off of github (unimplemented). This function also applies user-defined config and keys to the mod themselves.
---- This is the recommended way of loading mod - `load_init_from_table()` should only really be used by word itself.
+--- This is the recommended way of loading mod - `load_mod_from_table()` should only really be used by word itself.
 --- @param init_name string A path to a init on disk. A path seperator in word is '.', not '/'.
 --- @param cfg table? A config that reflects the structure of `word.config.user_config.load["init.name"].config`.
 --- @return boolean # Whether the init was successfully loaded.
-function Mod.load_init(init_name, cfg)
+function Mod.load_mod(init_name, cfg)
   -- Don't bother loading the init from disk if it's already loaded
   if Mod.is_init_loaded(init_name) then
     return true
   end
 
   -- Attempt to require the init, does not throw an error if the init doesn't exist
-  local init = require("word.mod." .. init_name)
+  local hasi, modl = pcall(require, "word.mod." .. init_name .. ".init")
 
   -- If the init is nil for some reason return false
-  if not init then
-    log.error(
+  if not hasi then
+    require("word.util.log").error(
       "Unable to load init",
       init_name,
       "- loaded file returned nil. Be sure to return the table created by mod.create() at the end of your init.lua file!"
@@ -471,8 +386,8 @@ function Mod.load_init(init_name, cfg)
 
   -- If the value of `init` is strictly true then it means the required file returned nothing
   -- We obviously can't do anything meaningful with that!
-  if init == true then
-    log.error(
+  if modl == true then
+    require("word.util.log").error(
       "An error has occurred when loading",
       init_name,
       "- loaded file didn't return anything meaningful. Be sure to return the table created by mod.create() at the end of your init.lua file!"
@@ -482,22 +397,22 @@ function Mod.load_init(init_name, cfg)
 
   -- Load the user-defined config
   if cfg and not vim.tbl_isempty(cfg) then
-    init.config.custom = cfg
-    init.config.public = vim.tbl_deep_extend("force", init.config.public, cfg)
+    modl.config.custom = cfg
+    modl.config.public = utils.extend(modl.config.public, cfg)
   else
-    init.config.custom = config.mod[init_name]
-    init.config.public = vim.tbl_deep_extend("force", init.config.public, init.config.custom or {})
+    modl.config.custom = config.mod[modl]
+    modl.config.public = utils.extend(modl.config.public, modl.config.custom or {})
   end
 
-  -- Pass execution onto load_init_from_table() and let it handle the rest
-  return Mod.load_init_from_table(init)
+  -- Pass execution onto load_mod_from_table() and let it handle the rest
+  return Mod.load_mod_from_table(modl)
 end
 
---- Has the same principle of operation as load_init_from_table(), except it then sets up the parent init's "required" table, allowing the parent to access the child as if it were a dependency.
+--- Has the same principle of operation as load_mod_from_table(), except it then sets up the parent init's "required" table, allowing the parent to access the child as if it were a dependency.
 --- @param init word.init A valid table as returned by mod.create()
 --- @param parent_init string|word.init If a string, then the parent is searched for in the loaded mod. If a table, then the init is treated as a valid init as returned by mod.create()
-function Mod.load_init_as_dependency_from_table(init, parent_init)
-  if Mod.load_init_from_table(init) then
+function Mod.load_mod_as_dependency_from_table(init, parent_init)
+  if Mod.load_mod_from_table(init) then
     if type(parent_init) == "string" then
       Mod.loaded_mod[parent_init].required[init.name] = init.public
     elseif type(parent_init) == "table" then
@@ -510,8 +425,8 @@ end
 --- @param init_name string A path to a init on disk. A path seperator in word is '.', not '/'
 --- @param parent_init string The name of the parent init. This is the init which the dependency will be attached to.
 --- @param cfg? table A config that reflects the structure of word.config.user_config.load["init.name"].config
-function Mod.load_init_as_dependency(init_name, parent_init, cfg)
-  if Mod.load_init(init_name, cfg) and Mod.is_init_loaded(parent_init) then
+function Mod.load_mod_as_dependency(init_name, parent_init, cfg)
+  if Mod.load_mod(init_name, cfg) and Mod.is_init_loaded(parent_init) then
     Mod.loaded_mod[parent_init].required[init_name] = Mod.get_init_config(init_name)
   end
 end
@@ -780,7 +695,7 @@ end
 function Mod.broadcast_event(event, callback)
   -- Broadcast the event to all mod
   if not event.split_type then
-    log.error("Unable to broadcast event of type", event.type, "- invalid event name")
+    require("word.util.log").error("Unable to broadcast event of type", event.type, "- invalid event name")
     return
   end
 
@@ -838,7 +753,7 @@ function Mod.send_event(recipient, event)
 end
 
 --- Load all inits in the `lua/word/mod` directory.
-function Mod.load_inits()
+function Mod.load_mods()
   local dir = "lua/word/mod"
   local handle = vim.loop.fs_scandir(dir)
   if not handle then
@@ -853,7 +768,7 @@ function Mod.load_inits()
 
     if type == "file" and name:match("init%.lua$") then
       local init_name = name:gsub("%.lua$", "")
-      Mod.load_init(init_name)
+      Mod.load_mod(init_name)
     end
   end
 end

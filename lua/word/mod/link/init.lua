@@ -17,6 +17,10 @@ u.ns("word-link")
 M.setup = function()
   return {
     success = true,
+    requires = {
+      "workspace",
+      "store"
+    }
   }
 end
 
@@ -96,7 +100,8 @@ M.public = {
 M.load = function()
   mod.await("cmd", function(cmd)
     cmd.add_commands_from_table({
-      ["preview"] = {
+      preview = {
+        name = "link",
         subcommands = {
           update = {
             args = 0,
@@ -107,7 +112,6 @@ M.load = function()
             args = 0,
           },
         },
-        name = "link"
       }
     })
   end)

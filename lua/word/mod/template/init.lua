@@ -6,8 +6,21 @@ local init = mod.create("template")
 init.load = function()
   mod.await("cmd", function(cmd)
     cmd.add_commands_from_table({
-      ["template"] = {
+      template = {
+        name = "template",
         subcommands = {
+          list = {
+            name = "template.list",
+            args = 1, --filetype
+          },
+          edit = {
+            name = "template.edit",
+            args = 1, --filetype
+          },
+          new = {
+            name = "template.new",
+            argss = 1, -- filetype, ...
+          },
           update = {
             args = 0,
             name = "template.update"
@@ -17,7 +30,6 @@ init.load = function()
             args = 0,
           },
         },
-        name = "template"
       }
     })
   end)
@@ -53,6 +65,8 @@ init.events = {}
 
 init.events.subscribed = {
   cmd = {
+    ["template.new"] = true,
+    ["template.edit"] = true,
     ["template.insert"] = true,
     ["template.update"] = true,
   },

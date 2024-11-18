@@ -1,25 +1,30 @@
-U = {}
-
-local api = vim.api
-U.ns = api.nvim_create_namespace
-U.win_valid = api.nvim_win_is_valid
-U.buf_ext = api.nvim_bug_get_extmarks
+U                   = {}
 
 local configuration = require("word.config")
-local log = require("word.util.log")
+local log           = require("word.util.log")
+
+local c, f, a, ts   = vim.cmd, vim.fn, vim.api, vim.treesitter
+
+
+U.autocmd   = a.nvim_create_autocmd
+U.cmd       = a.nvim_create_command
+U.ns        = a.nvim_create_namespace
+U.win_valid = a.nvim_win_is_valid
+U.buf_ext   = a.nvim_bug_get_extmarks
+
 
 local version = vim.version() -- TODO: Move to a more local scope
 
 --- A version agnostic way to call the neovim treesitter query parser
 --- @param language string # Language to use for the query
 --- @param query_string string # Query in s-expr syntax
---- @return vim.treesitter.Query # Parsed query
+--- @return ts.Query # Parsed query
 function U.ts_parse_query(language, query_string)
-  if vim.treesitter.query.parse then
-    return vim.treesitter.query.parse(language, query_string)
+  if ts.query.parse then
+    return ts.query.parse(language, query_string)
   else
     ---@diagnostic disable-next-line
-    return vim.treesitter.parse_query(language, query_string)
+    return ts.parse_query(language, query_string)
   end
 end
 
@@ -27,7 +32,6 @@ end
 --- @return string username
 function U.get_username()
   local current_os = configuration.os_info
-
   if not current_os then
     return ""
   end
@@ -41,6 +45,10 @@ function U.get_username()
   return ""
 end
 
+function U.extend(t1, t2)
+  return vim.tbl_deep_extend("force", t1, t2)
+end
+
 --- Returns an array of strings, the array being a list of languages that word can inject.
 ---@param values boolean If set to true will return an array of strings, if false will return a key-value table.
 ---@return string[]|table<string, { type: "treesitter"|"syntax"|"null" }>
@@ -50,19 +58,19 @@ function U.get_language_list(values)
 
   -- Search for regex files in syntax and after/syntax.
   -- Its best if we strip out anything but the ft name.
-  for _, lang in pairs(vim.api.nvim_get_runtime_file("syntax/*.vim", true)) do
-    local lang_name = vim.fn.fnamemodify(lang, ":t:r")
+  for _, lang in pairs(a.nvim_get_runtime_file("syntax/*.vim", true)) do
+    local lang_name = f.fnamemodify(lang, ":t:r")
     table.insert(regex_files, lang_name)
   end
 
-  for _, lang in pairs(vim.api.nvim_get_runtime_file("after/syntax/*.vim", true)) do
-    local lang_name = vim.fn.fnamemodify(lang, ":t:r")
+  for _, lang in pairs(a.nvim_get_runtime_file("after/syntax/*.vim", true)) do
+    local lang_name = f.fnamemodify(lang, ":t:r")
     table.insert(regex_files, lang_name)
   end
 
   -- Search for available parsers
-  for _, parser in pairs(vim.api.nvim_get_runtime_file("parser/*.so", true)) do
-    local parser_name = assert(vim.fn.fnamemodify(parser, ":t:r"))
+  for _, parser in pairs(a.nvim_get_runtime_file("parser/*.so", true)) do
+    local parser_name = assert(f.fnamemodify(parser, ":t:r"))
     ts_files[parser_name] = true
   end
 
@@ -192,12 +200,12 @@ function U.read_files(files, callback)
     file = tostring(file)
     local bufnr = vim.uri_to_bufnr(vim.uri_from_fname(file))
 
-    local should_delete = not vim.api.nvim_buf_is_loaded(bufnr)
+    local should_delete = not a.nvim_buf_is_loaded(bufnr)
 
-    vim.fn.bufload(bufnr)
+    f.bufload(bufnr)
     callback(bufnr, file)
     if should_delete then
-      vim.api.nvim_buf_delete(bufnr, { force = true })
+      a.nvim_buf_delete(bufnr, { force = true })
     end
   end
 end
@@ -210,7 +218,7 @@ end
 
 function U.wrap_dotrepeat(callback)
   return function(...)
-    if vim.api.nvim_get_mode().mode == "i" then
+    if a.nvim_get_mode().mode == "i" then
       callback(...)
       return
     end
@@ -219,22 +227,23 @@ function U.wrap_dotrepeat(callback)
     U.set_operatorfunc(function()
       callback(unpack(args))
     end)
-    vim.cmd("normal! g@l")
+    c("normal! g@l")
   end
 end
 
+local strcharpt, strwidth, strchars = f.strcharpart, a.nvim_strwidth, f.strchars
 --- Truncate input string to fit inside the `col_limit` when displayed. Takes non-ascii chars into account.
 --- @param str string The string to limit.
 --- @param col_limit integer `str` will be cut so that when displayed, the display length does not exceed this limit.
 --- @return string # Substring of input str
 function U.truncate_by_cell(str, col_limit)
-  if str and str:len() == vim.api.nvim_strwidth(str) then
-    return vim.fn.strcharpart(str, 0, col_limit)
+  if str and str:len() == strwidth(str) then
+    return strcharpt(str, 0, col_limit)
   end
-  local short = vim.fn.strcharpart(str, 0, col_limit)
-  if vim.api.nvim_strwidth(short) > col_limit then
-    while vim.api.nvim_strwidth(short) > col_limit do
-      short = vim.fn.strcharpart(short, 0, vim.fn.strchars(short) - 1)
+  local short = strcharpt(str, 0, col_limit)
+  if strwidth(short) > col_limit then
+    while strwidth(short) > col_limit do
+      short = strcharpt(short, 0, strchars(short) - 1)
     end
   end
   return short

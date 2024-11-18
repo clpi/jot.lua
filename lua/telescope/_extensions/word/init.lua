@@ -1,13 +1,13 @@
 local hastel, tel = pcall(require, "telescope")
--- local act = require("telescope.actions")
+local hasact, act = pcall(require, "telescope.actions")
 -- local set = require("telescope.actions.set")
 -- local sta = require("telescope.actions.state")
 -- local edi = require("telescope.pickers.entry_display")
 -- local cfg = require("telescope.config")
--- local pic = require("telescope.pickers")
--- local fnd = require("telescope.finders")
--- local pre = require("telescope.previewers")
--- local srt = require("telescope.sorters")
+local haspic, pic = pcall(require, "telescope.pickers")
+local hassrt, srt = pcall(require, "telescope.sorters")
+local hasfnd, fnd = pcall(require, "telescope.finders")
+local haspre, pre = pcall(require,"telescope.previewers"))
 local hasbui, bui = pcall(require, "telescope.builtin")
 -- local win = require("telescope.pickers.window")
 
@@ -24,7 +24,8 @@ end
 
 function M.custom_picker()
   pic.new({}, {
-    prompt_title = "word",
+    prompt_title = "word finder",
+    results_title = "results",
     sorter = srt.get_generic_fuzzy_sorter(),
     finder = fnd.new_table {
       results = {
@@ -34,11 +35,11 @@ function M.custom_picker()
     },
     attach_mappings = function(prompt_bufnr, map)
       act.select_base:replace(function()
-        local selection = act.get_selected_entry()
+        local sel = act.get_selected_entry()
         act.close(prompt_bufnr)
-        if selection.value == 'Index' then
+        if sel.value == 'Index' then
           require('word.index').index()
-        elseif selection.value == 'Notes' then
+        elseif sel.value == 'Notes' then
           require('word.notes').notes()
         end
       end)
@@ -55,8 +56,9 @@ end
 function M.setup()
   tel.register_extension({
     exports = {
-      notes = M.custom_picker()
-
+      notes = M.custom_picker(),
+      headings = bui.live_grep(),
+      grep = bui.live_grep()
     }
   })
   tel.load_extension("word")
