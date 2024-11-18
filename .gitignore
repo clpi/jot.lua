@@ -1,12 +1,7 @@
-/wiki/
+**index.md
+**notes/
 /luarocks
 /lua_modules
 /.luarocks
-/.luarc.json
-test.norg
-
-# direnv
 .direnv
-
-# pre-commit
 .pre-commit-config.yaml

@@ -1,0 +1,19 @@
+#!/usr/bin/env lua
+
+local ffi = require("ffi")
+local d = require("bit")
+local uv = require("jit")
+local c = coroutine
+local s = require("string")
+
+local i, o = io.stdin, io.stdout
+local r, w = o.read, o.write
+
+io.stdout:write("Hello, World!\n" .. "")
+
+
+
+string:pack("hi", "hi")
+w(o, os.getenv("HOME"))
+
+--vim:ft=lua

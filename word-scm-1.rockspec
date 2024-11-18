@@ -1,23 +1,21 @@
 rockspec_format = "3.0"
 package = "word.lua"
-version = "0.1.0"
+version = "0.1.0-alpha.1"
 source = {
   url = "git://github.com/clpi/word.lua",
   tag = nil
 }
 
 description = {
-  summary = "Extensibility for everyone",
+  summary = "Extensibility of org, comfort of markdown, for everyone",
   detailed = [[
-    org for markdown for neovim
+    Extensibility of org, comfort of markdown, for everyone
   ]],
   description = [[
-    extensibility of org without the hassle of another syntax
+    Extensibility of org, comfort of markdown, for everyone
   ]],
-  homepage = "word.cli.st",
-  maintainer = "github.com/clpi",
-  labels = { "wiki", "plugin", "neovim", "notes", "markdown" },
-  homepage = "https://github.com/clpi/word.lua",
+  homepage = "https://word.cli.st",
+  maintainer = "https://github.com/clpi",
   labels = {
     "wiki", "neovim", "notes", "org", "markdown"
   },
@@ -32,31 +30,24 @@ dependencies = {
   "pathlib.nvim ~> 2.2",
 }
 
-source = {
-  url = "http://github.com/clpi/word.lua/archive/v" .. MODREV .. ".zip",
-}
-
-if MODREV == "scm" then
-  source = {
-    url = "git://github.com/clpi/word.lua",
-  }
-end
-
 test_dependencies = {
   "nlua",
-  -- Placed here as we plan on removing nvim-treesitter as a dependency soon, but it's still required for various tests.
   "nvim-treesitter == 0.9.2",
 }
 
-test = {
-  type = "command",
-  command = "scripts/test.sh"
-}
+-- test = {
+--   type = "command",
+--   command = "scripts/test.sh"
+-- }
 
 build = {
   type = "builtin",
+  install = {
+    bin = {
+      "bin/word",
+    }
+  },
   copy_directories = {
-    "queries",
     "doc",
   }
 }

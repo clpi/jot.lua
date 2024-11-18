@@ -1,4 +1,4 @@
-*word.lua.txt*  word.lua
+*word.txt*  word.lua
 
 Author:  Chris Pecunies
 

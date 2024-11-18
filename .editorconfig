@@ -5,3 +5,11 @@ insert_final_newline = true
 indent_style = space
 indent_size = 2
 charset = utf-8
+
+[*.lua]
+indent_size = 2
+call_arg_parenthesis = keep
+tab_width = 2
+
+[*.md]
+tab_width = 2
