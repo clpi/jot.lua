@@ -8,6 +8,9 @@
 
 ---
 
+**BEGINNING DEVELOPMENT**
+
+
 `for neovim 0.10+`
 
 ## Introduction
