@@ -1,20 +1,14 @@
 local hastel, tel = pcall(require, "telescope")
 local hasact, act = pcall(require, "telescope.actions")
--- local set = require("telescope.actions.set")
--- local sta = require("telescope.actions.state")
--- local edi = require("telescope.pickers.entry_display")
--- local cfg = require("telescope.config")
 local haspic, pic = pcall(require, "telescope.pickers")
 local hassrt, srt = pcall(require, "telescope.sorters")
 local hasfnd, fnd = pcall(require, "telescope.finders")
-local haspre, pre = pcall(require,"telescope.previewers"))
+local haspre, pre = pcall(require, "telescope.previewers")
 local hasbui, bui = pcall(require, "telescope.builtin")
--- local win = require("telescope.pickers.window")
 
 local has_word, word = pcall(require, "word")
 
 local M = {}
-
 
 function M.setup_keys()
   local map = vim.api.nvim_set_keymap
@@ -34,7 +28,7 @@ function M.custom_picker()
       }
     },
     attach_mappings = function(prompt_bufnr, map)
-      act.select_base:replace(function()
+      act.select_default:replace(function()
         local sel = act.get_selected_entry()
         act.close(prompt_bufnr)
         if sel.value == 'Index' then
@@ -53,22 +47,73 @@ function M.custom_picker()
   }):find()
 end
 
+function M.setup_telescope()
+  tel.setup {
+    extensions = {
+      word = {
+        pickers = {
+          markdown_files = {
+            theme = "dropdown",
+            previewer = false,
+            layout_config = {
+              width = 0.5,
+              height = 0.4,
+            },
+          },
+          grep_markdown_files = {
+            theme = "dropdown",
+            previewer = false,
+            layout_config = {
+              width = 0.5,
+              height = 0.4,
+            },
+          },
+        },
+      },
+    },
+  }
+end
+
 function M.setup()
+  M.setup_telescope()
   tel.register_extension({
     exports = {
-      notes = M.custom_picker(),
-      headings = bui.live_grep(),
-      grep = bui.live_grep()
+      notes = M.custom_picker,
+      headings = bui.live_grep,
+      grep = bui.live_grep,
+      markdown_files = function(opts)
+        opts = opts or {}
+        opts.prompt_title = "Markdown Files"
+        opts.find_command = { "rg", "--files", "--glob", "*.md" }
+        bui.find_files(opts)
+      end,
+      grep_markdown_files = function(opts)
+        opts = opts or {}
+        opts.prompt_title = "Grep in Markdown Files"
+        opts.search_dirs = { "path/to/markdown/files" }
+        bui.live_grep(opts)
+      end,
     }
   })
   tel.load_extension("word")
 end
 
--- return M
---
 return tel.register_extension {
-  -- setup = word.setup,
   exports = {
-    -- word = require("telescope.builtin").find_files
+    notes = M.custom_picker,
+    headings = bui.live_grep,
+    grep = bui.live_grep,
+    markdown_files = function(opts)
+      opts = opts or {}
+      opts.prompt_title = "Markdown Files"
+      opts.find_command = { "rg", "--files", "--glob", "*.md" }
+      bui.find_files(opts)
+    end,
+    grep_markdown_files = function(opts)
+      opts = opts or {}
+      opts.prompt_title = "Grep in Markdown Files"
+      opts.search_dirs = { "path/to/markdown/files" }
+      bui.live_grep(opts)
+    end,
   }
 }

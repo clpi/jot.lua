@@ -988,4 +988,51 @@ init.events.subscribed = {
   },
 }
 
+-- Treesitter integration for the new telescope pickers
+local telescope = require("telescope")
+local finders = require("telescope.finders")
+local sorters = require("telescope.sorters")
+local pickers = require("telescope.pickers")
+local previewers = require("telescope.previewers")
+local actions = require("telescope.actions")
+local action_state = require("telescope.actions.state")
+
+local function browse_markdown_files(opts)
+  opts = opts or {}
+  pickers.new(opts, {
+    prompt_title = "Browse Markdown Files",
+    finder = finders.new_oneshot_job({ "rg", "--files", "--glob", "*.md" }, opts),
+    sorter = sorters.get_fuzzy_file(),
+    previewer = previewers.vim_buffer_cat.new(opts),
+    attach_mappings = function(prompt_bufnr, map)
+      actions.select_default:replace(function()
+        local selection = action_state.get_selected_entry()
+        actions.close(prompt_bufnr)
+        vim.cmd("edit " .. selection.value)
+      end)
+      return true
+    end,
+  }):find()
+end
+
+local function grep_markdown_files(opts)
+  opts = opts or {}
+  pickers.new(opts, {
+    prompt_title = "Grep in Markdown Files",
+    finder = finders.new_oneshot_job({ "rg", "--files", "--glob", "*.md" }, opts),
+    sorter = sorters.get_fuzzy_file(),
+    previewer = previewers.vim_buffer_vimgrep.new(opts),
+    attach_mappings = function(prompt_bufnr, map)
+      actions.select_default:replace(function()
+        local selection = action_state.get_selected_entry()
+        actions.close(prompt_bufnr)
+        vim.cmd("edit " .. selection.value)
+      end)
+      return true
+    end,
+  }):find()
+end
+
+telescope.load_extension("word")
+
 return init
