@@ -68,6 +68,9 @@ function W.setup(conf)
 
   -- Call Mod.load_mods to load all inits
   -- mod.load_mods()
+
+  -- P9884
+  require("telescope").load_extension("word")
 end
 
 function W.enter_md(manual, arguments)

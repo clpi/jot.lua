@@ -355,6 +355,27 @@ init.public = {
 
         return buf
     end,
+
+    --- UI integration for the new telescope pickers
+    ---@param opts table? Options for the picker
+    browse_markdown_files = function(opts)
+        opts = opts or {}
+        require("telescope.builtin").find_files({
+            prompt_title = "Browse Markdown Files",
+            find_command = { "rg", "--files", "--glob", "*.md" },
+            cwd = opts.cwd or vim.fn.getcwd(),
+        })
+    end,
+
+    --- UI integration for the new telescope pickers
+    ---@param opts table? Options for the picker
+    grep_markdown_files = function(opts)
+        opts = opts or {}
+        require("telescope.builtin").live_grep({
+            prompt_title = "Grep in Markdown Files",
+            search_dirs = { opts.cwd or vim.fn.getcwd() },
+        })
+    end,
 }
 
 init.examples = {
