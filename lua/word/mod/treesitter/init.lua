@@ -71,8 +71,8 @@ init.load = function()
     -- install_info = init.config.public.parser_configs.word,
     -- }
 
-    -- parser_configs.word_meta = {
-    -- install_info = init.config.public.parser_configs.word_meta,
+    -- parser_configs.markdown_inline = {
+    -- install_info = init.config.public.parser_configs.markdown_inline,
     -- }
 
     inits.await("cmd", function(wordcmd)
@@ -86,27 +86,27 @@ init.load = function()
 
     -- luacheck: pop
 
-    vim.api.nvim_create_autocmd("BufEnter", {
-      pattern = "*.md",
-      once = true,
-      callback = function()
-        init.public.parser_path = vim.api.nvim_get_runtime_file("parser/word.so", false)[1]
-
-        if init.public.parser_path then
-          return
-        end
-
-        if init.config.public.install_parsers then
-          require("nvim-treesitter.install").commands.TSInstallSync["run!"]("markdown", "markdown_inilne")
-          init.public.parser_path = vim.api.nvim_get_runtime_file("parser/word.so", false)[1]
-        else
-          assert(
-            false,
-            "word's parser is not installed! Run `:word sync-parsers` to install it, then restart Neovim."
-          )
-        end
-      end,
-    })
+    -- vim.api.nvim_create_autocmd("BufEnter", {
+    --   pattern = "*.md",
+    --   once = true,
+    --   callback = function()
+    --     init.public.parser_path = vim.api.nvim_get_runtime_file("parser/word.so", false)[1]
+    --
+    --     if init.public.parser_path then
+    --       return
+    --     end
+    --
+    --     if init.config.public.install_parsers then
+    --       require("nvim-treesitter.install").commands.TSInstallSync["run!"]("markdown", "markdown_inilne")
+    --       init.public.parser_path = vim.api.nvim_get_runtime_file("parser/word.so", false)[1]
+    --     else
+    --       assert(
+    --         false,
+    --         "word's parser is not installed! Run `:word sync-parsers` to install it, then restart Neovim."
+    --       )
+    --     end
+    --   end,
+    -- })
   end
 
   init.private.ts_utils = ts_utils
@@ -152,7 +152,7 @@ init.config.public = {
   -- },
   -- Configuration for the metadata parser (used to parse the contents
   -- of `@document.meta` blocks).
-  -- word_meta = {
+  -- markdown_inline = {
   --   url = "https://github.com/nvim-word/tree-sitter-word-meta",
   --   files = { "src/parser.c" },
   --   branch = "main",
@@ -816,7 +816,7 @@ init.public = {
     )
 
     local meta_query = utils.ts_parse_query(
-      "word_meta",
+      "markdown_inline",
       [[
                 (metadata
                   (pair
@@ -844,15 +844,15 @@ init.public = {
 
     local meta_source = init.public.get_node_text(meta_node, iter_src)
 
-    local word_meta_parser = vim.treesitter.get_string_parser(meta_source, "word_meta")
+    local markdown_inline_parser = vim.treesitter.get_string_parser(meta_source, "markdown_inline")
 
-    local word_meta_tree = word_meta_parser:parse()[1]
+    local markdown_inline_tree = markdown_inline_parser:parse()[1]
 
-    if not word_meta_tree then
+    if not markdown_inline_tree then
       return
     end
 
-    for id, node in meta_query:iter_captures(word_meta_tree:root(), meta_source) do
+    for id, node in meta_query:iter_captures(markdown_inline_tree:root(), meta_source) do
       if meta_query.captures[id] == "key" then
         local key = trim(init.public.get_node_text(node, meta_source))
 
@@ -978,7 +978,7 @@ init.on_event = function(event)
     end
 
     local install = require("nvim-treesitter.install")
-    install.commands.TSInstallSync["run!"]("word_meta")
+    install.commands.TSInstallSync["run!"]("markdown_inline")
   end
 end
 

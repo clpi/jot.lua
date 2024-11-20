@@ -415,14 +415,10 @@ init.config.public = {
 }
 
 init.setup = function()
-  return { success = true, requires = { "autocmd" } }
+  return { success = true, requires = {} }
 end
 
 init.load = function()
-  init.required["autocmd"].enable_autocommand("BufEnter")
-  init.required["autocmd"].enable_autocommand("FileType")
-  init.required["autocmd"].enable_autocommand("ColorScheme", true)
-
   init.public.trigger_hl()
 
   vim.api.nvim_create_autocmd({ "FileType", "ColorScheme" }, {
@@ -500,7 +496,7 @@ init.public = {
         vim.api.nvim_set_hl(0, full_highlight_name, {
           link = highlight:sub(2),
         })
-      else       -- Otherwise simply apply the highlight options the user provided
+      else -- Otherwise simply apply the highlight options the user provided
         -- If the highlight already exists then assume the user doesn't want it to be
         -- overwritten
         if does_hl_exist and does_hl_exist:len() > 0 then
@@ -571,7 +567,7 @@ init.public = {
         -- If it is a table then recursively traverse down it!
         if type(highlight) == "table" then
           descend(highlight, hl_name)
-        else         -- Otherwise we're dealing with a string
+        else -- Otherwise we're dealing with a string
           -- Hence we should clear the highlight
           vim.cmd("highlight! clear word" .. prefix .. hl_name)
         end
@@ -592,7 +588,7 @@ init.public = {
     -- If we were successful and if the attribute exists then return it
     if success and hl[attribute] then
       return bit.tohex(hl[attribute], 6)
-    else     -- Else log the message in a regular info() call, it's not an insanely important error
+    else -- Else log the message in a regular info() call, it's not an insanely important error
       log.info("Unable to grab highlight for attribute", attribute, " - full error:", hl)
     end
 
@@ -625,11 +621,6 @@ init.public = {
 }
 
 init.events.subscribed = {
-  ["autocmd"] = {
-    colorscheme = true,
-    bufenter = true,
-  },
 }
 
 return init
-

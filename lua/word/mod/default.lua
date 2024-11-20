@@ -1,4 +1,5 @@
 local w = require("word")
+local mod = w.mod
 
 C = {}
 
@@ -18,9 +19,9 @@ C.default_mod = {
   word_post_load = function()
   end,
   -- NON OPTIONAL
-  name = "",
+  name = "base",
   -- NON OPTIONAL
-  path = "",
+  path = "base.init",
   private = {},
   public = {
     version = w.version
@@ -35,7 +36,7 @@ C.default_mod = {
   events = {
     subscribed = { -- The events that the init is subscribed to
     },
-    defined = { -- The events that the init itself has defined
+    defined = {    -- The events that the init itself has defined
     },
   },
   required = {
@@ -44,9 +45,50 @@ C.default_mod = {
   },
   imported = {
   },
-  tests = function() 
+  tests = function()
 
   end,
 }
+
+
+
+C.default_modules = require("word.mod").create_meta(
+-- "treesitter",
+  "encrypt",
+  "agenda",
+  "job",
+  "tag",
+  "autocmd",
+  "notes",
+  "maps",
+  "cmd",
+  "store",
+  "code",
+  "export",
+  "preview",
+  "icon",
+  "pick",
+  "lsp",
+  'completion',
+  'data',
+  "resources",
+  "metadata",
+  "capture",
+  "template",
+  "track",
+  "media",
+  "snippets",
+  "time",
+  "run",
+  "sync",
+  "search",
+  "todo",
+  "ui",
+  "calendar",
+  "publish",
+  "link"
+)
+
+C.base_modules = C.default_modules
 
 return C

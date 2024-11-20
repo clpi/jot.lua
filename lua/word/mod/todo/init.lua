@@ -83,7 +83,7 @@ init.load = function()
       end
 
       init.private.buffers[buf] = true
-      init.public.attach_introspector(buf)
+      -- init.public.attach_introspector(buf) -- TODO
     end,
   })
 end

@@ -10,17 +10,17 @@ Different mod can define their own commands, completions and conditions on when 
 like these commands to be avaiable.
 
 For a full example on how to create your own command, it is recommended to read the
-`base.cmd`'s `init.lua` file. At the beginning of the file is an examples table
+`base.cmd`'s `mod.lua` file. At the beginning of the file is an examples table
 which walks you through the necessary steps.
 --]]
 
 local word = require("word")
-local log, mod = word.log, word.mod
+local log, mod, util = word.log, word.mod, word.utils
 
-local init = mod.create("cmd")
+local M = mod.create("cmd")
 
 
-init.private = {
+M.private = {
 
   --- Handles the calling of the appropriate function based on the command the user entered
   command_callback = function(data)
@@ -46,7 +46,7 @@ init.private = {
     end
 
     local ref = {
-      subcommands = init.public.word_commands,
+      subcommands = M.public.word_commands,
     }
     local argument_index = 0
 
@@ -90,8 +90,8 @@ init.private = {
     end
 
     if #args == 0 or argument_count < ref.min_args then
-      local completions = init.private.generate_completions(_, table.concat({ "word ", data.args, " " }))
-      init.private.select_next_cmd_arg(data.args, completions)
+      local completions = M.private.generate_completions(_, table.concat({ "word ", data.args, " " }))
+      M.private.select_next_cmd_arg(data.args, completions)
       return
     elseif argument_count > ref.max_args then
       log.error(
@@ -107,7 +107,7 @@ init.private = {
 
     if not ref.name then
       log.error(
-        ("Error when executing `:word %s` - the ending command didn't have a `name` variable associated with it! This is an implementation error on the developer's side, so file a report to the author of the init.")
+        ("Error when executing `:word %s` - the ending command didn't have a `name` variable associated with it! This is an implementation error on the developer's side, so file a report to the author of the mod.")
         :format(
           data.args
         )
@@ -115,14 +115,14 @@ init.private = {
       return
     end
 
-    if not init.events.defined[ref.name] then
-      init.events.defined[ref.name] = mod.define_event(init, ref.name)
+    if not M.events.defined[ref.name] then
+      M.events.defined[ref.name] = mod.define_event(M, ref.name)
     end
 
     mod.broadcast_event(
       assert(
         mod.create_event(
-          init,
+          M,
           table.concat({ "cmd.events.", ref.name }),
           vim.list_slice(args, argument_index + 1)
         )
@@ -164,7 +164,7 @@ init.private = {
     )
 
     local ref = {
-      subcommands = init.public.word_commands,
+      subcommands = M.public.word_commands,
     }
     local last_valid_ref = ref
     local last_completion_level = 0
@@ -231,7 +231,7 @@ init.private = {
   ---@param qargs table #A string of arguments previously supplied to the word command
   ---@param choices table #all possible choices for the next argument
   select_next_cmd_arg = function(qargs, choices)
-    local current = table.concat({ "word ", qargs })
+    local current = table.concat({ "Word ", qargs })
 
     local query
 
@@ -254,16 +254,16 @@ init.private = {
     end)
   end,
 }
-init.public = {
+M.public = {
 
   -- The table containing all the functions. This can get a tad complex so I recommend you read the wiki entry
   word_commands = {
-    init = {
+    mod = {
       subcommands = {
-        -- new = {
-        --   args = 1,
-        --   name = "init.new",
-        -- },
+        new = {
+          args = 1,
+          name = "mod.new",
+        },
         load = {
           args = 1,
           name = "mod.load",
@@ -277,51 +277,51 @@ init.public = {
     },
   },
 
-  --- Recursively merges the contents of the init's config.public.funtions table with base.cmd's init.config.public.word_commands table.
-  ---@param init_name string #An absolute path to a loaded init with a init.config.public.word_commands table following a valid structure
-  add_commands = function(init_name)
-    local init_config = mod.get_init(init_name)
+  --- Recursively merges the contents of the init's config.public.funtions table with base.cmd's mod.config.public.word_commands table.
+  ---@param mod_name string #An absolute path to a loaded init with a mod.config.public.word_commands table following a valid structure
+  add_commands = function(mod_name)
+    local mod_config = mod.get_mod(mod_name)
 
-    if not init_config or not init_config.word_commands then
+    if not mod_config or not mod_config.word_commands then
       return
     end
 
-    init.public.word_commands =
-        vim.tbl_extend("force", init.public.word_commands, init_config.word_commands)
+    M.public.word_commands =
+        vim.tbl_extend("force", M.public.word_commands, mod_config.word_commands)
   end,
 
-  --- Recursively merges the provided table with the init.config.public.word_commands table.
-  ---@param functions table #A table that follows the init.config.public.word_commands structure
+  --- Recursively merges the provided table with the mod.config.public.word_commands table.
+  ---@param functions table #A table that follows the mod.config.public.word_commands structure
   add_commands_from_table = function(functions)
-    init.public.word_commands = vim.tbl_extend("force", init.public.word_commands, functions)
+    M.public.word_commands = vim.tbl_extend("force", M.public.word_commands, functions)
   end,
 
   --- Takes a relative path (e.g "list.mod") and loads it from the commands/ directory
   ---@param name string #The relative path of the init we want to load
   add_commands_from_file = function(name)
     -- Attempt to require the file
-    local err, ret = pcall(require, "word.mod.cmd.commands." .. name)
+    local err, ret = pcall(require, "word.mod.cmd.commands." .. name .. "init")
 
     -- If we've failed bail out
     if not err then
       log.warn(
         "Could not load command",
         name,
-        "for init base.cmd - the corresponding init.lua file does not exist."
+        "for init base.cmd - the corresponding mod.lua file does not exist."
       )
       return
     end
 
     -- Load the init from table
-    mod.load_init_from_table(ret)
+    mod.load_mod_from_table(ret)
   end,
 
   --- Rereads data from all mod and rebuild the list of available autocompletiinitinitons and commands
   sync = function()
     -- Loop through every loaded init and set up all their commands
-    for _, mod in pairs(mod.loaded_mod) do
-      if mod.public.word_commands then
-        init.public.add_commands_from_table(mod.public.word_commands)
+    for _, lm in pairs(mod.loaded_mod) do
+      if lm.public.word_commands then
+        M.public.add_commands_from_table(lm.public.word_commands)
       end
     end
   end,
@@ -329,32 +329,32 @@ init.public = {
   --- Defines a custom completion function to use for `base.cmd`.
   ---@param callback function The same function format as you would receive by being called by `:command -completion=customlist,v:lua.callback word`.
   set_completion_callback = function(callback)
-    init.private.generate_completions = callback
+    M.private.generate_completions = callback
   end,
 }
-init.load = function()
+M.load = function()
   -- Define the :word command with autocompletion taking any number of arguments (-nargs=*)
   -- If the user passes no arguments or too few, we'll query them for the remainder using select_next_cmd_arg.
-  vim.api.nvim_create_user_command("Word", init.private.command_callback, {
+  vim.api.nvim_create_user_command("Word", M.private.command_callback, {
     desc = "The word command",
     force = true,
     -- bang = true,
     nargs = "*",
-    complete = init.private.generate_completions,
+    complete = M.private.generate_completions,
   })
 
   -- Loop through all the command mod we want to load and load them
-  for _, command in ipairs(init.config.public.load) do
+  for _, command in ipairs(M.config.public.load) do
     -- If one of the command mod is "base" then load all the base mod
     if command == "base" then
-      for _, base_command in ipairs(init.config.public.base) do
-        init.public.add_commands_from_file(base_command)
+      for _, base_command in ipairs(M.config.public.base) do
+        M.public.add_commands_from_file(base_command)
       end
     end
   end
 end
 
-init.config.public = {
+M.config.public = {
   -- A list of cmd mod to load automatically.
   -- This feature will soon be deprecated, so it is not recommended to touch it.
   load = {
@@ -372,11 +372,11 @@ init.config.public = {
 ---@class base.cmd
 
 
-init.word_post_load = init.public.sync
+M.word_post_load = M.public.sync
 
-init.on_event = function(event)
+M.on_event = function(event)
   if event.type == "cmd.events.mod.load" then
-    local ok = pcall(mod.load_init, event.content[1])
+    local ok = pcall(mod.load_mod, event.content[1])
 
     if not ok then
       vim.notify(string.format("init `%s` does not exist!", event.content[1]), vim.log.levels.ERROR, {})
@@ -386,7 +386,7 @@ init.on_event = function(event)
   if event.type == "cmd.events.mod.list" then
     local Popup = require("nui.popup")
 
-    local init_list_popup = Popup({
+    local mod_list_popup = Popup({
       position = "50%",
       size = { width = "50%", height = "80%" },
       enter = true,
@@ -401,16 +401,16 @@ init.on_event = function(event)
       },
     })
 
-    init_list_popup:on("VimResized", function()
-      init_list_popup:update_layout()
+    mod_list_popup:on("VimResized", function()
+      mod_list_popup:update_layout()
     end)
 
     local function close()
-      init_list_popup:unmount()
+      mod_list_popup:unmount()
     end
 
-    init_list_popup:map("n", "<Esc>", close, {})
-    init_list_popup:map("n", "q", close, {})
+    mod_list_popup:map("n", "<Esc>", close, {})
+    mod_list_popup:map("n", "q", close, {})
 
     local lines = {}
 
@@ -418,29 +418,29 @@ init.on_event = function(event)
       table.insert(lines, "- `" .. name .. "`")
     end
 
-    vim.api.nvim_buf_set_lines(init_list_popup.bufnr, 0, -1, true, lines)
+    vim.api.nvim_buf_set_lines(mod_list_popup.bufnr, 0, -1, true, lines)
 
-    vim.bo[init_list_popup.bufnr].modifiable = false
+    vim.bo[mod_list_popup.bufnr].modifiable = false
 
-    init_list_popup:mount()
+    mod_list_popup:mount()
   end
 end
 
-init.events.subscribed = {
+M.events.subscribed = {
   cmd = {
-    -- ["init.new"] = true,
+    -- ["mod.new"] = true,
     ["mod.load"] = true,
     ["mod.list"] = true,
   },
 }
 
-init.examples = {
+M.examples = {
   ["Adding a word command"] = function()
-    -- In your init.setup(), make sure to require base.cmd (requires = { "cmd" })
+    -- In your mod.setup(), make sure to require base.cmd (requires = { "cmd" })
     -- Afterwards in a function of your choice that gets called *after* base.cmd gets intialized e.g. load():
 
-    init.load = function()
-      init.required["cmd"].add_commands_from_table({
+    M.load = function()
+      M.required["cmd"].add_commands_from_table({
         -- The name of our command
         my_command = {
           min_args = 1, -- Tells cmd that we want at least one argument for this command
@@ -477,7 +477,7 @@ init.examples = {
 
     -- Afterwards, you want to subscribe to the corresponding event:
 
-    init.events.subscribed = {
+    M.events.subscribed = {
       ["cmd"] = {
         ["my.command"] = true, -- Has the same name as our "name" variable had in the "data" table
       },
@@ -506,4 +506,4 @@ init.examples = {
   end,
 }
 
-return init
+return M

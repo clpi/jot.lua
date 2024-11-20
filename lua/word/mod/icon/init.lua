@@ -1,7 +1,7 @@
 --[[
-    file: Concealer
+    file: icon
     title: Display Markup as Icons, not Text
-    description: The concealer module converts verbose markup elements into beautified icons for your viewing pleasure.
+    description: The icon module converts verbose markup elements into beautified icons for your viewing pleasure.
     summary: Enhances the basic word experience by using icons instead of text.
     embed: https://user-images.githubusercontent.com/76052559/216767027-726b451d-6da1-4d09-8fa4-d08ec4f93f54.png
     ---
@@ -11,7 +11,7 @@
 To reduce the amount of cognitive load required to "parse" word documents with your own eyes, this module
 masks, or sometimes completely hides many categories of markup.
 
-The concealer depends on [Nerd Fonts >=v3.0.1](https://github.com/ryanoasis/nerd-fonts/releases/latest) to be
+The icon depends on [Nerd Fonts >=v3.0.1](https://github.com/ryanoasis/nerd-fonts/releases/latest) to be
 installed on your system.
 
 This module respects `:h conceallevel` and `:h concealcursor`. Setting the wrong values for these options can
@@ -74,7 +74,6 @@ module.setup = function()
   return {
     success = true,
     requires = {
-      "autocmd",
       "treesitter",
     },
   }
@@ -435,7 +434,7 @@ local superscript_digits = {
   ["-"] = "⁻",
 }
 
----@class core.concealer
+---@class core.icon
 module.public = {
   icon_renderers = {
     on_left = function(config, bufid, node)
@@ -669,7 +668,7 @@ module.config.public = {
   -- - "basic" - use a mixture of icons (includes cute flower icons!)
   -- - "diamond" - use diamond shapes for headings
   -- - "varied" - use a mix of round and diamond shapes for headings; no cute flower icons though :(
-  icon_preset = "basic",
+  icon = "basic",
 
   -- If true, word will enable folding by default for `.word` documents.
   -- You may use the inbuilt Neovim folding options like `foldnestmax`,
@@ -681,7 +680,7 @@ module.config.public = {
   -- When set to `auto`, word will open all folds when opening new documents if `foldlevel` is 0.
   -- When set to `always`, word will always open all folds when opening new documents.
   -- When set to `never`, word will not do anything.
-  init_open_folds = "auto",
+  mod_open_folds = "auto",
 
   -- Configuration for icons.
   --
@@ -1269,7 +1268,7 @@ local function update_cursor(event)
   cursor_record.line_content = event.line_content
 end
 
-local function handle_init_event(event)
+local function handle_mod_event(event)
   assert(vim.api.nvim_win_is_valid(event.window))
   update_cursor(event)
 
@@ -1325,18 +1324,18 @@ local function handle_init_event(event)
       wo.foldexpr = vim.treesitter.foldexpr and "v:lua.vim.treesitter.foldexpr()" or "nvim_treesitter#foldexpr()"
       wo.foldtext = ""
 
-      local init_open_folds = module.config.public.init_open_folds
+      local mod_open_folds = module.config.public.mod_open_folds
       local function open_folds()
         vim.cmd("normal! zR")
       end
 
-      if init_open_folds == "always" then
+      if mod_open_folds == "always" then
         open_folds()
-      elseif init_open_folds == "never" then -- luacheck:ignore 542
+      elseif mod_open_folds == "never" then -- luacheck:ignore 542
         -- do nothing
       else
-        if init_open_folds ~= "auto" then
-          log.warn('"init_open_folds" must be "auto", "always", or "never"')
+        if mod_open_folds ~= "auto" then
+          log.warn('"mod_open_folds" must be "auto", "always", or "never"')
         end
 
         if wo.foldlevel == 0 then
@@ -1407,26 +1406,14 @@ local function handle_winscrolled(event)
 end
 
 local function handle_filetype(event)
-  handle_init_event(event)
+  handle_mod_event(event)
 end
 
 local event_handlers = {
   ["cmd.events.icon.toggle"] = handle_toggle_prettifier,
-  -- ["core.autocommands.events.bufnewfile"] = handle_init_event,
-  ["autocmd.events.filetype"] = handle_filetype,
-  ["autocmd.events.bufreadpost"] = handle_init_event,
-  ["autocmd.events.insertenter"] = handle_insertenter,
-  ["autocmd.events.insertleave"] = handle_insertleave,
-  ["autocmd.events.cursormoved"] = handle_cursor_moved,
-  ["autocmd.events.cursormovedi"] = handle_cursor_moved_i,
-  ["autocmd.events.winscrolled"] = handle_winscrolled,
 }
 
 module.on_event = function(event)
-  if event.referrer == "autocmd" and vim.bo[event.buffer].ft ~= "markdown" then
-    return
-  end
-
   if (not module.private.enabled) and (event.type ~= "cmd.events.icon.toggle") then
     return
   end
@@ -1434,27 +1421,20 @@ module.on_event = function(event)
 end
 
 module.load = function()
-  local icon_preset =
-      module.imported[module.name .. "." .. module.config.public.icon_preset].config.private
-      ["icon_preset_" .. module.config.public.icon_preset]
-  if not icon_preset then
+  local icon =
+      module.imported[module.name .. "." .. module.config.public.icon].config.private
+      ["icon_" .. module.config.public.icon]
+  if not icon then
     log.error(
-      ("Unable to load icon preset '%s' - such a preset does not exist"):format(module.config.public.icon_preset)
+      ("Unable to load icon preset '%s' - such a preset does not exist"):format(module.config.public.icon)
     )
     return
   end
 
   module.config.public =
-      vim.tbl_deep_extend("force", module.config.public, { icons = icon_preset }, module.config.custom or {})
+      vim.tbl_deep_extend("force", module.config.public, { icons = icon }, module.config.custom or {})
 
   -- module.required["core.autocommands"].enable_autocommand("BufNewFile")
-  module.required["autocmd"].enable_autocommand("FileType", true)
-  module.required["autocmd"].enable_autocommand("BufReadPost")
-  module.required["autocmd"].enable_autocommand("InsertEnter")
-  module.required["autocmd"].enable_autocommand("InsertLeave")
-  module.required["autocmd"].enable_autocommand("CursorMoved")
-  module.required["autocmd"].enable_autocommand("CursorMovedI")
-  module.required["autocmd"].enable_autocommand("WinScrolled", true)
 
   mod.await("cmd", function(wordcmd)
     wordcmd.add_commands_from_table({
@@ -1479,17 +1459,6 @@ module.load = function()
 end
 
 module.events.subscribed = {
-  autocmd = {
-    -- bufnewfile = true,
-    filetype = true,
-    bufreadpost = true,
-    insertenter = true,
-    insertleave = true,
-    cursormoved = true,
-    cursormovedi = true,
-    winscrolled = true,
-  },
-
   cmd = {
     ["icon.toggle"] = true,
   },

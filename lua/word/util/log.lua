@@ -64,13 +64,16 @@ end
 local unpack = unpack or table.unpack
 
 Log.warn = function(inp)
-  print("ERROR: ", inp)
+  -- print("ERROR: ", inp)
 end
 Log.info = function(inp)
-  print("ERROR: ", inp)
+  -- print("ERROR: ", inp)
 end
 Log.error = function(inp)
-  print("ERROR: ", inp)
+  -- print("ERROR: ", inp)
+end
+Log.trace = function(inp)
+  -- print("TRACE: ", inp)
 end
 
 --- @param config word.log.configuration

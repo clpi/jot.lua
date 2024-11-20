@@ -1,13 +1,11 @@
---- @brief [[
---- This file marks the beginning of the entire plugin. It's here that everything fires up and starts pumping.
 --- @brief ]]
 
 -- core = {
 --   core = require("word.core"),
 -- },
 W = {
-  graph = require("word.core"),
-  -- mod = require("word.mod"),
+  health = require("word.health"),
+  mod = require("word.mod"),
   version = require("word.config.version").version,
   cfg = {
     cfg = require("word.config"),
@@ -18,7 +16,7 @@ W = {
   callbacks = require("word.util.callback"),
   config = require("word.config"),
   lsp = require("word.lsp"),
-  -- cmd = require("word.cmd"),
+  cmd = require("word.cmd"),
   ui = require("word.ui"),
   log = require("word.util.log"),
   util = {
@@ -44,13 +42,13 @@ function W.setup(conf)
   -- Ensure that we are running Neovim 0.10+
   assert(utils.is_minimum_version(0, 10, 0), "word requires at least Neovim version 0.10 to operate!")
 
-  conf = conf or require "word.config.default".user
+  conf = conf or { load = { base = {} } }
   if conf.load == nil then conf.load = { base = {} } end
   config.user_config = utils.extend(config.user_config, conf)
   log.new(config.user_config.logger or log.get_base_config(), true)
 
   -- If the file we have entered has a `.word` extension:
-  if W.util.buf.check_ext("md") or not config.user_config.lazy_loading then
+  if W.util.buf.check_md() or not config.user_config.lazy_loading then
     W.enter_md(false)
   else
     a.nvim_create_user_command("WordInit", function()
@@ -65,9 +63,6 @@ function W.setup(conf)
       end,
     })
   end
-
-  -- Call Mod.load_mods to load all inits
-  -- mod.load_mods()
 end
 
 function W.enter_md(manual, arguments)
@@ -96,33 +91,32 @@ function W.enter_md(manual, arguments)
   end
 
   -- Go through each defined init and grab its config
-  for name, init in pairs(mod_list) do
-    config.mod[name] = utils.extend(config.mod[name] or {}, init.config or {})
+  for name, lm in pairs(mod_list) do
+    config.mod[name] = utils.extend(config.mod[name] or {}, lm.config or {})
   end
 
   -- After all config are merged proceed to actually load the mod
-  local load_mod = require("word.mod").load_mod
+  local load_mod = modu.load_mod
   for name, _ in pairs(mod_list) do
-    -- If it could not be loaded then halt
     if not load_mod(name) then
       log.warn("Recovering from error...")
-      require("word.mod").loaded_mod[name] = nil
+      modu.loaded_mod[name] = nil
     end
   end
 
   -- Goes through each loaded init and invokes word_post_load()
-  for _, init in pairs(require("word.mod").loaded_mod) do
-    init.word_post_load()
+  for _, lm in pairs(modu.loaded_mod) do
+    lm.word_post_load()
   end
 
   -- Set this variable to prevent word from loading twice
   config.started = true
 
   -- Lets the entire word environment know that word has started!
-  require("word.mod").broadcast_event({
+  modu.broadcast_event({
     type = "started",
     split_type = {
-      "base", "started"
+      "started"
     },
     filename = "",
     filehead = "",
@@ -137,8 +131,7 @@ function W.enter_md(manual, arguments)
 
   -- Sometimes external plugins prefer hooking in to an autocommand
   vim.api.nvim_exec_autocmds("User", {
-    modeline = true,
-    pattern = "markdown", -- wordInit
+    pattern = "WordStarted", -- wordInit
   })
 end
 

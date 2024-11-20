@@ -16,6 +16,7 @@ globals = {
   "_",
   "vim",
   "word",
+  "async",
   "log",
 }
 

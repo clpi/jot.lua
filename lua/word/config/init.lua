@@ -1,7 +1,7 @@
 local sys = require("word.util.sys")
-local defaults = require("word.config.default")
+-- local defaults = require("word.config.default")
 local os_info = sys.get_os_info()
-local wv = require("word.config.version")
+-- local wv = require("word.config.version")
 local f = vim.fn
 
 --- Stores the configuration for the entirety of word.
@@ -11,7 +11,12 @@ local f = vim.fn
 ---
 --- @type word.configuration
 C = {
-  user_config = defaults.user,
+  user_config = {
+    lazy_loading = false,
+    load = {
+
+    }
+  },
 
   store_path = f.stdpath("data") .. "/word.mpack",
 
@@ -19,8 +24,10 @@ C = {
   manual = nil,
   arguments = {},
 
-  word_version = wv.word_version,
-  version = wv.version,
+  -- word_version = wv.word_version,
+  -- version = wv.version,
+  word_version = "0.1.0",
+  version = "0.1.0",
 
   os_info = os_info,
   pathsep = os_info == "windows" and "\\" or "/",

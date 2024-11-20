@@ -1,21 +1,31 @@
 # word - the _familiar_, organized future for neovim
 
+<!--toc:start-->
+
+- [word - the _familiar_, organized future for neovim](#word-the-familiar-organized-future-for-neovim)
+  - [Introduction](#introduction)
+  - [Requirements](#requirements)
+  - [Quickstart](#quickstart)
+  - [Config](#config)
+  - [Usage](#usage)
+  - [Todo](#todo)
+  - [Support](#support)
+  - [Credits](#credits)
+  <!--toc:end-->
+
 <a href="https://neovim.io"> ![Neovim](https://img.shields.io/badge/Neovim%200.10+-brightgreen?style=for-the-badge) </a>
 <a href="/LICENSE"> ![License](https://img.shields.io/badge/license-GPL%20v3-brightgreen?style=for-the-badge)</a>
-[![Push to Luarocks](https://github.com/clpi/word.lua/actions/workflows/luarocks.yml/badge.svg)](https://github.com/clpi/word.lua/actions/workflows/luarocks.yml)
-[![Deploy mdBook site to Pages](https://github.com/clpi/word.lua/actions/workflows/book.yml/badge.svg)](https://github.com/clpi/word.lua/actions/workflows/book.yml)
 ![LuaRocks](https://img.shields.io/luarocks/v/clpi/word.lua)
 
 ---
 
-**BEGINNING DEVELOPMENT**
-
-
-`for neovim 0.10+`
+> [!Warning]
+>
+> `word.lua` is **BEGINNING DEVELOPMENT**
 
 ## Introduction
 
-**word** is a plugin meant to bring the awesome extensibility of emacs [org-mode] or [neorg] without needing to switch from the gold standard [markdown], or from the best editor [neovim].
+- **word.lua** is a [neovim] plugin intended to bring the extensibility of [org-mode] or [neorg] in the comfort of [markdown].
 
 - we want to be able to take notes like developers, without shutting ourselves out of the entire ecosystem built around markdown.
 
@@ -23,29 +33,32 @@
 
 ## Requirements
 
-- must have at least [neovim 0.10+](https://neovim.io)
+> [!Info]
+>
+> `word.lua` must have at least [neovim 0.10+](https://neovim.io)
 
 ## Quickstart
 
 <details open>
   <summary>
-lazy.nvim
+<a href="#">lazy.nvim</a>
   </summary>
 
 ```lua
 {
     "clpi/word.lua",
     lazy    = false,
-    version = false,
     config  = true,
-    branch = "master",
-    opts = {},
+    version = "*"
+    branch  = "master",
+    config  = true,
+    build   = ":TSUpdate markdown markdown_inline",
     dependencies = {
       "nvim-telescope/telescope.nvim",
       "MunifTanjim/nui.nvim",
-      "nvim-nio",
-      "pathlib.nvim",
-      "plenary-nvim",
+      "nvim-neotest/nvim-nio",
+      "pysan3/pathlib.nvim",
+      "nvim-lua/plenary-nvim",
     }
 }
 ```
@@ -57,12 +70,19 @@ lazy.nvim
 <details>
 
   <summary>
-plug.vim
+<a href="#">plug.vim</a>
   </summary>
+
+> [!Warning]
+>
+> Not yet tested
 
 ```vim
 Plug "nvim-telescope/telescope.nvim"
 Plug 'MunifTanjim/nui.nvim'
+Plug 'nvim-lua/plenary-nvim'
+Plug "pysan3/pathlib.nvim"
+Plug "nvim-neotest/nvim-nio"
 Plug "clpi/word.lua", {
     \ "branch" : "master",
     \ "do"     : ":lua require('word').setup()"
@@ -74,12 +94,19 @@ Plug "clpi/word.lua", {
 ---
 
 <details>
-<summary>Vundle</summary>
+<summary><a href="#">Vundle</a></summary>
+
+> [!Warning]
+>
+> Not yet tested
 
 ```vim
-  Plugin 'nvim-telescope/telescope.nvim'
-  Plugin 'MunifTanjim/nui.nvim'
-  Plugin 'renerocksai/telekasten.nvim'
+Plugin 'nvim-lua/plenary-nvim'
+Plugin "pysan3/pathlib.nvim"
+Plugin "nvim-neotest/nvim-nio"
+Plugin 'nvim-telescope/telescope.nvim'
+Plugin 'MunifTanjim/nui.nvim'
+Plugin 'clpi/word.lua'
 ```
 
 </details>
@@ -89,10 +116,16 @@ Plug "clpi/word.lua", {
 <details>
 
   <summary>
-dein.vim
+<a href="#">dein.vim</a>
   </summary>
 
+> [!Warning]
+>
+> Not yet tested
+
 ```vim
+call dein#add('pysan3/pathlib.nvim')
+call dein#add('nvim-neotest/nvim-nio')
 call dein#add('MunifTanjim/nui.nvim')
 call dein#add('nvim-telescope/telescope.nvim')
 call dein#add('clpi/word.lua')
@@ -105,13 +138,17 @@ call dein#add('clpi/word.lua')
 <details>
 
   <summary>
-packer.nvim
+<a href="#">packer.nvim</a>
   </summary>
+
+> [!Warning]
+>
+> Not yet tested
 
 ```lua
 use {
   "clp/word.lua",
-  rocks = {
+  requires = {
         "nvim-telescope/telescope.nvim",
         "nvim-nio",
         "nui.nvim",
@@ -127,23 +164,61 @@ use {
 
 </details>
 
+---
+
+<details>
+
+  <summary>
+<a href="#">mini.deps</a>
+  </summary>
+
+> [!Warning]
+>
+> Not yet tested
+
+```lua
+{
+  "clp/word.lua",
+}
+```
+
+</details>
+
+---
+
+<details>
+
+  <summary>
+<a href="#">rocks.nvim</a>
+  </summary>
+
+> [!Warning]
+>
+> Not yet tested
+
+```lua
+Rocks install mini.lua
+```
+
+</details>
+
 ## Config
 
-check back!
+```lua
+-- Setup the initial configuration
+require("word").setup({})
+
+```
 
 ## Usage
 
-check back!
+Check back!
 
 ## Todo
 
-- [ ] Bring at least a few scaffolded modules to functionality
-- [ ] Automate flake creation through GH Actions
-- [ ] Fix rudimentary commands ported over to bring to base functionality
-- [ ] Once at base functionality, clean up and refactor to bring to a `0.1.0` release
-- [ ] Allow optional choice of telescope or not
-- [ ] Add other package manager support
-- [ ] **Support [blink-cmp] and** [nvim-cmp] and [magazine-cmp] when possible
+> [!Tip]
+>
+> Check out [TODO.md](./TODO.md) for a more detailed list of tasks
 
 ## Support
 

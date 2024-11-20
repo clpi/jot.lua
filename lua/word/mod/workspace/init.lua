@@ -15,7 +15,7 @@ To use `base.workspace`, simply load up the init in your configuration and speci
 ```lua
 require('word').setup {
     load = {
-        ["base"] = {},
+        ["default"] = {},
         ["workspace"] = {
             config = {
                 workspaces = {
@@ -40,7 +40,7 @@ workspace. To get the best experience it's recommended to set the `autochdir` Ne
 You can use workspace to create new notes in your workspaces.
 
 ```lua
-local workspace = require('word').mod.get_init("workspace")
+local workspace = require('word').mod.get_mod("workspace")
 workspace.create_file("my_file", "my_ws", {
     no_open  = false,  -- open file after creation?
     force    = false,  -- overwrite file if exists
@@ -68,7 +68,7 @@ local init = mod.create("workspace")
 init.setup = function()
   return {
     success = true,
-    requires = { "autocmd", "ui", "store", "workspace.utils" },
+    requires = { "ui", "store", "workspace.utils" },
   }
 end
 
@@ -84,7 +84,6 @@ init.load = function()
   -- vim.keymap.set("<c-\\><c-\\>", "<Plug>(word.workspace.new-note)", init.public.new_note)
 
   -- Used to detect when we've entered a buffer with a potentially different cwd
-  init.required["autocmd"].enable_autocommand("BufEnter", true)
 
   mod.await("cmd", function(cmd)
     cmd.add_commands_from_table({
@@ -100,20 +99,20 @@ init.load = function()
 
   if init.config.public.open_last_workspace and vim.fn.argc(-1) == 0 then
     if init.config.public.open_last_workspace == "default" then
-      if not init.config.public.base_workspace then
+      if not init.config.public.default_workspace then
         log.warn(
-          'Configuration error in `default.workspace`: the `open_last_workspace` option is set to "default", but no default workspace is provided in the `base_workspace` configuration variable. baseing to opening the last known workspace.'
+          'Configuration error in `base.workspace`: the `open_last_workspace` option is set to "default", but no base workspace is provided in the `default_workspace` configuration variable. baseing to opening the last known workspace.'
         )
         init.public.set_last_workspace()
         return
       end
 
-      init.public.open_workspace(init.config.public.base_workspace)
+      init.public.open_workspace(init.config.public.default_workspace)
     else
       init.public.set_last_workspace()
     end
-  elseif init.config.public.base_workspace then
-    init.public.set_workspace(init.config.public.base_workspace)
+  elseif init.config.public.default_workspace then
+    init.public.set_workspace(init.config.public.default_workspace)
   end
 end
 
@@ -125,19 +124,18 @@ init.config.public = {
   ---@type table<string, PathlibPath>
   workspaces = {
     default = require("pathlib").cwd(),
-    base = require("pathlib").cwd(),
   },
   -- The name for the index file.
   --
   -- The index file is the "entry point" for all of your notes.
   index = "index.md",
   -- The base workspace to set whenever Neovim starts.
-  base_workspace = nil,
+  default_workspace = nil,
   -- Whether to open the last workspace's index file when `nvim` is executed
   -- without arguments.
   --
-  -- May also be set to the string `"base"`, due to which word will always
-  -- open up the index file for the workspace defined in `base_workspace`.
+  -- May also be set to the string `"default"`, due to which word will always
+  -- open up the index file for the workspace defined in `default_workspace`.
   open_last_workspace = false,
   -- Whether to use base.ui.text_popup for `workspace.new.note` event.
   -- if `false`, will use vim's base `vim.ui.input` instead.
@@ -240,15 +238,15 @@ init.public = {
 
     local file = Path(vim.fn.expand("%:p"))
 
-    -- Name of matching workspace. Falls back to "base"
-    local ws_name = "base"
+    -- Name of matching workspace. Falls back to "default"
+    local ws_name = "default"
 
     -- Store the depth of the longest match
     local longest_match = 0
 
     -- Find a matching workspace
     for workspace, location in pairs(init.config.public.workspaces) do
-      if workspace ~= "base" then
+      if workspace ~= "default" then
         if file:is_relative_to(location) and location:depth() > longest_match then
           ws_name = workspace
           longest_match = location:depth()
@@ -269,7 +267,7 @@ init.public = {
       init.public.set_workspace(ws_match)
     else
       -- Otherwise try to reset the workspace to the base
-      init.public.set_workspace("base")
+      init.public.set_workspace("default")
     end
   end,
   --- Updates completions for the :word command
@@ -353,7 +351,7 @@ init.public = {
   --- Reads the word_last_workspace.txt file and loads the cached workspace from there
   set_last_workspace = function()
     -- Attempt to open the last workspace cache file in read-only mode
-    local store = mod.get_init("store")
+    local store = mod.get_mod("store")
 
     if not store then
       log.trace("init `base.store` not loaded, refusing to load last user's workspace.")
@@ -362,7 +360,7 @@ init.public = {
 
     local last_workspace = store.retrieve("last_workspace")
     last_workspace = type(last_workspace) == "string" and last_workspace
-        or init.config.public.base_workspace
+        or init.config.public.default_workspace
         or ""
 
     local workspace_path = init.public.get_workspace(last_workspace)
@@ -427,7 +425,7 @@ init.public = {
     init.public.set_workspace(workspace)
 
     -- If we're switching to a workspace that isn't the base workspace then enter the index file
-    if workspace ~= "base" then
+    if workspace ~= "default" then
       vim.cmd("e " .. (ws_match / init.public.get_index()):cmd_string())
     end
   end,
@@ -509,7 +507,7 @@ init.on_event = function(event)
     local index_path = current_ws[2] / init.public.get_index()
 
     if vim.fn.filereadable(index_path:tostring("/")) == 0 then
-      if current_ws[1] == "base" then
+      if current_ws[1] == "default" then
         utils.notify(table.concat({
           "Index file cannot be created in 'base' workspace to avoid confusion.",
           "If this is intentional, manually create an index file beforehand to use this command.",
@@ -542,13 +540,10 @@ init.events.defined = {
 }
 
 init.events.subscribed = {
-  ["autocmd"] = {
-    bufenter = true,
-  },
-  ["workspace"] = {
+  workspace = {
     workspace_changed = true,
   },
-  ["cmd"] = {
+  cmd = {
     ["workspace.workspace"] = true,
     ["workspace.index"] = true,
   },

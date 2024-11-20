@@ -24,7 +24,7 @@ init.public = {
         }
 
         -- Apply any custom modifiers that the user has specified
-        window_config = assert(mod.get_init("ui"), "ui is not loaded!").apply_custom_options(
+        window_config = assert(mod.get_mod("ui"), "ui is not loaded!").apply_custom_options(
             modifiers,
             vim.tbl_extend("force", window_config, config or {})
         )

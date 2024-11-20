@@ -5,7 +5,7 @@
 --- @init "word.mod"
 
 --- @class word.C
-C = {
+local C = {
   ---@type table<string, { [1]: fun(event: word.event, content: table|any), [2]?: fun(event: word.event): boolean }>
   callback_list = {},
 }
@@ -18,7 +18,7 @@ function C.on_event(event_name, callback, content_filter)
   -- If the table doesn't exist then create it
   C.callback_list[event_name] = C.callback_list[event_name] or {}
   -- Insert the callback and content filter
-  table.insert(C.callback_list[event_name], { callback, content_filter })
+  require("table").insert(C.callback_list[event_name], { callback, content_filter })
 end
 
 --- Used internally by word to call all C with an event.

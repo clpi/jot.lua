@@ -42,9 +42,8 @@ M.private = {
   ---@param custom_date? string #A YYYY-mm-dd string that specifies a date to open the notes at instead
   open_notes = function(time, custom_date)
     -- TODO(vhyrro): Change this to use word dates!
-    local modw = M.required["workspace"]
-    local workspace = M.config.public.workspace or modw.get_current_workspace()[1]
-    local workspace_path = modw.get_workspace(workspace)
+    local workspace = M.config.public.workspace or M.required["workspace"].get_current_workspace()[1]
+    local workspace_path = M.required["workspace"].get_workspace(workspace)
     local folder_name = M.config.public.notes_folder
     local template_name = M.config.public.template_name
 
@@ -71,16 +70,16 @@ M.private = {
 
 
     local notes_file_exists =
-        modw.file_exists(workspace_path .. "/" .. folder_name .. config.pathsep .. path)
+        M.required["workspace"].file_exists(workspace_path .. "/" .. folder_name .. config.pathsep .. path)
 
-    modw.create_file(folder_name .. config.pathsep .. path, workspace)
+    M.required["workspace"].create_file(folder_name .. config.pathsep .. path, workspace)
 
-    modw.create_file(folder_name .. config.pathsep .. path, workspace)
+    M.required["workspace"].create_file(folder_name .. config.pathsep .. path, workspace)
 
     if
         not notes_file_exists
         and M.config.public.use_template
-        and modw.file_exists(workspace_path .. "/" .. folder_name .. "/" .. template_name)
+        and M.required["workspace"].file_exists(workspace_path .. "/" .. folder_name .. "/" .. template_name)
     then
       vim.cmd("$read " .. workspace_path .. "/" .. folder_name .. "/" .. template_name .. "| w")
     end
@@ -115,8 +114,8 @@ M.private = {
 
   --- Opens the toc file
   open_toc = function()
-    local workspace = M.config.public.workspace or modw.get_current_workspace()[1]
-    local index = mod.get_M_config("workspace").index
+    local workspace = M.config.public.workspace or M.required["workspace"].get_current_workspace()[1]
+    local index = mod.get_mod_config("workspace").index
     local folder_name = M.config.public.notes_folder
 
     -- If the toc exists, open it, if not, create it
@@ -129,9 +128,9 @@ M.private = {
 
   --- Creates or updates the toc file
   create_toc = function()
-    local workspace = M.config.public.workspace or modw.get_current_workspace()[1]
-    local index = mod.get_M_config("workspace").index
-    local workspace_path = modw.get_workspace(workspace)
+    local workspace = M.config.public.workspace or M.required["workspace"].get_current_workspace()[1]
+    local index = mod.get_mod_config("workspace").index
+    local workspace_path = M.required["workspace"].get_workspace(workspace)
     local workspace_name_for_link = M.config.public.workspace or ""
     local folder_name = M.config.public.notes_folder
 
@@ -155,7 +154,7 @@ M.private = {
     -- Gets the title from the metadata of a file, must be called in a vim.schedule
     local get_title = function(file)
       local buffer = vim.fn.bufadd(workspace_path .. config.pathsep .. folder_name .. config.pathsep .. file)
-      local meta = modw.get_document_metadata(buffer)
+      local meta = M.required["workspace"].get_document_metadata(buffer)
       return meta.title
     end
 
@@ -291,9 +290,9 @@ M.private = {
               return output
             end
 
-        modw.create_file(
+        M.required["workspace"].create_file(
           folder_name .. config.pathsep .. index,
-          workspace or modw.get_current_workspace()[1]
+          workspace or M.required["workspace"].get_current_workspace()[1]
         )
 
         -- The current buffer now must be the toc file, so we set our toc entries there
@@ -343,7 +342,7 @@ M.config.private = {
 
 ---@class base.notes
 M.public = {
-  version = "0.0.9",
+  version = "0.1.0",
 }
 
 M.load = function()
@@ -384,7 +383,7 @@ M.on_event = function(event)
       M.private.notes_yesterday()
     elseif event.split_type[2] == "notes.custom" then
       if not event.content[1] then
-        local calendar = mod.get_M("calendar")
+        local calendar = mod.get_od("calendar")
 
         if not calendar then
           log.error("[ERROR]: `base.calendar` is not loaded! Said M is required for this operation.")

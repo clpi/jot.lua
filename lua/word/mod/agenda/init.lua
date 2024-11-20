@@ -1,4 +1,5 @@
 local uv = vim.uv
+local e = vim.lpeg
 
 local d = require("word")
 local lib, mod = d.lib, d.mod
@@ -8,7 +9,7 @@ local init = mod.create("agenda")
 init.load = function()
   mod.await("cmd", function(cmd)
     cmd.add_commands_from_table({
-      ["agenda"] = {
+      agenda = {
         subcommands = {
           update = {
             args = 0,

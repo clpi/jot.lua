@@ -71,9 +71,6 @@ M.events.defined = {
 }
 
 M.events.subscribed = {
-  ["autocmd"] = {
-    bufenter = true,
-  },
   ["workspace"] = {
     workspace_changed = true,
   },

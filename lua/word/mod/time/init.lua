@@ -436,9 +436,9 @@ init.public = {
       end
     end
 
-    if inits.is_init_loaded("calendar") then
+    if inits.is_mod_loaded("calendar") then
       vim.cmd.stopinsert()
-      inits.get_init("calendar").select_date({ callback = vim.schedule_wrap(callback) })
+      inits.get_mod("calendar").select_date({ callback = vim.schedule_wrap(callback) })
     else
       vim.ui.input({
         prompt = "Date: ",

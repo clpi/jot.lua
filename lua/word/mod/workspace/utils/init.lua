@@ -35,7 +35,7 @@ init.public = {
     local custom_workspace_path = filepath:match("^%$([^/\\]*)[/\\]")
     if custom_workspace_path then
       ---@type base.workspace
-      local ws = mod.get_init("workspace")
+      local ws = mod.get_mod("workspace")
       if not workspace then
         log.error(table.concat({
           "Unable to jump to link with custom workspace: `default.workspace` is not loaded.",
@@ -88,7 +88,7 @@ init.public = {
       -- the user, and we don't have to crash out of this function (which creates a long and
       -- misleading error message).
       if err and not err:match("Vim:E325") then
-        log.error("Failed to edit file %s. Error:\n%s"):format(path, err)
+        log.error(("Failed to edit file %s. Error:\n%s"):format(path, err))
       end
     end
   end,
