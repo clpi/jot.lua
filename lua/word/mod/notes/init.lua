@@ -37,6 +37,12 @@ end
 
 
 M.private = {
+  open_month = function()
+
+  end,
+  open_index = function()
+
+  end,
   --- Opens a notes entry at the given time
   ---@param time? number #The time to open the notes entry at as returned by `os.time()`
   ---@param custom_date? string #A YYYY-mm-dd string that specifies a date to open the notes at instead
@@ -356,6 +362,8 @@ M.load = function()
         min_args = 1,
         max_args = 2,
         subcommands = {
+          index = { args = 0, name = "notes.index" },
+          month = { max_args = 1, name = "notes.month" },
           tomorrow = { args = 0, name = "notes.tomorrow" },
           yesterday = { args = 0, name = "notes.yesterday" },
           today = { args = 0, name = "notes.today" },
@@ -383,7 +391,7 @@ M.on_event = function(event)
       M.private.notes_yesterday()
     elseif event.split_type[2] == "notes.custom" then
       if not event.content[1] then
-        local calendar = mod.get_od("calendar")
+        local calendar = mod.get_mod("calendar")
 
         if not calendar then
           log.error("[ERROR]: `base.calendar` is not loaded! Said M is required for this operation.")
@@ -419,6 +427,8 @@ end
 
 M.events.subscribed = {
   cmd = {
+    ["notes.index"] = true,
+    ["notes.month"] = true,
     ["notes.yesterday"] = true,
     ["notes.tomorrow"] = true,
     ["notes.today"] = true,

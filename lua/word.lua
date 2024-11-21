@@ -6,12 +6,11 @@
 W = {
   health = require("word.health"),
   mod = require("word.mod"),
-  version = require("word.config.version").version,
+  version = require("word.config").version,
   cfg = {
     cfg = require("word.config"),
-    opts = require("word.config.opts"),
-    version = require("word.config.version"),
-    default = require("word.config.default"),
+    -- opts = require("word.config.opts"),
+    version = require("word.config").version,
   },
   callbacks = require("word.util.callback"),
   config = require("word.config"),

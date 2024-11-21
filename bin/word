@@ -1,14 +1,14 @@
 #!/usr/bin/env lua
 
-local d = require("bit")
-local c = coroutine
+local c = require("coroutine")
 local s = require("string")
 local t = require("table")
 
 local i, o, e = io.stdin, io.stdout, io.stderr
+os.execute("ls")
 local r, w = o.read, o.write
 
-io.write(o, "Hello, World!\n" .. "")
+o:write("Hello, World!\n" .. "")
 
 
 

@@ -1,6 +1,6 @@
 L = {}
-local c = require("vim._meta.mpack")
 local a = require("plenary.async")
+local f = require("coroutine")
 local d = math
 local d = coroutine
 

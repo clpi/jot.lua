@@ -173,7 +173,7 @@ init.public = {
       filetype = "markdown",
     }
 
-    vim.api.nvim_buf_set_name(buf, "Word://" .. name)
+    vim.api.nvim_buf_set_name(buf, "word://" .. name)
 
     local win_options = {
       vertical = true,
@@ -321,7 +321,7 @@ init.public = {
     end
 
     local buf = (function()
-      name = "word/" .. name .. ".word"
+      name = "word/" .. name .. ".md"
 
       if split_type == "vsplitl" then
         return init.public.create_vsplit(name, true, {}, { split = "left" })

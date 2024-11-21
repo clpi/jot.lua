@@ -7,7 +7,8 @@ local M = d.mod.create("lsp")
 M.load = function()
   mod.await("cmd", function(cmd)
     cmd.add_commands_from_table({
-      ["lsp"] = {
+      lsp = {
+        condition = "markdown",
         subcommands = {
           update = {
             args = 0,
