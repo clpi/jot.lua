@@ -67,7 +67,7 @@ init.config.public = {
 
 init.setup = function()
   return {
-    requires = { "treesitter" },
+    requires = { "query" },
   }
 end
 
@@ -96,7 +96,7 @@ function init.public.attach_introspector(buffer)
     error(string.format("Could not attach to buffer %d, buffer is not a word file!", buffer))
   end
 
-  init.required["treesitter"].execute_query(
+  init.required["query"].execute_query(
     [[
     (_
       state: (detached_modifier_extension)) @item
@@ -120,7 +120,7 @@ function init.public.attach_introspector(buffer)
       first = math.min(first, vim.api.nvim_buf_line_count(buf) - 1)
 
       ---@type TSNode?
-      local node = init.required["treesitter"].get_first_node_on_line(buf, first)
+      local node = init.required["query"].get_first_node_on_line(buf, first)
 
       if not node then
         return
@@ -145,7 +145,7 @@ function init.public.attach_introspector(buffer)
 
       introspect(node)
 
-      local node_above = init.required["treesitter"].get_first_node_on_line(buf, first - 1)
+      local node_above = init.required["query"].get_first_node_on_line(buf, first - 1)
 
       do
         local todo_status = node_above:named_child(1)

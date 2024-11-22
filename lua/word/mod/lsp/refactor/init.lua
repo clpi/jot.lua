@@ -19,24 +19,22 @@ M.setup = function()
   return {
     success = true,
     requires = {
-      "treesitter",
-      "vault",
+      "query",
+      "workspace",
     },
   }
 end
 
-local vault, ts
+local workspace, ts
 M.load = function()
-  -- TODO: how would I get types in here?
-  ---@type treesitter
-  ts = M.required["treesitter"]
-  vault = M.required["vault"]
+  -- ts = M.required["query"]
+  -- workspace = M.required["workspace"]
 end
 
 ---@class lsp.refactor
 M.public = {
   ---move the current file from one location to another, and update all the links to/from the file
-  ---in the current vault. Deletes the buffer of the original file if it exists
+  ---in the current workspace. Deletes the buffer of the original file if it exists
   ---@param current_path string
   ---@param new_path string
   ---@return boolean success
@@ -58,7 +56,7 @@ M.public = {
     local buf = vim.uri_to_bufnr(vim.uri_from_fname(current_path))
     local total_changed = { files = 0, links = 0 }
 
-    ---@type lsp.vaultEdit
+    ---@type lsp.WorkspaceEdit
     local wsEdit = { changes = {} }
     ---@param link Link
     local current_file_changes = M.private.fix_links(current_path, function(link)
@@ -73,7 +71,7 @@ M.public = {
       if not range then
         return
       end
-      local link_path, rel = vault.expand_pathlib(link_str, raw, current_path)
+      local link_path, rel = workspace.expand_pathlib(link_str, raw, current_path)
       if link_path and rel then
         -- it's relative to the file location, so we might have to change it
         local lp = Path(tostring(link_path)):relative_to(Path(new_path), true):resolve():remove_suffix(".md")
@@ -89,10 +87,10 @@ M.public = {
       wsEdit.changes[current_path_uri] = current_file_changes
     end
 
-    local ws_name = vault.get_current_vault()[1]
-    local ws_path = vault.get_current_vault()[2]
+    local ws_name = workspace.get_current_workspace()[1]
+    local ws_path = workspace.get_current_workspace()[2]
 
-    local files = vault.get_markdown_files(ws_name)
+    local files = workspace.get_markdown_files(ws_name)
     local new_ws_path = "$" .. string.gsub(new_path, "^" .. ws_path, "")
     new_ws_path = string.gsub(new_ws_path, "%.md$", "")
     for _, file in ipairs(files) do
@@ -113,7 +111,7 @@ M.public = {
         if not range then
           return
         end
-        local link_path, rel = vault.expand_pathlib(link_str, raw, file)
+        local link_path, rel = workspace.expand_pathlib(link_str, raw, file)
         if not link_path then
           return
         end
@@ -146,7 +144,7 @@ M.public = {
       Path(new_path):parent():mkdir(750, true)
     end
     vim.api.nvim_buf_delete(buf, {})
-    vim.lsp.util.apply_vault_edit(wsEdit, "utf-8")
+    vim.lsp.util.apply_workspace_edit(wsEdit, "utf-8")
     vim.notify(
       ("[word] renamed %s to %s\nChanged %d links across %d files."):format(
         current_path,
@@ -159,7 +157,7 @@ M.public = {
     return true
   end,
 
-  ---rename the heading on the given line. Updating all links in the current vault that point to
+  ---rename the heading on the given line. Updating all links in the current workspace that point to
   ---the heading
   ---@param line_number number 1-indexed line number the heading is on
   ---@param new_heading string new heading, including the leading `*`s
@@ -189,7 +187,7 @@ M.public = {
     -- headings with checkbox items have this extra white space.
     title_text = string.gsub(title_text, "^ ", "")
 
-    ---@type lsp.vaultEdit
+    ---@type lsp.WorkspaceEdit
     local wsEdit = { changes = {} }
     ---@param link Link
     local changes = M.private.fix_links(buf, function(link)
@@ -228,8 +226,8 @@ M.public = {
     end
 
     -- loop through all the files
-    local ws_name = vault.get_current_vault()[1]
-    local files = vault.get_markdown_files(ws_name)
+    local ws_name = workspace.get_current_workspace()[1]
+    local files = workspace.get_markdown_files(ws_name)
 
     local current_path = vim.api.nvim_buf_get_name(0)
     for _, file in ipairs(files) do
@@ -244,7 +242,7 @@ M.public = {
           return
         end
 
-        local link_path, _ = vault.expand_pathlib(link_str, false, current_path)
+        local link_path, _ = workspace.expand_pathlib(link_str, false, current_path)
         local link_heading = link.text and link.text.text
         local link_prefix = link.type and link.type.text
         if not link_heading or not link_prefix then
@@ -276,7 +274,7 @@ M.public = {
       ::continue::
     end
 
-    vim.lsp.util.apply_vault_edit(wsEdit, "utf-8")
+    vim.lsp.util.apply_workspace_edit(wsEdit, "utf-8")
     vim.notify(
       ("[word] renamed %s to %s\nChanged %d links across %d files."):format(
         title_text,

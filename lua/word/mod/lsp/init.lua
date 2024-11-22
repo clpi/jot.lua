@@ -3,16 +3,20 @@
 local mod = require("word.mod")
 local log = require('word.util.log')
 
-local M = mod.create("lsp")
+local M = mod.create("lsp", {
+  "refactor",
+  "format",
+  "completion",
+})
 
 M.setup = function()
   return {
     success = true,
     requires = {
-      "treesitter",
-      "vault",
+      "query",
+      "workspace",
       "cmd",
-      "ui.text_popup",
+      "ui.popup",
       "lsp.refactor",
       "lsp.format",
       "lsp.completion",
@@ -30,20 +34,32 @@ M.config.public = {
   },
 }
 
-local vault ---@type vault
+local workspace ---@type workspace
 local refactor ---@type lsp.refactor
 local format ---@type lsp.format
-local ts ---@type treesitter
+local ts ---@type query
 local lsp_completion ---@type lsp.completion
 
 M.load = function()
-  M.required.cmd.add_commands_from_table({
+  M.required["cmd"].add_commands_from_table({
     lsp = {
       min_args = 0,
       max_args = 1,
       name = "lsp",
       condition = "markdown",
       subcommands = {
+        command = {
+          args = 0,
+          name = "lsp.command"
+        },
+        action = {
+          args = 0,
+          name = "lsp.action"
+        },
+        lens = {
+          args = 0,
+          name = "lsp.lens"
+        },
         hint = {
           args = 0,
           name = "lsp.hint"
@@ -77,8 +93,8 @@ M.load = function()
       },
     },
   })
-  ts = M.required["treesitter"]
-  vault = M.required["vault"]
+  ts = M.required["query"]
+  workspace = M.required["workspace"]
   refactor = M.required["lsp.refactor"]
   format = M.required["lsp.format"]
   lsp_completion = M.required["lsp.completion"]
@@ -96,7 +112,7 @@ M.private.handlers = {
         renameProvider = {
           prepareProvider = true,
         },
-        vault = {
+        workspace = {
           fileOperations = {
             willRename = {
               filters = {
@@ -113,7 +129,7 @@ M.private.handlers = {
         },
       },
       serverInfo = {
-        name = "lsp",
+        name = "wordls",
         version = "0.0.1",
       },
     }
@@ -390,7 +406,7 @@ M.private.handlers = {
   end,
 
 
-  ["vault/willRenameFiles"] = function(params, _callback, _notify_reply_callback)
+  ["workspace/willRenameFiles"] = function(params, _callback, _notify_reply_callback)
     for _, files in ipairs(params.files) do
       local old = vim.uri_to_fname(files.oldUri)
       local new = vim.uri_to_fname(files.newUri)
@@ -403,7 +419,7 @@ M.private.start_lsp = function()
   -- setup and attach the shell LSP for file renaming
   -- https://github.com/jmbuhr/otter.nvim/pull/137/files
   vim.lsp.start({
-    name = "lsp",
+    name = "wordls",
     -- capabilities = vim.lsp.protocol.make_client_capabilities(),
     cmd = function(_dispatchers)
       local members = {
@@ -422,12 +438,15 @@ M.private.start_lsp = function()
       return members
     end,
     filetypes = { "markdown" },
-    root_dir = tostring(vault.get_current_vault()[2]),
+    root_dir = tostring(workspace.get_current_workspace()[2]),
   })
 end
 
 M.events.subscribed = {
   cmd = {
+    ["lsp.actions"] = true,
+    ["lsp.lens"] = true,
+    ["lsp.commands"] = true,
     ["lsp.hint"] = true,
     ["lsp.diagnostic"] = true,
     ["lsp.format"] = true,

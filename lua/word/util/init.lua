@@ -50,7 +50,7 @@ end
 
 --- Returns an array of strings, the array being a list of languages that word can inject.
 ---@param values boolean If set to true will return an array of strings, if false will return a key-value table.
----@return string[]|table<string, { type: "treesitter"|"syntax"|"null" }>
+---@return string[]|table<string, { type: "query"  |"syntax"|"null" }>
 function U.get_language_list(values)
   local regex_files = {}
   local ts_files = {}
@@ -77,7 +77,7 @@ function U.get_language_list(values)
 
   for _, syntax in pairs(regex_files) do
     if ts_files[syntax] then
-      ret[syntax] = { type = "treesitter" }
+      ret[syntax] = { type = "query"   }
     else
       ret[syntax] = { type = "syntax" }
     end

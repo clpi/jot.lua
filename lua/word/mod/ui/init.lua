@@ -10,20 +10,27 @@ local word = require("word")
 local log, mod = word.log, word.mod
 
 local init = mod.create("ui", {
-  "selection_popup",
-  "text_popup",
+  -- "icon",
+  -- "calendar",
+  "dashboard",
+  'hl',
+  "popup",
 })
 
-init.setup = function()
+init.load = function()
   for _, imported in pairs(init.imported) do
     init.public = vim.tbl_extend("force", init.public, imported.public)
   end
-
-  return {}
+end
+init.setup = function()
+  return {
+    namespace = vim.api.nvim_create_namespace("word/ui"),
+    success = true,
+  }
 end
 
 init.private = {
-  namespace = vim.api.nvim_create_namespace("ui"),
+  namespace = vim.api.nvim_create_namespace("word/ui"),
 }
 
 ---@class base.ui
@@ -99,7 +106,7 @@ init.public = {
       height = { height, "number", true },
     })
 
-    local bufname = "Word://" .. name
+    local bufname = "word://" .. name
 
     if vim.fn.bufexists(bufname) == 1 then ---@diagnostic disable-line
       log.error("Buffer '" .. name .. "' already exists")
@@ -214,7 +221,7 @@ init.public = {
       return
     end
 
-    local namespace = vim.api.nvim_create_namespace("Word://display/" .. name)
+    local namespace = vim.api.nvim_create_namespace("word://display/" .. name)
 
     local buf = (function()
       name = "display/" .. name
@@ -293,7 +300,7 @@ init.public = {
   ---@param opts table|nil
   ---   - opts.keys (boolean)             if false, will not use the base keys
   ---   - opts.del_on_autocmd (table)    delete buffer on specified autocmd
-  create_word_buffer = function(name, split_type, config, opts)
+  create_markdown_buffer = function(name, split_type, config, opts)
     vim.validate({
       name = { name, "string" },
       split_type = { split_type, "string" },
@@ -302,7 +309,7 @@ init.public = {
     })
 
     config = vim.tbl_deep_extend("keep", config or {}, {
-      ft = "word",
+      ft = "markdown",
     })
 
     opts = vim.tbl_deep_extend(

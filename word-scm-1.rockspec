@@ -18,7 +18,7 @@ description = {
   homepage = "https://github.com/clpi/word.lua",
   maintainer = "https://github.com/clpi",
   labels = {
-    "wiki", "neovim", "notes", "org", "markdown", "nvim"
+    "wiki", "neovim", "note", "org", "markdown", "nvim"
   },
   license = "MIT",
 }

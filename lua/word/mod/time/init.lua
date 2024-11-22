@@ -436,9 +436,9 @@ init.public = {
       end
     end
 
-    if inits.is_mod_loaded("calendar") then
+    if inits.is_mod_loaded("ui.calendar") then
       vim.cmd.stopinsert()
-      inits.get_mod("calendar").select_date({ callback = vim.schedule_wrap(callback) })
+      inits.get_mod("ui.calendar").select_date({ callback = vim.schedule_wrap(callback) })
     else
       vim.ui.input({
         prompt = "Date: ",
@@ -471,6 +471,13 @@ init.private = {
 init.load = function()
   vim.keymap.set("", "<Plug>(word.time.insert-date)", lib.wrap(init.public.insert_date, false))
   vim.keymap.set("i", "<Plug>(word.time.insert-date.insert-mode)", lib.wrap(init.public.insert_date, true))
+end
+
+init.setup = function()
+  return {
+    success = true,
+    requires = { "ui.calendar" },
+  }
 end
 
 return init

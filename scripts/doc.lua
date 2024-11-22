@@ -71,7 +71,7 @@ for _, file in ipairs(docgen.aggregate_module_files()) do
   end
 
   -- Make word load the module, which also evaluates dependencies
-  local _ok, err = pcall(modules.load_module, parsed_module.name)
+  local _ok, err = pcall(modules.setup_module, parsed_module.name)
 
   if not _ok then
     vim.notify("Error when loading module '" .. file .. "': " .. err)

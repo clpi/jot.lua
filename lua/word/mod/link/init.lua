@@ -18,8 +18,8 @@ M.setup = function()
   return {
     success = true,
     requires = {
-      "vault",
-      "store"
+      "workspace",
+      "data"
     }
   }
 end

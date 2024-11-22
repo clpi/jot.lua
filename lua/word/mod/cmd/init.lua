@@ -46,7 +46,7 @@ M.private = {
     end
 
     local ref = {
-      subcommands = M.public.word_commands,
+      subcommands = M.public.commands,
     }
     local argument_index = 0
 
@@ -142,7 +142,7 @@ M.private = {
         return true
       end
 
-      if condition == "word" and not is_word then
+      if condition == "markdown" and not is_word then
         return false
       end
 
@@ -164,7 +164,7 @@ M.private = {
     )
 
     local ref = {
-      subcommands = M.public.word_commands,
+      subcommands = M.public.commands,
     }
     local last_valid_ref = ref
     local last_completion_level = 0
@@ -254,10 +254,11 @@ M.private = {
     end)
   end,
 }
+M.setup = function()
+  return { success = true, requires = {} }
+end
 M.public = {
-
-  -- The table containing all the functions. This can get a tad complex so I recommend you read the wiki entry
-  word_commands = {
+  commands = {
     mod = {
       subcommands = {
         new = {
@@ -277,30 +278,44 @@ M.public = {
     },
   },
 
-  --- Recursively merges the contents of the init's config.public.funtions table with base.cmd's mod.config.public.word_commands table.
-  ---@param mod_name string #An absolute path to a loaded init with a mod.config.public.word_commands table following a valid structure
+  -- The table containing all the functions. This can get a tad complex so I recommend you read the wiki entry
+
+  --- Recursively merges the contents of the init's config.public.funtions table with base.cmd's mod.config.public.commands table.
+  ---@param mod_name string #An absolute path to a loaded init with a mod.config.public.commands table following a valid structure
   add_commands = function(mod_name)
     local mod_config = mod.get_mod(mod_name)
 
-    if not mod_config or not mod_config.word_commands then
+    if not mod_config or not mod_config.commands then
       return
     end
 
-    M.public.word_commands =
-        vim.tbl_extend("force", M.public.word_commands, mod_config.word_commands)
+    M.public.commands =
+        vim.tbl_extend("force", M.public.commands, mod_config.commands)
   end,
 
-  --- Recursively merges the provided table with the mod.config.public.word_commands table.
-  ---@param functions table #A table that follows the mod.config.public.word_commands structure
+  -- add = function(cmd, cb)
+  --   mod.await("cmd", function(c)
+  --     c.add_commands_from_table({
+  --       [cmd] = {
+  --         name = cmd,
+  --         callback = cb,
+  --       }
+  --     })
+  --   end)
+  --   M.public.add_commands(cmd)
+  -- end,
+
+  --- Recursively merges the provided table with the mod.config.public.commands table.
+  ---@param functions table #A table that follows the mod.config.public.commands structure
   add_commands_from_table = function(functions)
-    M.public.word_commands = vim.tbl_extend("force", M.public.word_commands, functions)
+    M.public.commands = vim.tbl_extend("force", M.public.commands, functions)
   end,
 
   --- Takes a relative path (e.g "list.mod") and loads it from the commands/ directory
   ---@param name string #The relative path of the init we want to load
   add_commands_from_file = function(name)
     -- Attempt to require the file
-    local err, ret = pcall(require, "word.mod.cmd.commands." .. name .. "init")
+    local err, ret = pcall(require, "word.mod.cmd." .. name .. "init")
 
     -- If we've failed bail out
     if not err then
@@ -313,15 +328,15 @@ M.public = {
     end
 
     -- Load the init from table
-    mod.load_mod_from_table(ret)
+    mod.setup_mod_from_table(ret)
   end,
 
   --- Rereads data from all mod and rebuild the list of available autocompletiinitinitons and commands
   sync = function()
     -- Loop through every loaded init and set up all their commands
     for _, lm in pairs(mod.loaded_mod) do
-      if lm.public.word_commands then
-        M.public.add_commands_from_table(lm.public.word_commands)
+      if lm.public.commands then
+        M.public.add_commands_from_table(lm.public.commands)
       end
     end
   end,
@@ -337,6 +352,7 @@ M.load = function()
   -- If the user passes no arguments or too few, we'll query them for the remainder using select_next_cmd_arg.
   vim.api.nvim_create_user_command("Word", M.private.command_callback, {
     desc = "The word command",
+    range = 2,
     force = true,
     -- bang = true,
     nargs = "*",
@@ -345,8 +361,8 @@ M.load = function()
 
   -- Loop through all the command mod we want to load and load them
   for _, command in ipairs(M.config.public.load) do
-    -- If one of the command mod is "base" then load all the base mod
-    if command == "base" then
+    -- If one of the command mod is "config" then load all the base mod
+    if command == "default" then
       for _, base_command in ipairs(M.config.public.base) do
         M.public.add_commands_from_file(base_command)
       end
@@ -358,88 +374,31 @@ M.config.public = {
   -- A list of cmd mod to load automatically.
   -- This feature will soon be deprecated, so it is not recommended to touch it.
   load = {
-    "base",
+    "default",
   },
 
   -- A list of base commands to load.
   --
   -- This feature will soon be deprecated, so it is not recommended to touch it.
   base = {
-    "return",
+    "mod",
+    "back",
     "rename",
   },
 }
----@class base.cmd
+---@class cmd
 
 
-M.word_post_load = M.public.sync
+M.post_load = M.public.sync
 
-M.on_event = function(event)
-  if event.type == "cmd.events.mod.load" then
-    local ok = pcall(mod.load_mod, event.content[1])
 
-    if not ok then
-      vim.notify(string.format("init `%s` does not exist!", event.content[1]), vim.log.levels.ERROR, {})
-    end
-  end
-
-  if event.type == "cmd.events.mod.list" then
-    local Popup = require("nui.popup")
-
-    local mod_list_popup = Popup({
-      position = "50%",
-      size = { width = "50%", height = "80%" },
-      enter = true,
-      buf_options = {
-        filetype = "markdown",
-        modifiable = true,
-        readonly = false,
-      },
-      win_options = {
-        conceallevel = 3,
-        concealcursor = "nvi",
-      },
-    })
-
-    mod_list_popup:on("VimResized", function()
-      mod_list_popup:update_layout()
-    end)
-
-    local function close()
-      mod_list_popup:unmount()
-    end
-
-    mod_list_popup:map("n", "<Esc>", close, {})
-    mod_list_popup:map("n", "q", close, {})
-
-    local lines = {}
-
-    for name, _ in pairs(word.mod.loaded_mod) do
-      table.insert(lines, "- `" .. name .. "`")
-    end
-
-    vim.api.nvim_buf_set_lines(mod_list_popup.bufnr, 0, -1, true, lines)
-
-    vim.bo[mod_list_popup.bufnr].modifiable = false
-
-    mod_list_popup:mount()
-  end
-end
-
-M.events.subscribed = {
-  cmd = {
-    -- ["mod.new"] = true,
-    ["mod.load"] = true,
-    ["mod.list"] = true,
-  },
-}
 
 M.examples = {
   ["Adding a word command"] = function()
     -- In your mod.setup(), make sure to require base.cmd (requires = { "cmd" })
     -- Afterwards in a function of your choice that gets called *after* base.cmd gets intialized e.g. load():
 
-    M.load = function()
+    M.setup = function()
       M.required["cmd"].add_commands_from_table({
         -- The name of our command
         my_command = {
@@ -504,6 +463,64 @@ M.examples = {
     -- And that's it! You're good to go.
     -- Want to find out more? Read the wiki entry! https://github.com/nvim-word/word/wiki/word-Command
   end,
+}
+M.on_event = function(event)
+  if event.type == "cmd.events.mod.setup" then
+    local ok = pcall(mod.setup_mod, event.content[1])
+
+    if not ok then
+      vim.notify(string.format("init `%s` does not exist!", event.content[1]), vim.log.levels.ERROR, {})
+    end
+  end
+
+  if event.type == "cmd.events.mod.list" then
+    local Popup = require("nui.popup")
+
+    local mod_list_popup = Popup({
+      position = "50%",
+      size = { width = "50%", height = "80%" },
+      enter = true,
+      buf_options = {
+        filetype = "markdown",
+        modifiable = true,
+        readonly = false,
+      },
+      win_options = {
+        conceallevel = 3,
+        concealcursor = "nvi",
+      },
+    })
+
+    mod_list_popup:on("VimResized", function()
+      mod_list_popup:update_layout()
+    end)
+
+    local function close()
+      mod_list_popup:unmount()
+    end
+
+    mod_list_popup:map("n", "<Esc>", close, {})
+    mod_list_popup:map("n", "q", close, {})
+
+    local lines = {}
+
+    for name, _ in pairs(word.mod.loaded_mod) do
+      table.insert(lines, "- `" .. name .. "`")
+    end
+
+    vim.api.nvim_buf_set_lines(mod_list_popup.bufnr, 0, -1, true, lines)
+
+    vim.bo[mod_list_popup.bufnr].modifiable = false
+
+    mod_list_popup:mount()
+  end
+end
+M.events.subscribed = {
+  cmd = {
+    -- ["mod.new"] = true,
+    ["mod.load"] = true,
+    ["mod.list"] = true,
+  },
 }
 
 return M

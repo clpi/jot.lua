@@ -1,38 +1,38 @@
 --[[
     file: LSP-Completion
     title: Completions without a completion plugin
-    summary: Provide an LSP Completion source for Neorg
+    summary: Provide an LSP Completion source for word
     internal: true
     ---
 This mod works with the [`completion`](@completion) mod to attempt to provide
 intelligent completions.
 
 After setting up `completion` with the `engine` set to `lsp-completion`. Then you can get
-neorg completions the same way you get completions from other language servers.
+word completions the same way you get completions from other language servers.
 --]]
 
 local word = require("word")
 local mod, utils = word.mod, word.utils
 
 local M = mod.create("lsp.completion")
-local ts ---@type treesitter
+local ts ---@type query
 local search
 
 M.setup = function()
   return {
     success = true,
     requires = {
-      "treesitter",
+      "query",
     },
   }
 end
 
-M.mod = function()
-  ts = mod.required["treesitter"]
+M.load = function()
+  -- ts = mod.required["query"]
 end
 
 M.private = {
-  ---Query neorg SE for a list of categories, and format them into completion items
+  ---Query word SE for a list of categories, and format them into completion items
   make_category_suggestions = function()
     if not search then
       M.private.mod_search()
@@ -47,13 +47,13 @@ M.private = {
   end,
 
   load_search = function()
-    if mod.load_mod("search") then
+    if mod.setup_mod("search") then
       search = mod.get_mod("search")
     end
   end,
 }
 
----@class lsp.completion : neorg.completion_engine
+---@class lsp.completion : word.completion_engine
 M.public = {
   create_source = function()
     -- these numbers come from: https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#completionItemKind
@@ -133,14 +133,14 @@ M.public = {
     end
 
     local meta_source = ts.get_node_text(meta_node, iter_src)
-    local markdown_meta_parser = vim.treesitter.get_string_parser(meta_source, "markdown_meta")
-    local markdown_meta_tree = markdown_meta_parser:parse()[1]
-    if not markdown_meta_tree then
+    local markdown_inline_parser = vim.treesitter.get_string_parser(meta_source, "markdown_inline")
+    local markdown_inline_tree = markdown_inline_parser:parse()[1]
+    if not markdown_inline_tree then
       return {}
     end
 
     local meta_query = utils.ts_parse_query(
-      "markdown_meta",
+      "markdown_inline",
       [[
                 (metadata
                   (pair
@@ -151,7 +151,7 @@ M.public = {
             ]]
     )
 
-    for id, node in meta_query:iter_captures(markdown_meta_tree:root(), meta_source) do
+    for id, node in meta_query:iter_captures(markdown_inline_tree:root(), meta_source) do
       if meta_query.captures[id] == "pair" then
         local range = ts.get_node_range(node)
         local meta_range = ts.get_node_range(meta_node)

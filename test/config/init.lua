@@ -11,9 +11,9 @@ local word = require("word")
 word.setup(
   {
     load = {
-      vault = {
+      workspace = {
         config = {
-          vaults = {
+          workspaces = {
             book = "./book"
           }
         }

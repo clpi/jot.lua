@@ -7,8 +7,9 @@ W = {
   health = require("word.health"),
   mod = require("word.mod"),
   version = require("word.config").version,
-  config = require("word.config"),
-  callbacks = require("word.util.callback"),
+  config = require('word.config').config,
+  callbacks = require("word.event"),
+  event = require("word.event"),
   cmd = require("word.cmd"),
   log = require("word.util.log"),
   util = {
@@ -16,13 +17,13 @@ W = {
     fs = require("word.util.fs"),
     log = require("word.util.log"),
     buf = require("word.util.buf"),
-    cb = require("word.util.callback"),
+    cb = require("word.event"),
   },
   utils = require("word.util"),
   lib = require("word.util.lib")
 }
 
-local config, log, modu, utils = require "word.config", W.log, W.mod, W.utils
+local config, log, modu, utils = require "word.config".config, W.log, W.mod, W.utils
 local a, f, ext = vim.api, vim.fn, vim.tbl_deep_extend
 
 
@@ -36,19 +37,19 @@ function W.setup(conf)
   -- Ensure that we are running Neovim 0.10+
   -- assert(utils.is_minimum_version(0, 10, 0), "word requires at least Neovim version 0.10 to operate!")
 
-  conf = conf or { mod = { base = {} } }
-  if conf.mod == nil then conf.mod = { base = {} } end
+  conf = conf or { mod = {} }
+  if conf.mod == nil then conf.mod = {} end
   config.user = utils.extend(config.user, conf)
   log.new(config.user.logger or log.get_base_config(), true)
 
   -- If the file we have entered has a `.word` extension:
-  if vim.fn.expand("%:e") or not config.user.lazy then
+  if W.util.buf.check_md() or not config.user.lazy then
     W.enter_md(false)
   else
-    a.nvim_create_user_command("WordInit", function()
-      vim.cmd.delcommand("WordInit")
-      W.enter_md(true)
-    end, {})
+    -- a.nvim_create_user_command("WordInit", function()
+    --   vim.cmd.delcommand("WordInit")
+    --   W.enter_md(true)
+    -- end, {})
 
     a.nvim_create_autocmd("BufAdd", {
       pattern = "markdown",
@@ -90,7 +91,7 @@ function W.enter_md(manual, args)
   end
 
   -- After all config are merged proceed to actually load the mod
-  local load_mod = modu.load_mod
+  local load_mod = modu.setup_mod
   for name, _ in pairs(mod_list) do
     if not load_mod(name) then
       log.warn("Recovering from error...")
@@ -100,7 +101,7 @@ function W.enter_md(manual, args)
 
   -- Goes through each loaded init and invokes word_post_load()
   for _, lm in pairs(modu.loaded_mod) do
-    lm.word_post_load()
+    lm.post_load()
   end
 
   -- Set this variable to prevent word from loading twice
@@ -115,7 +116,7 @@ function W.enter_md(manual, args)
     filename = "",
     filehead = "",
     cursor_position = { 0, 0 },
-    referrer = "base", -- TODO: consider editing out? Not sure base
+    referrer = "config", -- TODO: consider editing out? Not sure base
     line_content = "",
     broadcast = true,
     buffer = a.nvim_get_current_buf(),
@@ -135,5 +136,5 @@ function W.is_loaded()
   return config.started
 end
 
--- require("telescope").load_extension("word")
+-- require("telescope").setup_extension("word")
 return W

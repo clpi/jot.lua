@@ -1,3 +1,4 @@
+local C = {}
 -- local defaults = require("word.config.default")
 local os_info = require("word.util").get_os_info()
 -- local wv = require("word.config.version")
@@ -7,8 +8,8 @@ local f = vim.fn
 
 --- @class (exact) word.configuration.user
 --- @field hook? fun(manual: boolean, arguments?: string)    A user-defined function that is invoked whenever word starts up. May be used to e.g. set custom keybindings.
---- @field lazy_loading? boolean                             Whether to defer loading the word base until after the user has entered a `.word` file.
---- @field load table<string, word.configuration.init>    A list of mod to load, alongside their configurations.
+--- @field lazy? boolean                             Whether to defer loading the word base until after the user has entered a `.word` file.
+--- @field mod table<string, word.configuration.init>    A list of mod to load, alongside their configurations.
 --- @field logger? word.log.configuration                   A configuration table for the logger.
 
 --- @class (exact) word.configuration
@@ -19,7 +20,8 @@ local f = vim.fn
 --- @field os_info OperatingSystem                           The operating system that word is currently running under.
 --- @field pathsep "\\"|"/"                                  The operating system that word is currently running under.
 --- @field started boolean                                   Set to `true` when word is fully initialized.
---- @field user_config word.configuration.user              Stores the configuration provided by the user.
+--- @field data string
+--- @field user word.configuration.user              Stores the configuration provided by the user.
 --- @field version string                                    The version of word that is currently active. Automatically updated by CI on every release.
 
 --- Stores the configuration for the entirety of word.
@@ -28,15 +30,18 @@ local f = vim.fn
 --- @see word.setup
 ---
 --- @type word.configuration
-local C = {
+
+-- TODO: What goes below this line until the next notice used to belong to mod
+C.config = {
   user = {
-    lazy = false,
     mod = {
+
+
 
     }
   },
 
-  store_path = f.stdpath("data") .. "/word.mpack",
+  data = f.stdpath("data") .. "/word.mpack",
 
   mod = {},
   manual = nil,

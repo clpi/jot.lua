@@ -10,8 +10,8 @@
 local uv = vim.loop or vim.uv
 local lu = vim.lsp.util
 local co = coroutine
-local cb = require("word.util.callback")
-local config = require("word.config")
+local cb = require("word.event")
+local config = require("word.config").config
 local log = require("word.util.log")
 local utils = require("word.util")
 
@@ -22,21 +22,20 @@ local M = {}
 --- @alias word.mod.public { version: string, [any]: any }
 
 --- @class (exact) word.mod.resolver
---- @field completion completion
---- @field conceal conceal
---- @field vault vault
---- @field hl hl
---- @field notes notes
+--- @field completion? completion
+--- @field ["ui.icon"]? ui.icon
+--- @field workspace workspace
+--- @field ["ui.icon"] ui.icon
+--- @field note note
 --- @field keys keys
 --- @field link link
 --- @field cmd cmd
 --- @field code code
 --- @field todo todo
 --- @field ui ui
---- @field ["calendar.views.monthly"] calendar.views.monthly
---- @field ["ui.selection_popup"] ui.selection_popup
---- @field ["vault"] vault
---- @field ["ui.text_popup"] Mi.text_popup
+--- @field ["ui.calendar.month"] calendar.views.monthly
+--- @field ["workspace"] workspace
+--- @field ["ui.popup"] ui.popup
 
 --- Defines both a public and private configuration for a word init.
 --- Public configurations may be tweaked by the user from the `word.setup()` function,  whereas private configurations are for internal use only.
@@ -61,7 +60,7 @@ local M = {}
 --- @field imported? table<string, word.mod> Imported submod of the given init. Contrary to `required`, which only exposes the public API of a init, imported mod can be accessed in their entirety.
 --- @field load? fun() Function that is invoked once the init is considered "stable", i.e. after all dependencies are loaded. Perform your main loading routine here.
 --- @field name string The name of the init.
---- @field word_post_load? fun() Function that is invoked after all mod are loaded. Useful if you want the word environment to be fully set up before performing some task.
+--- @field post_load? fun() Function that is invoked after all mod are loaded. Useful if you want the word environment to be fully set up before performing some task.
 --- @field path string The full path to the init (a more verbose version of `name`). May be used in lua's `require()` statements.
 --- @field public private? table A convenience table to place all of your private variables that you don't want to expose.
 --- @field public public? word.mod.public Every init can expose any set of information it sees fit through this field. All functions and variables declared in this table will be visiable to any other init loaded.
@@ -89,12 +88,12 @@ function M.create(name, imports)
     end,
     on_event = function()
     end,
-    word_post_load = function()
+    post_load = function()
     end,
     -- NON OPTIONAL
-    name = "base",
+    name = "config",
     -- NON OPTIONAL
-    path = "mod.base",
+    path = "mod.config",
     private = {},
     public = {
       version = require("word.config").version
@@ -128,7 +127,7 @@ function M.create(name, imports)
     for _, import in ipairs(imports) do
       local fullpath = table.concat({ name, import }, ".")
 
-      if not M.load_mod(fullpath) then
+      if not M.setup_mod(fullpath) then
         log.error("Unable to load import '" ..
           fullpath .. "'! An error occured (see traceback below):")
         assert(false) -- Halt execution, no recovering from this error...
@@ -177,7 +176,7 @@ M.create_meta = function(name, ...)
     end)()
 
     for _, mname in ipairs(m.config.public.enable) do
-      M.load_mod(mname)
+      M.setup_mod(mname)
     end
   end
 
@@ -198,7 +197,7 @@ M.loaded_mod = {}
 --- Loads a specified init. If the init subscribes to any events then they will be activated too.
 --- @param m word.mod The actual init to load.
 --- @return boolean # Whether the init successfully loaded.
-function M.load_mod_from_table(m)
+function M.setup_mod_from_table(m)
   log.info("Loading init with name" .. m.name)
 
   -- If our init is already loaded don't try loading it again
@@ -268,7 +267,7 @@ function M.load_mod_from_table(m)
             "isn't loaded but can be as it's defined in the user's config. Loading..."
           )
 
-          if not M.load_mod(req_mod) then
+          if not M.setup_mod(req_mod) then
             require("word.util.log").error(
               "Unable to load wanted init for",
               m.name,
@@ -309,7 +308,7 @@ function M.load_mod_from_table(m)
 
       -- This would've always returned false had we not added the current init to the loaded init list earlier above
       if not M.is_mod_loaded(req_mod) then
-        if not M.load_mod(req_mod) then
+        if not M.setup_mod(req_mod) then
           log.error(
             ("Unable to load init %s, required dependency %s did not load successfully"):format(
               m.name,
@@ -406,9 +405,9 @@ end
 --- If the init cannot not be found, attempt to load it off of github (unimplemented). This function also applies user-defined config and keys to the mod themselves.
 --- This is the recommended way of loading mod - `load_mod_from_table()` should only really be used by word itself.
 --- @param mod_name string A path to a init on disk. A path seperator in word is '.', not '/'.
---- @param cfg table? A config that reflects the structure of `word.config.user.load["init.name"].config`.
+--- @param cfg table? A config that reflects the structure of `word.config.user.setup["init.name"].config`.
 --- @return boolean # Whether the init was successfully loaded.
-function M.load_mod(mod_name, cfg)
+function M.setup_mod(mod_name, cfg)
   -- Don't bother loading the init from disk if it's already loaded
   if M.is_mod_loaded(mod_name) then
     return true
@@ -448,14 +447,14 @@ function M.load_mod(mod_name, cfg)
   end
 
   -- Pass execution onto load_mod_from_table() and let it handle the rest
-  return M.load_mod_from_table(modl)
+  return M.setup_mod_from_table(modl)
 end
 
 --- Has the same principle of operation as load_mod_from_table(), except it then sets up the parent init's "required" table, allowing the parent to access the child as if it were a dependency.
 --- @param init word.mod A valid table as returned by mod.create()
 --- @param parent_mod string|word.mod If a string, then the parent is searched for in the loaded mod. If a table, then the init is treated as a valid init as returned by mod.create()
-function M.load_mod_as_dependency_from_table(init, parent_mod)
-  if M.load_mod_from_table(init) then
+function M.setup_mod_as_dependency_from_table(init, parent_mod)
+  if M.setup_mod_from_table(init) then
     if type(parent_mod) == "string" then
       M.loaded_mod[parent_mod].required[init.name] = init.public
     elseif type(parent_mod) == "table" then
@@ -467,9 +466,9 @@ end
 --- Normally loads a init, but then sets up the parent init's "required" table, allowing the parent init to access the child as if it were a dependency.
 --- @param mod_name string A path to a init on disk. A path seperator in word is '.', not '/'
 --- @param parent_mod string The name of the parent init. This is the init which the dependency will be attached to.
---- @param cfg? table A config that reflects the structure of word.config.user.load["init.name"].config
-function M.load_mod_as_dependency(mod_name, parent_mod, cfg)
-  if M.load_mod(mod_name, cfg) and M.is_mod_loaded(parent_mod) then
+--- @param cfg? table A config that reflects the structure of word.config.user.setup["init.name"].config
+function M.setup_mod_as_dependency(mod_name, parent_mod, cfg)
+  if M.setup_mod(mod_name, cfg) and M.is_mod_loaded(parent_mod) then
     M.loaded_mod[parent_mod].required[mod_name] = M.get_mod_config(mod_name)
   end
 end
@@ -797,7 +796,7 @@ function M.send_event(recipient, event)
 end
 
 --- Load all inits in the `lua/word/mod` directory.
-function M.load_mods()
+function M.setup_mods()
   local dir = "lua/word/mod"
   local handle = vim.uv.fs_scandir(dir)
   if not handle then
@@ -812,7 +811,7 @@ function M.load_mods()
 
     if type == "file" and name:match("init%.lua$") then
       local mod_name = name:gsub("%.lua$", "")
-      M.load_mod(mod_name)
+      M.setup_mod(mod_name)
     end
   end
 end

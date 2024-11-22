@@ -62,7 +62,7 @@ function M.setup()
       grep = bui.live_grep()
     }
   })
-  tel.load_extension("word")
+  tel.setup_extension("word")
 end
 
 -- return M

@@ -1,5 +1,15 @@
 # word - the _familiar_, organized future for neovim
 
+<a href="https://neovim.io"> ![Neovim](https://img.shields.io/badge/Neovim%200.10+-brightgreen?style=for-the-badge) </a>
+<a href="/LICENSE"> ![License](https://img.shields.io/badge/license-GPL%20v3-brightgreen?style=for-the-badge)</a>
+![LuaRocks](https://img.shields.io/luarocks/v/clpi/word.lua)
+
+---
+
+> [!Warning]
+>
+> `word.lua` is **BEGINNING DEVELOPMENT**
+
 <!--toc:start-->
 
 - [word - the _familiar_, organized future for neovim](#word-the-familiar-organized-future-for-neovim)
@@ -13,15 +23,6 @@
   - [Credits](#credits)
   <!--toc:end-->
 
-<a href="https://neovim.io"> ![Neovim](https://img.shields.io/badge/Neovim%200.10+-brightgreen?style=for-the-badge) </a>
-<a href="/LICENSE"> ![License](https://img.shields.io/badge/license-GPL%20v3-brightgreen?style=for-the-badge)</a>
-![LuaRocks](https://img.shields.io/luarocks/v/clpi/word.lua)
-
----
-
-> [!Warning]
->
-> `word.lua` is **BEGINNING DEVELOPMENT**
 
 ## Introduction
 
@@ -55,9 +56,9 @@
     config = function(_, opts)
       require("word").setup({
         mod = {
-          vault = {
+          workspace = {
             config = {
-              vaults = {
+              workspaces = {
                 notes = "~/notes"
               }
             }

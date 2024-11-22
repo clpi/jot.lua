@@ -12,14 +12,14 @@ return {
 
     start("word Configuration")
 
-    if config.load == nil or vim.tbl_isempty(config.load) then
+    if config.setup == nil or vim.tbl_isempty(config.setup) then
       ok("Empty configuration provided: word will load `base` by default.")
-    elseif type(config.load) ~= "table" then
+    elseif type(config.setup) ~= "table" then
       error("Invalid data type provided. `load` table should be a dictionary of modules!")
     else
       info("Checking `load` table...")
 
-      for key, value in pairs(config.load) do
+      for key, value in pairs(config.setup) do
         if type(key) ~= "string" then
           error(
             fmt(
@@ -27,7 +27,7 @@ return {
               type(key)
             )
           )
-        elseif not modules.load_module(key) then
+        elseif not modules.setup_module(key) then
           warn(
             fmt(
               "You are attempting to load a module `%s` which is not recognized by word at this time. You may receive an error upon launching Neorg.",
@@ -87,7 +87,7 @@ return {
 
     start("word Keybinds")
 
-    modules.load_module("core.keybinds")
+    modules.setup_module("core.keybinds")
     local keybinds = modules.get_module("core.keybinds")
     local keybinds_config = modules.get_module_config("core.keybinds")
 
