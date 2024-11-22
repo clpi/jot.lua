@@ -5,6 +5,8 @@ local log = require('word.util.log')
 
 local M = mod.create("lsp", {
   "refactor",
+  "signature",
+  "lens",
   "format",
   "semantic",
   "action",
@@ -22,6 +24,9 @@ M.setup = function()
       "cmd",
       "ui.popup",
       "lsp.refactor",
+      "lsp.lens",
+      "lsp.action",
+      "lsp.hint",
       "lsp.format",
       "lsp.completion",
     },
@@ -140,7 +145,7 @@ M.private.handlers = {
 
     if M.config.public.completion.enable then
       initializeResult.capabilities.completionProvider = {
-        triggerCharacters = { "@", "-", "(", " ", ".", ":", "#", "*", "^", "[" },
+        triggerCharacters = { "@", "/", "|", "-", "(", " ", ".", ":", "#", "*", "^", "[" },
         resolveProvider = false,
         completionItem = {
           labelDetailsSupport = true,
@@ -340,7 +345,29 @@ M.private.handlers = {
     _callback(nil, hints)
   end,
 
-  ["textDocument/implementations"] = function(params, _callback, _notify_reply_callback)
+  ["typeHierarchy/subtypes"] = function(params, _callback, _notify_reply_callback)
+  end,
+  ["typeHierarchy/supertypes"] = function(params, _callback, _notify_reply_callback)
+  end,
+  ["textDocument/typeDefinition"] = function(params, _callback, _notify_reply_callback)
+  end,
+  ["workspace/configuration"] = function(params, _callback, _notify_reply_callback)
+  end,
+  ["workspace/executeCommand"] = function(params, _callback, _notify_reply_callback)
+  end,
+  ["workspace/workspaceFolders"] = function(params, _callback, _notify_reply_callback)
+  end,
+  ["workspace/symbol"] = function(params, _callback, _notify_reply_callback)
+  end,
+  ["textDocument/semanticTokens/full"] = function(params, _callback, _notify_reply_callback)
+  end,
+  ["textDocument/semanticTokens/full/delta"] = function(params, _callback, _notify_reply_callback)
+  end,
+  ["textDocument/publishDiagnostics"] = function(params, _callback, _notify_reply_callback)
+  end,
+  ["textDocument/prepareTypeHierarchy"] = function(params, _callback, _notify_reply_callback)
+  end,
+  ["textDocument/implementation"] = function(params, _callback, _notify_reply_callback)
     local buf = vim.uri_to_bufnr(params.textDocument.uri)
     local node = ts.get_first_node_on_line(buf, params.position.line)
     if not node then
@@ -424,7 +451,7 @@ M.private.start_lsp = function()
   -- https://github.com/jmbuhr/otter.nvim/pull/137/files
   vim.lsp.start({
     name = "wordls",
-    -- capabilities = vim.lsp.protocol.make_client_capabilities(),
+    handlers = M.private.handlers,
     cmd = function(_dispatchers)
       local members = {
         trace = "messages",
@@ -449,6 +476,9 @@ end
 M.events.subscribed = {
   cmd = {
     ["lsp.actions"] = true,
+    ["lsp.references"] = true,
+    ["lsp.implementations"] = true,
+    ["lsp.typedefinition"] = true,
     ["lsp.lens"] = true,
     ["lsp.commands"] = true,
     ["lsp.hint"] = true,
