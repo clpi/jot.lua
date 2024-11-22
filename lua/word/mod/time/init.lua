@@ -17,8 +17,9 @@ mapping them):
 - `word.time.insert-date.insert-mode` - Insert date at cursor position (called from insert mode)
 --]]
 
-local d = require("word")
-local lib, inits, utils = d.lib, d.mod, d.utils
+local w = require("word")
+local lib, inits, utils = w.lib, w.mod, w.utils
+local d, t = os.date, os.time
 
 local init = inits.create("time")
 

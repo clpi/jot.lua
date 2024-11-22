@@ -6,6 +6,10 @@ local log = require('word.util.log')
 local M = mod.create("lsp", {
   "refactor",
   "format",
+  "semantic",
+  "action",
+  "hint",
+  "diagnostic",
   "completion",
 })
 

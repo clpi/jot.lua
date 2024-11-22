@@ -188,10 +188,10 @@ init.load = function()
             args = 0,
             name = "code.file",
           },
-          -- directory = {
-          --     max_args = 1,
-          --     name = "code.directory",
-          -- }
+          workspace = {
+            max_args = 1,
+            name = "code.workspace",
+          }
         },
       },
     })

@@ -20,7 +20,7 @@ their titles.
 --]]
 
 local word = require("word")
-local config, lib, log, mod = word.config, word.lib, word.log, word.mod
+local config, lib, log, mod = word.cfg, word.lib, word.log, word.mod
 
 local M = mod.create("template")
 

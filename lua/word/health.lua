@@ -30,7 +30,7 @@ return {
         elseif not modules.setup_module(key) then
           warn(
             fmt(
-              "You are attempting to load a module `%s` which is not recognized by word at this time. You may receive an error upon launching Neorg.",
+              "You are attempting to load a module `%s` which is not recognized by word at this time. You may receive an error upon launching word.",
               key
             )
           )

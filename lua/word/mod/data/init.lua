@@ -5,7 +5,7 @@
     Internal: true
     ---
 --]]
-local M = require("word.mod").create("data", { "sync" })
+local M = require("word.mod").create("data", { "sync", 'tag', 'meta', 'code' })
 
 M.setup = function()
   return {
