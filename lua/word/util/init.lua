@@ -1,9 +1,8 @@
-U                   = {}
+U                 = {}
 
-local configuration = require("word.config")
-local log           = require("word.util.log")
+local log         = require("word.util.log")
 
-local c, f, a, ts   = vim.cmd, vim.fn, vim.api, vim.treesitter
+local c, f, a, ts = vim.cmd, vim.fn, vim.api, vim.treesitter
 
 
 U.autocmd   = a.nvim_create_autocmd
@@ -31,7 +30,7 @@ end
 --- An OS agnostic way of querying the current user
 --- @return string username
 function U.get_username()
-  local current_os = configuration.os_info
+  local current_os = U.os_info
   if not current_os then
     return ""
   end
@@ -247,6 +246,32 @@ function U.truncate_by_cell(str, col_limit)
     end
   end
   return short
+end
+
+U.get_os_info = function()
+  local os = vim.loop.os_uname().sysname:lower()
+
+  if os:find("windows_nt") then
+    return "windows"
+  elseif os == "darwin" then
+    return "mac"
+  elseif os == "linux" then
+    local f = io.open("/proc/version", "r")
+    if f ~= nil then
+      local version = f:read("*all")
+      f:close()
+      if version:find("WSL2") then
+        return "wsl2"
+      elseif version:find("microsoft") then
+        return "wsl"
+      end
+    end
+    return "linux"
+  elseif os:find("bsd") then
+    return "bsd"
+  end
+
+  error("[word]: Unable to determine the currently active operating system!")
 end
 
 return U

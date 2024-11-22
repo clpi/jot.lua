@@ -1,6 +1,7 @@
+local MODREV, SPECREV = "scm", "-1"
 rockspec_format = "3.0"
 package = "word.lua"
-version = "0.1.0-alpha.1"
+version = MODREV .. SPECREV
 source = {
   url = "git://github.com/clpi/word.lua",
   tag = nil
@@ -14,13 +15,21 @@ description = {
   description = [[
     Extensibility of org, comfort of markdown, for everyone
   ]],
-  homepage = "https://word.cli.st",
+  homepage = "https://github.com/clpi/word.lua",
   maintainer = "https://github.com/clpi",
   labels = {
-    "wiki", "neovim", "notes", "org", "markdown"
+    "wiki", "neovim", "notes", "org", "markdown", "nvim"
   },
   license = "MIT",
 }
+
+if MODREV == "scm" then
+  source = {
+    url = "git://github.com/clpi/word.lua",
+    tag = nil,
+    branch = "master"
+  }
+end
 
 dependencies = {
   "lua == 5.1",

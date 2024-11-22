@@ -14,7 +14,7 @@ neorg completions the same way you get completions from other language servers.
 local word = require("word")
 local mod, utils = word.mod, word.utils
 
-local mod = mod.create("lsp.completion")
+local M = mod.create("lsp.completion")
 local ts ---@type treesitter
 local search
 
@@ -27,7 +27,7 @@ M.setup = function()
   }
 end
 
-M.mod =function()
+M.mod = function()
   ts = mod.required["treesitter"]
 end
 
@@ -35,7 +35,7 @@ M.private = {
   ---Query neorg SE for a list of categories, and format them into completion items
   make_category_suggestions = function()
     if not search then
-      mod.private.mod_search()
+      M.private.mod_search()
     end
 
     local categories = search.get_categories()
@@ -47,7 +47,7 @@ M.private = {
   end,
 
   load_search = function()
-    if mod.mod_mod("search") then
+    if mod.load_mod("search") then
       search = mod.get_mod("search")
     end
   end,
@@ -57,7 +57,7 @@ M.private = {
 M.public = {
   create_source = function()
     -- these numbers come from: https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#completionItemKind
-    mod.private.completion_item_mapping = {
+    M.private.completion_item_mapping = {
       Directive = 14,
       Tag = 14,
       Language = 10,
@@ -69,10 +69,10 @@ M.public = {
       File = 17,
     }
 
-    function mod.public.completion_handler(request, callb, _)
-      local abstracted_context = mod.public.create_abstracted_context(request)
+    function M.public.completion_handler(request, callback, _)
+      local abstracted_context = M.public.create_abstracted_context(request)
 
-      local completion_cache = mod.public.invoke_completion_engine(abstracted_context)
+      local completion_cache = M.public.invoke_completion_engine(abstracted_context)
 
       if completion_cache.options.pre then
         completion_cache.options.pre(abstracted_context)
@@ -90,11 +90,11 @@ M.public = {
         completions[index] = {
           label = label,
           insertText = insert_text,
-          kind = mod.private.completion_item_mapping[completion_cache.options.type],
+          kind = M.private.completion_item_mapping[completion_cache.options.type],
         }
       end
 
-      callb(nil, completions)
+      callback(nil, completions)
     end
   end,
 
@@ -160,7 +160,7 @@ M.public = {
 
         local cursor = vim.api.nvim_win_get_cursor(0)
         if cursor[1] - 1 >= range.row_start and cursor[1] - 1 <= range.row_end then
-          return mod.private.make_category_suggestions()
+          return M.private.make_category_suggestions()
         end
       end
     end
@@ -229,4 +229,4 @@ M.public = {
   end,
 }
 
-return mod
+return M

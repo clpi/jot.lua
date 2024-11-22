@@ -6,7 +6,11 @@
 
 ## Is it for you?
 
+`todo`
+
 ## Is it better than the alternatives?
+
+`todo`
 
 ## Other resources
 

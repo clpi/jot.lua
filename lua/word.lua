@@ -7,17 +7,13 @@ W = {
   health = require("word.health"),
   mod = require("word.mod"),
   version = require("word.config").version,
-  cfg = {
-    cfg = require("word.config"),
-    -- opts = require("word.config.opts"),
-    version = require("word.config").version,
-  },
-  callbacks = require("word.util.callback"),
   config = require("word.config"),
+  callbacks = require("word.util.callback"),
   cmd = require("word.cmd"),
   log = require("word.util.log"),
   util = {
     util = require("word.util"),
+    fs = require("word.util.fs"),
     log = require("word.util.log"),
     buf = require("word.util.buf"),
     cb = require("word.util.callback"),
@@ -26,26 +22,27 @@ W = {
   lib = require("word.util.lib")
 }
 
-local config, log, modu, utils = W.config, W.log, W.mod, W.utils
+local config, log, modu, utils = require "word.config", W.log, W.mod, W.utils
 local a, f, ext = vim.api, vim.fn, vim.tbl_deep_extend
+
 
 --- @init "word.config"
 
 --- Initializes word. Parses the supplied user configuration, initializes all selected mod and adds filetype checking for `.word`.
---- @param cfg word.configuration.user? A table that reflects the structure of `config.user_config`.
---- @see config.user_config
+--- @param conf word.configuration.user? A table that reflects the structure of `config.user`.
+--- @see config.user
 --- @see word.configuration.user
 function W.setup(conf)
   -- Ensure that we are running Neovim 0.10+
-  assert(utils.is_minimum_version(0, 10, 0), "word requires at least Neovim version 0.10 to operate!")
+  -- assert(utils.is_minimum_version(0, 10, 0), "word requires at least Neovim version 0.10 to operate!")
 
-  conf = conf or { load = { base = {} } }
-  if conf.load == nil then conf.load = { base = {} } end
-  config.user_config = utils.extend(config.user_config, conf)
-  log.new(config.user_config.logger or log.get_base_config(), true)
+  conf = conf or { mod = { base = {} } }
+  if conf.mod == nil then conf.mod = { base = {} } end
+  config.user = utils.extend(config.user, conf)
+  log.new(config.user.logger or log.get_base_config(), true)
 
   -- If the file we have entered has a `.word` extension:
-  if W.util.buf.check_md() or not config.user_config.lazy_loading then
+  if vim.fn.expand("%:e") or not config.user.lazy then
     W.enter_md(false)
   else
     a.nvim_create_user_command("WordInit", function()
@@ -62,9 +59,9 @@ function W.setup(conf)
   end
 end
 
-function W.enter_md(manual, arguments)
+function W.enter_md(manual, args)
   -- Extract the init list from the user config
-  local mod_list = config.user_config and config.user_config.load or {}
+  local mod_list = config.user and config.user.mod or {}
 
   -- If we have already started word or if we haven't defined any mod to load then bail
   if config.started or not mod_list or vim.tbl_isempty(mod_list) then
@@ -72,8 +69,8 @@ function W.enter_md(manual, arguments)
   end
 
   -- If the user has defined a post-load hook then execute it
-  if config.user_config.hook then
-    config.user_config.hook(manual, arguments)
+  if config.user.hook then
+    config.user.hook(manual, args)
   end
 
   -- If word was loaded manually (through `:wordStart`) then set this flag to true
@@ -81,9 +78,9 @@ function W.enter_md(manual, arguments)
 
   -- If the user has supplied any word environment variables
   -- then parse those here
-  if arguments and arguments:len() > 0 then
-    for key, value in arguments:gmatch("([%w%W]+)=([%w%W]+)") do
-      config.arguments[key] = value
+  if args and args:len() > 0 then
+    for key, value in args:gmatch("([%w%W]+)=([%w%W]+)") do
+      config.args[key] = value
     end
   end
 
@@ -118,7 +115,7 @@ function W.enter_md(manual, arguments)
     filename = "",
     filehead = "",
     cursor_position = { 0, 0 },
-    referrer = "", -- TODO: consider editing out? Not sure base
+    referrer = "base", -- TODO: consider editing out? Not sure base
     line_content = "",
     broadcast = true,
     buffer = a.nvim_get_current_buf(),

@@ -9,4 +9,4 @@
 - [ ] **Support [blink-cmp] and** [nvim-cmp] and [magazine-cmp] when possible
 - [ ] Support `rst`, limited `.txt` and `md`?
 - [ ] _IMPORTANT_ Remove `pathlib.nvim` dependency
-- [ ] `mod` encrypt, export
+- [ ] `mod` encrypt, export, track, metadata

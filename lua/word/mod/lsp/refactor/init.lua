@@ -21,18 +21,16 @@ M.setup = function()
     requires = {
       "treesitter",
       "vault",
-      "vault.utils",
     },
   }
 end
 
-local vault, vault_utils, ts
-M.mod =function()
+local vault, ts
+M.load = function()
   -- TODO: how would I get types in here?
   ---@type treesitter
   ts = M.required["treesitter"]
   vault = M.required["vault"]
-  vault_utils = M.required["vault.utils"]
 end
 
 ---@class lsp.refactor
@@ -75,10 +73,10 @@ M.public = {
       if not range then
         return
       end
-      local link_path, rel = vault_utils.expand_pathlib(link_str, raw, current_path)
+      local link_path, rel = vault.expand_pathlib(link_str, raw, current_path)
       if link_path and rel then
         -- it's relative to the file location, so we might have to change it
-        local lp = Path(tostring(link_path)):relative_to(Path(new_path), true):resolve():remove_suffix(".markdown")
+        local lp = Path(tostring(link_path)):relative_to(Path(new_path), true):resolve():remove_suffix(".md")
         if lp then
           return tostring(lp), unpack(range)
         end
@@ -96,7 +94,7 @@ M.public = {
 
     local files = vault.get_markdown_files(ws_name)
     local new_ws_path = "$" .. string.gsub(new_path, "^" .. ws_path, "")
-    new_ws_path = string.gsub(new_ws_path, "%.markdown$", "")
+    new_ws_path = string.gsub(new_ws_path, "%.md$", "")
     for _, file in ipairs(files) do
       file = tostring(file)
       if file == current_path then
@@ -115,7 +113,7 @@ M.public = {
         if not range then
           return
         end
-        local link_path, rel = vault_utils.expand_pathlib(link_str, raw, file)
+        local link_path, rel = vault.expand_pathlib(link_str, raw, file)
         if not link_path then
           return
         end
@@ -127,7 +125,7 @@ M.public = {
             if not new_link then
               return
             end
-            new_link:resolve():remove_suffix(".markdown")
+            new_link:resolve():remove_suffix(".md")
           else
             new_link = Path(new_ws_path)
           end
@@ -246,7 +244,7 @@ M.public = {
           return
         end
 
-        local link_path, _ = vault_utils.expand_pathlib(link_str, false, current_path)
+        local link_path, _ = vault.expand_pathlib(link_str, false, current_path)
         local link_heading = link.text and link.text.text
         local link_prefix = link.type and link.type.text
         if not link_heading or not link_prefix then

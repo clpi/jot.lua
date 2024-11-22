@@ -51,8 +51,20 @@
     config  = true,
     version = "*"
     branch  = "master",
-    config  = true,
     build   = ":TSUpdate markdown markdown_inline",
+    config = function(_, opts)
+      require("word").setup({
+        mod = {
+          vault = {
+            config = {
+              vaults = {
+                notes = "~/notes"
+              }
+            }
+          }
+        }
+      })
+    end,
     dependencies = {
       "nvim-telescope/telescope.nvim",
       "MunifTanjim/nui.nvim",

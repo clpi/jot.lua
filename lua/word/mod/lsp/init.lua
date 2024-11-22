@@ -3,25 +3,25 @@
 local mod = require("word.mod")
 local log = require('word.util.log')
 
-local module = mod.create("lsp")
+local M = mod.create("lsp")
 
-module.setup = function()
+M.setup = function()
   return {
     success = true,
     requires = {
       "treesitter",
       "vault",
-      "vault.utils",
       "cmd",
       "ui.text_popup",
       "lsp.refactor",
+      "lsp.format",
       "lsp.completion",
     },
   }
 end
 
-module.config.public = {
-  completion_provider = {
+M.config.public = {
+  completion = {
     -- Enable or disable the completion provider
     enable = true,
 
@@ -31,18 +31,34 @@ module.config.public = {
 }
 
 local vault ---@type vault
-local refactor ---@type external.refactor
+local refactor ---@type lsp.refactor
+local format ---@type lsp.format
 local ts ---@type treesitter
-local lsp_completion ---@type external.lsp-completion
+local lsp_completion ---@type lsp.completion
 
-module.mod =function()
-  module.required["cmd"].add_commands_from_table({
+M.load = function()
+  M.required.cmd.add_commands_from_table({
     lsp = {
       min_args = 0,
       max_args = 1,
       name = "lsp",
-      condition = "word",
+      condition = "markdown",
       subcommands = {
+        hint = {
+          args = 0,
+          name = "lsp.hint"
+        },
+        diagnostic = {
+          args = 0,
+          name = "lsp.diagnostic"
+        },
+        format = {
+          name = "lsp.format"
+        },
+        refactor = {
+          args = 1,
+          name = "lsp.refactor"
+        },
         rename = {
           args = 1,
           name = "lsp.rename",
@@ -61,19 +77,20 @@ module.mod =function()
       },
     },
   })
-  ts = module.required["treesitter"]
-  vault = module.required["vault"]
-  refactor = module.required["external.refactor"]
-  lsp_completion = module.required["external.lsp-completion"]
+  ts = M.required["treesitter"]
+  vault = M.required["vault"]
+  refactor = M.required["lsp.refactor"]
+  format = M.required["lsp.format"]
+  lsp_completion = M.required["lsp.completion"]
 
   vim.api.nvim_create_autocmd("FileType", {
-    pattern = "word",
-    callb = module.private.start_lsp,
+    pattern = "markdown",
+    callback = M.private.start_lsp,
   })
 end
 
-module.private.handlers = {
-  ["initialize"] = function(_params, callb, _notify_reply_callb)
+M.private.handlers = {
+  ["initialize"] = function(_params, callback, _notify_reply_callback)
     local initializeResult = {
       capabilities = {
         renameProvider = {
@@ -101,7 +118,7 @@ module.private.handlers = {
       },
     }
 
-    if module.config.public.completion_provider.enable then
+    if M.config.public.completion.enable then
       initializeResult.capabilities.completionProvider = {
         triggerCharacters = { "@", "-", "(", " ", ".", ":", "#", "*", "^", "[" },
         resolveProvider = false,
@@ -111,12 +128,108 @@ module.private.handlers = {
       }
     end
 
-    callb(nil, initializeResult)
+    callback(nil, initializeResult)
+  end,
+
+  ["textDocument/hover"] = function(params, callback, _notify_reply_callback)
+    local buf = vim.uri_to_bufnr(params.textDocument.uri)
+    local node = ts.get_first_node_on_line(buf, params.position.line)
+    if not node then
+      return
+    end
+
+    local type = node:type()
+    if type:match("^heading%d") then
+      local heading_line = vim.api.nvim_buf_get_lines(buf, params.position.line, params.position.line + 1, true)[1]
+      callback(nil, { contents = { { value = heading_line } } })
+    end
+  end,
+
+  ["textDocument/formatting"] = function(params, callback, _notify_reply_callback)
+    format.format_document(params.textDocument.uri, callback)
+  end,
+
+  ["textDocument/inlayHint"] = function(params, _callback, _notify_reply_callback)
+    local buf = vim.uri_to_bufnr(params.textDocument.uri)
+    local hints = {}
+    for _, node in ipairs(ts.get_nodes(buf)) do
+      if node:type() == "heading1" then
+        table.insert(hints, {
+          range = {
+            start = { line = node:range().start.line, character = 0 },
+            ["end"] = { line = node:range().start.line, character = 0 },
+          },
+          kind = "Other",
+          label = "Rename Heading",
+        })
+      end
+    end
+    _callback(nil, hints)
+  end,
+  ['textDocument/documentSymbol'] = function(params, callback, _notify_reply_callback)
+    local buf = vim.uri_to_bufnr(params.textDocument.uri)
+    local symbols = {}
+    for _, node in ipairs(ts.get_nodes(buf)) do
+      if node:type() == "heading1" then
+        table.insert(symbols, {
+          name = vim.api.nvim_buf_get_lines(buf, node:range().start.line, node:range().start.line + 1, true)[1],
+          kind = 1,
+          range = {
+            start = { line = node:range().start.line, character = 0 },
+            ["end"] = { line = node:range().start.line, character = 0 },
+          },
+          selectionRange = {
+            start = { line = node:range().start.line, character = 0 },
+            ["end"] = { line = node:range().start.line, character = 0 },
+          },
+        })
+      end
+    end
+    callback(nil, symbols)
+  end,
+
+
+
+
+  ['textDocument/linkedEditingRange'] = function(params, callback, _notify_reply_callback)
+    local buf = vim.uri_to_bufnr(params.textDocument.uri)
+    local node = ts.get_first_node_on_line(buf, params.position.line)
+    if not node then
+      return
+    end
+
+    local type = node:type()
+    if type:match("^heading%d") then
+      local range = {
+        start = { line = params.position.line, character = 0 },
+        ["end"] = { line = params.position.line + 1, character = 0 },
+      }
+      callback(nil, range)
+    end
+  end,
+  ['textDocument/foldingRange'] = function(params, callback, _notify_reply_callback)
+    local buf = vim.uri_to_bufnr(params.textDocument.uri)
+    local ranges = {}
+    for _, node in ipairs(ts.get_nodes(buf)) do
+      if node:type() == "heading1" then
+        table.insert(ranges, {
+          startLine = node:range().start.line,
+          startCharacter = 0,
+          endLine = node:range().start.line,
+          endCharacter = 0,
+          kind = "region",
+        })
+      end
+    end
+    callback(nil, ranges)
+  end,
+  ["textDocument/rename"] = function(params, _callback, _notify_reply_callback)
+    refactor.rename_heading(params.position.line + 1, params.newName)
   end,
 
   ["textDocument/completion"] = function(p, c, _)
     -- Attempt to hijack completion for categories completions
-    if module.config.public.completion_provider.categories then
+    if M.config.public.completion.categories then
       local cats = lsp_completion.category_completion()
       if cats and not vim.tbl_isempty(cats) then
         c(nil, lsp_completion.category_completion())
@@ -126,7 +239,7 @@ module.private.handlers = {
     lsp_completion.completion_handler(p, c, _)
   end,
 
-  ["textDocument/prepareRename"] = function(params, callb, _notify_reply_callb)
+  ["textDocument/prepareRename"] = function(params, callback, _notify_reply_callback)
     local buf = vim.uri_to_bufnr(params.textDocument.uri)
     local node = ts.get_first_node_on_line(buf, params.position.line)
     if not node then
@@ -142,15 +255,142 @@ module.private.handlers = {
       }
       local heading_line =
           vim.api.nvim_buf_get_lines(buf, params.position.line, params.position.line + 1, true)[1]
-      callb(nil, { range = range, placeholder = heading_line })
+      callback(nil, { range = range, placeholder = heading_line })
     end
   end,
 
-  ["textDocument/rename"] = function(params, _callb, _notify_reply_callb)
+
+  ['textDocument/codeLens'] = function(params, callback, _notify_reply_callback)
+    local buf = vim.uri_to_bufnr(params.textDocument.uri)
+    local codeLens = {}
+    for _, node in ipairs(ts.get_nodes(buf)) do
+      if node:type() == "heading1" then
+        table.insert(codeLens, {
+          range = {
+            start = { line = node:range().start.line, character = 0 },
+            ["end"] = { line = node:range().start.line, character = 0 },
+          },
+          command = {
+            title = "Rename Heading",
+            command = "lsp.rename.heading",
+            arguments = {
+              line_content = vim.api.nvim_buf_get_lines(buf, node:range().start.line, node:range().start.line + 1, true)
+                  [1],
+              cursor_position = { node:range().start.line, 0 },
+            },
+          },
+        })
+      end
+    end
+    callback(nil, codeLens)
+  end,
+
+  ['textDocument/references'] = function(params, callback, _notify_reply_callback)
+    local buf = vim.uri_to_bufnr(params.textDocument.uri)
+    local references = {}
+    for _, node in ipairs(ts.get_nodes(buf)) do
+      if node:type() == "heading1" then
+        table.insert(references, {
+          uri = vim.uri_from_bufnr(buf),
+          range = {
+            start = { line = node:range().start.line, character = 0 },
+            ["end"] = { line = node:range().start.line, character = 0 },
+          },
+        })
+      end
+    end
+    callback(nil, references)
+  end,
+
+  ["workspace/inlayHint/refresh"] = function(params, _callback, _notify_reply_callback)
+    local buf = vim.uri_to_bufnr(params.uri)
+    local hints = {}
+    for _, node in ipairs(ts.get_nodes(buf)) do
+      if node:type() == "heading1" then
+        table.insert(hints, {
+          range = {
+            start = { line = node:range().start.line, character = 0 },
+            ["end"] = { line = node:range().start.line, character = 0 },
+          },
+          kind = "Other",
+          label = "Rename Heading",
+        })
+      end
+    end
+    _callback(nil, hints)
+  end,
+
+  ["textDocument/implementations"] = function(params, _callback, _notify_reply_callback)
+    local buf = vim.uri_to_bufnr(params.textDocument.uri)
+    local node = ts.get_first_node_on_line(buf, params.position.line)
+    if not node then
+      return
+    end
+
+    local type = node:type()
+    if type:match("^heading%d") then
+      local range = {
+        start = { line = params.position.line, character = 0 },
+        ["end"] = { line = params.position.line + 1, character = 0 },
+      }
+      local heading_line =
+          vim.api.nvim_buf_get_lines(buf, params.position.line, params.position.line + 1, true)[1]
+      callback(nil, { range = range, placeholder = heading_line })
+    end
+  end,
+  ["textDocument/rename"] = function(params, _callback, _notify_reply_callback)
     refactor.rename_heading(params.position.line + 1, params.newName)
   end,
 
-  ["vault/willRenameFiles"] = function(params, _callb, _notify_reply_callb)
+  ['textDocument/codeLens'] = function(params, callback, _notify_reply_callback)
+    local buf = vim.uri_to_bufnr(params.textDocument.uri)
+    local codeLens = {}
+    for _, node in ipairs(ts.get_nodes(buf)) do
+      if node:type() == "heading1" then
+        table.insert(codeLens, {
+          range = {
+            start = { line = node:range().start.line, character = 0 },
+            ["end"] = { line = node:range().start.line, character = 0 },
+          },
+          command = {
+            title = "Rename Heading",
+            command = "lsp.rename.heading",
+            arguments = {
+              line_content = vim.api.nvim_buf_get_lines(buf, node:range().start.line, node:range().start.line + 1, true)
+                  [1],
+              cursor_position = { node:range().start.line, 0 },
+            },
+          },
+        })
+      end
+    end
+    callback(nil, codeLens)
+  end,
+
+  ['textDocument/codeAction'] = function(params, callback, _notify_reply_callback)
+    local buf = vim.uri_to_bufnr(params.textDocument.uri)
+    local actions = {}
+    for _, node in ipairs(ts.get_nodes(buf)) do
+      if node:type() == "heading1" then
+        table.insert(actions, {
+          title = "Rename Heading",
+          command = {
+            title = "Rename Heading",
+            command = "lsp.rename.heading",
+            arguments = {
+              line_content = vim.api.nvim_buf_get_lines(buf, node:range().start.line, node:range().start.line + 1, true)
+                  [1],
+              cursor_position = { node:range().start.line, 0 },
+            },
+          },
+        })
+      end
+    end
+    callback(nil, actions)
+  end,
+
+
+  ["vault/willRenameFiles"] = function(params, _callback, _notify_reply_callback)
     for _, files in ipairs(params.files) do
       local old = vim.uri_to_fname(files.oldUri)
       local new = vim.uri_to_fname(files.newUri)
@@ -159,7 +399,7 @@ module.private.handlers = {
   end,
 }
 
-module.private.start_lsp = function()
+M.private.start_lsp = function()
   -- setup and attach the shell LSP for file renaming
   -- https://github.com/jmbuhr/otter.nvim/pull/137/files
   vim.lsp.start({
@@ -168,9 +408,9 @@ module.private.start_lsp = function()
     cmd = function(_dispatchers)
       local members = {
         trace = "messages",
-        request = function(method, params, callb, notify_reply_callb)
-          if module.private.handlers[method] then
-            module.private.handlers[method](params, callb, notify_reply_callb)
+        request = function(method, params, callback, notify_reply_callback)
+          if M.private.handlers[method] then
+            M.private.handlers[method](params, callback, notify_reply_callback)
           else
             log.debug("Unexpected LSP method: " .. method)
           end
@@ -186,20 +426,25 @@ module.private.start_lsp = function()
   })
 end
 
-module.events.subscribed = {
-  ["cmd"] = {
+M.events.subscribed = {
+  cmd = {
+    ["lsp.hint"] = true,
+    ["lsp.diagnostic"] = true,
+    ["lsp.format"] = true,
+    ["lsp.refactor"] = true,
+    ["lsp.rename"] = true,
     ["lsp.rename.file"] = true,
     ["lsp.rename.heading"] = true,
   },
 }
 
-module.on_event = function(event)
-  if module.private[event.split_type[2]] then
-    module.private[event.split_type[2]](event)
+M.on_event = function(event)
+  if M.private[event.split_type[2]] then
+    M.private[event.split_type[2]](event)
   end
 end
 
-module.private["lsp.rename.file"] = function(event)
+M.private["lsp.rename.file"] = function(event)
   local new_path = event.content[1]
   local current = vim.api.nvim_buf_get_name(0)
   if new_path then
@@ -214,7 +459,7 @@ module.private["lsp.rename.file"] = function(event)
   end
 end
 
-module.private["lsp.rename.heading"] = function(event)
+M.private["lsp.rename.heading"] = function(event)
   local line_number = event.cursor_position[1]
   local prefix = string.match(event.line_content, "^%s*%*+ ")
   if not prefix then -- this is a very very simple check that we're on a heading line. We use TS in the actual rename_heading function
@@ -232,4 +477,4 @@ module.private["lsp.rename.heading"] = function(event)
   end)
 end
 
-return module
+return M

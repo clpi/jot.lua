@@ -385,7 +385,11 @@ end
 
 M.on_event = function(event)
   if event.split_type[1] == "cmd" then
-    if event.split_type[2] == "notes.tomorrow" then
+    if event.split_type[2] == "notes.index" then
+      M.private.open_index()
+    elseif event.split_type[2] == "notes.month" then
+      M.private.open_month()
+    elseif event.split_type[2] == "notes.tomorrow" then
       M.private.notes_tomorrow()
     elseif event.split_type[2] == "notes.yesterday" then
       M.private.notes_yesterday()

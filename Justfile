@@ -1,5 +1,8 @@
 all: slint llint clean
 
+tv:
+  nvim -u test/config/init.lua
+
 slint :
   stylua --check .
 

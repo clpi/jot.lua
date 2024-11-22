@@ -35,6 +35,7 @@ local M = {}
 --- @field ui ui
 --- @field ["calendar.views.monthly"] calendar.views.monthly
 --- @field ["ui.selection_popup"] ui.selection_popup
+--- @field ["vault"] vault
 --- @field ["ui.text_popup"] Mi.text_popup
 
 --- Defines both a public and private configuration for a word init.
@@ -96,7 +97,7 @@ function M.create(name, imports)
     path = "mod.base",
     private = {},
     public = {
-      version = config.version
+      version = require("word.config").version
     },
     config = {
       private = {
@@ -260,7 +261,7 @@ function M.load_mod_from_table(m)
 
       -- This would've always returned false had we not added the current init to the loaded init list earlier above
       if not M.is_mod_loaded(req_mod) then
-        if config.user_config.load[req_mod] then
+        if config.user.mod[req_mod] then
           log.trace(
             "Wanted init",
             req_mod,
@@ -405,7 +406,7 @@ end
 --- If the init cannot not be found, attempt to load it off of github (unimplemented). This function also applies user-defined config and keys to the mod themselves.
 --- This is the recommended way of loading mod - `load_mod_from_table()` should only really be used by word itself.
 --- @param mod_name string A path to a init on disk. A path seperator in word is '.', not '/'.
---- @param cfg table? A config that reflects the structure of `word.config.user_config.load["init.name"].config`.
+--- @param cfg table? A config that reflects the structure of `word.config.user.load["init.name"].config`.
 --- @return boolean # Whether the init was successfully loaded.
 function M.load_mod(mod_name, cfg)
   -- Don't bother loading the init from disk if it's already loaded
@@ -442,7 +443,7 @@ function M.load_mod(mod_name, cfg)
     modl.config.custom = cfg
     modl.config.public = utils.extend(modl.config.public, cfg)
   else
-    modl.config.custom = config.mod[modl]
+    modl.config.custom = config.mod[mod_name]
     modl.config.public = utils.extend(modl.config.public, modl.config.custom or {})
   end
 
@@ -466,7 +467,7 @@ end
 --- Normally loads a init, but then sets up the parent init's "required" table, allowing the parent init to access the child as if it were a dependency.
 --- @param mod_name string A path to a init on disk. A path seperator in word is '.', not '/'
 --- @param parent_mod string The name of the parent init. This is the init which the dependency will be attached to.
---- @param cfg? table A config that reflects the structure of word.config.user_config.load["init.name"].config
+--- @param cfg? table A config that reflects the structure of word.config.user.load["init.name"].config
 function M.load_mod_as_dependency(mod_name, parent_mod, cfg)
   if M.load_mod(mod_name, cfg) and M.is_mod_loaded(parent_mod) then
     M.loaded_mod[parent_mod].required[mod_name] = M.get_mod_config(mod_name)

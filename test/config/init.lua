@@ -11,6 +11,13 @@ local word = require("word")
 word.setup(
   {
     load = {
+      vault = {
+        config = {
+          vaults = {
+            book = "./book"
+          }
+        }
+      },
       base = {},
     }
   }

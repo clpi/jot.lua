@@ -1,23 +1,26 @@
+local uv = vim.uv
+local e = vim.lpeg
+
 local d = require("word")
 local lib, mod = d.lib, d.mod
 
-local init = mod.create("metadata")
+local init = mod.create("search")
 
 init.load = function()
   mod.await("cmd", function(cmd)
     cmd.add_commands_from_table({
-      ["metadata"] = {
+      agenda = {
         subcommands = {
           update = {
             args = 0,
-            name = "metadata.update"
+            name = "agenda.update"
           },
           insert = {
-            name = "metadata.insert",
+            name = "agenda.insert",
             args = 0,
           },
         },
-        name = "metadata"
+        name = "agenda"
       }
     })
   end)
@@ -53,8 +56,8 @@ init.events = {}
 
 init.events.subscribed = {
   cmd = {
-    ["metadata.insert"] = true,
-    ["metadata.update"] = true,
+    ["agenda.insert"] = true,
+    ["agenda.update"] = true,
   },
 }
 

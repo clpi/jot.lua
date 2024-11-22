@@ -1,8 +1,8 @@
 local docgen = require("docgen")
 local fileio = require("fileio")
 
-local neorg = require("neorg.core")
-local lib, modules = neorg.lib, neorg.modules
+local word = require("word")
+local lib, modules = word.lib, word.modules
 
 --- CONFIGURABLE DOCGEN BEHAVIOUR
 --- Tweak as you see fit.
@@ -25,7 +25,7 @@ local doc_modules = {
 
 --- Fully renders a large set of configuration options
 ---@param configuration_options ConfigOptionArray[] An array of ConfigOptionArrays
----@return string[] #An array of markdown strings corresponding to all of the rendered configuration options
+---@return string[] #An array of md strings corresponding to all of the rendered configuration options
 local function concat_configuration_options(configuration_options)
   local result = {}
 
@@ -70,7 +70,7 @@ for _, file in ipairs(docgen.aggregate_module_files()) do
     goto continue
   end
 
-  -- Make Neorg load the module, which also evaluates dependencies
+  -- Make word load the module, which also evaluates dependencies
   local _ok, err = pcall(modules.load_module, parsed_module.name)
 
   if not _ok then
@@ -98,7 +98,7 @@ fileio.write_to_wiki(
   "Default-Keybinds",
   docgen.generators.keybinds(
     doc_modules,
-    docgen.open_file(vim.fn.fnamemodify("../lua/neorg/modules/core/keybinds/module.lua", ":p"))
+    docgen.open_file(vim.fn.fnamemodify("../lua/word/modules/core/keybinds/module.lua", ":p"))
   )
 )
 fileio.write_to_wiki("_Sidebar", docgen.generators.sidebar(doc_modules))
@@ -172,11 +172,11 @@ for module_name, module in pairs(doc_modules) do
     end)
   end
 
-  -- Perform module lookups in the module's top comment markdown data.
+  -- Perform module lookups in the module's top comment md data.
   -- This cannot be done earlier because then there would be no guarantee
   -- that all the modules have been properly indexed and parsed.
-  for i, line in ipairs(module.top_comment_data.markdown) do
-    module.top_comment_data.markdown[i] = docgen.lookup_modules(doc_modules, line)
+  for i, line in ipairs(module.top_comment_data.md) do
+    module.top_comment_data.md[i] = docgen.lookup_modules(doc_modules, line)
   end
 
   fileio.write_to_wiki(
