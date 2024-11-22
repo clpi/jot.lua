@@ -5,19 +5,20 @@
     Internal: true
     ---
 --]]
-local M = require("word.mod").create("data", { "sync", 'tag', 'meta', 'code' })
+local M = require("word.mod").create("data", { "sync", 'tag', 'meta', 'code', 'dirs' })
 
 M.setup = function()
   return {
     success = true,
     requires = {
+      'data.dirs'
     },
   }
 end
 
 M.config.public = {
   -- Full path to store data (saved in mpack data format)
-  path = vim.fn.stdpath("data") .. "/word.mpack",
+  path = vim.fn.stdpath "data" .. "/word.mpack",
 }
 
 M.private = {

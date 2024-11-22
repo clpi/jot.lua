@@ -15,3 +15,13 @@ llint:
 
 version:
   echo "0.1.0"
+
+install:
+  co -r ./scripts/bin/word
+
+version:
+  echo "0.1.0"
+
+book:
+  mdbook build
+

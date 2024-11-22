@@ -43,6 +43,12 @@ C.config = {
 
   data = f.stdpath("data") .. "/word.mpack",
 
+  ft = {
+    md = true,
+    rmd = true,
+    markdown = true
+  },
+
   mod = {},
   manual = nil,
   args = {},

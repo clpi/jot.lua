@@ -30,6 +30,10 @@ Welcome -- to the `word.lua` book. I hope this helps!
   - [Highlights](./customizing/highlights.md)
 
 - [Export](./export.md)
+
+  - [Frameworks](./publish/frameworks.md)
+  - [org](./export/org.md)
+
 - [Publishing](./publish.md)
 
   - [Frameworks](./publish/frameworks.md)

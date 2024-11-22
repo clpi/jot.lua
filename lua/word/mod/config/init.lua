@@ -8,6 +8,7 @@ return mod.create_meta(
 -- "tag",
 -- "autocmd",
   "config",
+  "move",
   -- "autocmd",
   "note",
   -- "maps",
