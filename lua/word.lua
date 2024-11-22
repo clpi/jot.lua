@@ -37,8 +37,8 @@ function W.setup(conf)
   -- Ensure that we are running Neovim 0.10+
   -- assert(utils.is_minimum_version(0, 10, 0), "word requires at least Neovim version 0.10 to operate!")
 
-  conf = conf or { mod = {} }
-  if conf.mod == nil then conf.mod = {} end
+  conf = conf or { mods = {} }
+  if conf.mods == nil then conf.mods = {} end
   con.user = utils.extend(con.user, conf)
   log.new(con.user.logger or log.get_base_config(), true)
 
@@ -62,7 +62,7 @@ end
 
 function W.enter_md(manual, args)
   -- Extract the init list from the user config
-  local mod_list = con.user and con.user.mod or {}
+  local mod_list = con.user and con.user.mods or {}
 
   -- If we have already started word or if we haven't defined any mod to load then bail
   if con.started or not mod_list or vim.tbl_isempty(mod_list) then
@@ -87,7 +87,7 @@ function W.enter_md(manual, args)
 
   -- Go through each defined init and grab its con
   for name, lm in pairs(mod_list) do
-    con.mod[name] = utils.extend(con.mod[name] or {}, lm.config or {})
+    con.mods[name] = utils.extend(con.mods[name] or {}, lm.config or {})
   end
 
   -- After all config are merged proceed to actually load the mod

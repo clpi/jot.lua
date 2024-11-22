@@ -23,10 +23,9 @@
   - [Credits](#credits)
   <!--toc:end-->
 
-
 ## Introduction
 
-- **word.lua** is a [neovim] plugin intended to bring the extensibility of [org-mode] or [neorg] in the comfort of [markdown].
+- **word.lua** is a [neovim](#) plugin intended to bring the extensibility of [org-mode](#) or [neorg](github.com/nvim-neorg/neorg) in the comfort of [markdown](#).
 
 - we want to be able to take notes like developers, without shutting ourselves out of the entire ecosystem built around markdown.
 
@@ -49,13 +48,12 @@
 {
     "clpi/word.lua",
     lazy    = false,
-    config  = true,
     version = "*"
     branch  = "master",
-    build   = ":TSUpdate markdown markdown_inline",
     config = function(_, opts)
       require("word").setup({
-        mod = {
+        mods = {
+          config = {},
           workspace = {
             config = {
               workspaces = {
@@ -86,7 +84,7 @@
 <a href="#">plug.vim</a>
   </summary>
 
-> [!Warning]
+> [!Caution]
 >
 > Not yet tested
 
@@ -98,7 +96,19 @@ Plug "pysan3/pathlib.nvim"
 Plug "nvim-neotest/nvim-nio"
 Plug "clpi/word.lua", {
     \ "branch" : "master",
-    \ "do"     : ":lua require('word').setup()"
+    \ "do"     : ':lua require([[word]]).setup({
+    \   mods = {
+    \     config = {},
+    \     workspace = {
+    \       config = {
+    \         workspaces = {
+    \           default = [[~/wiki]],
+    \           notes = [[~/notes]]
+    \         }
+    \       }
+    \     }
+    \   }
+    \ })'
     \ }
 ```
 
@@ -109,7 +119,7 @@ Plug "clpi/word.lua", {
 <details>
 <summary><a href="#">Vundle</a></summary>
 
-> [!Warning]
+> [!Caution]
 >
 > Not yet tested
 
@@ -132,7 +142,7 @@ Plugin 'clpi/word.lua'
 <a href="#">dein.vim</a>
   </summary>
 
-> [!Warning]
+> [!Caution]
 >
 > Not yet tested
 
@@ -154,7 +164,7 @@ call dein#add('clpi/word.lua')
 <a href="#">packer.nvim</a>
   </summary>
 
-> [!Warning]
+> [!Caution]
 >
 > Not yet tested
 
@@ -185,7 +195,7 @@ use {
 <a href="#">mini.deps</a>
   </summary>
 
-> [!Warning]
+> [!Caution]
 >
 > Not yet tested
 
@@ -205,7 +215,7 @@ use {
 <a href="#">rocks.nvim</a>
   </summary>
 
-> [!Warning]
+> [!Caution]
 >
 > Not yet tested
 
@@ -219,13 +229,28 @@ Rocks install mini.lua
 
 ```lua
 -- Setup the initial config
-require("word").setup({})
-
+-- with workspace 'home' at ~/home
+-- and make it default
+require("word").setup({
+  mods = {
+    config = {},
+    workspace = {
+      config = {
+        default = 'home',
+        workspaces = {
+          home = "~/notes"
+        }
+      }
+    }
+  }
+})
 ```
 
 ## Usage
 
-Check back!
+> [!Note]
+>
+> Still early on in development!
 
 ## Todo
 
@@ -235,7 +260,9 @@ Check back!
 
 ## Support
 
-check back!
+> [!Note]
+>
+> Still early on in development!
 
 ## Credits
 
@@ -253,3 +280,7 @@ thank you and keep updated!
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 <!-- </div> -->
+
+```
+
+```

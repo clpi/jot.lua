@@ -33,7 +33,7 @@ local M = {}
 --- @field code code
 --- @field todo todo
 --- @field ui ui
---- @field ["ui.calendar.month"] calendar.views.monthly
+--- @field ["ui.calendar.month"] ui.calendar.month
 --- @field ["workspace"] workspace
 --- @field ["ui.popup"] ui.popup
 
@@ -442,7 +442,7 @@ function M.setup_mod(mod_name, cfg)
     modl.config.custom = cfg
     modl.config.public = utils.extend(modl.config.public, cfg)
   else
-    modl.config.custom = config.mod[mod_name]
+    modl.config.custom = config.mods[mod_name]
     modl.config.public = utils.extend(modl.config.public, modl.config.custom or {})
   end
 
