@@ -18,7 +18,7 @@ description = {
   homepage = "https://github.com/clpi/word.lua",
   maintainer = "https://github.com/clpi",
   labels = {
-    "wiki", "neovim", "note", "org", "markdown", "nvim"
+    "wiki", "neovim", "note", "org", "markdown", "nvim", "plugin", "org-mode",
   },
   license = "MIT",
 }
@@ -33,9 +33,7 @@ end
 
 dependencies = {
   "lua == 5.1",
-  "nvim-nio ~> 1.7",
   "plenary.nvim == 0.1.4",
-  "nui.nvim == 0.3.0",
   "pathlib.nvim ~> 2.2",
 }
 
@@ -53,7 +51,7 @@ build = {
   type = "builtin",
   install = {
     bin = {
-      "bin/word",
+      "scripts/bin/word",
     }
   },
   copy_directories = {
