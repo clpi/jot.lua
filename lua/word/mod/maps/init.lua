@@ -210,7 +210,7 @@ M.private = {
           -- ^New Note
           {
             "<LocalLeader>nn",
-            "<Plug>(word.workspace.new-note)",
+            "<Plug>(word.vault.new-note)",
             opts = { desc = "[word] Create New Note" },
           },
         },

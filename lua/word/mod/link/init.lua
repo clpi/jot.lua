@@ -18,7 +18,7 @@ M.setup = function()
   return {
     success = true,
     requires = {
-      "workspace",
+      "vault",
       "store"
     }
   }

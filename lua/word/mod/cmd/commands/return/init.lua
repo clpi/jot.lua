@@ -5,7 +5,7 @@
     internal: true
     ---
 When executed (`:word return`), all currently open `.word` files are deleted from
-the buffer list, and the current workspace is set to "base".
+the buffer list, and the current vault is set to "base".
 --]]
 
 local word = require("word")

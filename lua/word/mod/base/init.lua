@@ -12,7 +12,7 @@ return mod.create_meta(
   "notes",
   -- "maps",
   "cmd",
-  "workspace",
+  "vault",
   -- "treesitter",
   "store",
   "ui",

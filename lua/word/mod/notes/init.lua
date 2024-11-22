@@ -29,7 +29,7 @@ M.setup = function()
   return {
     success = true,
     requires = {
-      "workspace",
+      "vault",
       "treesitter",
     },
   }
@@ -48,8 +48,8 @@ M.private = {
   ---@param custom_date? string #A YYYY-mm-dd string that specifies a date to open the notes at instead
   open_notes = function(time, custom_date)
     -- TODO(vhyrro): Change this to use word dates!
-    local workspace = M.config.public.workspace or M.required["workspace"].get_current_workspace()[1]
-    local workspace_path = M.required["workspace"].get_workspace(workspace)
+    local vault = M.config.public.vault or M.required["vault"].get_current_vault()[1]
+    local vault_path = M.required["vault"].get_vault(vault)
     local folder_name = M.config.public.notes_folder
     local template_name = M.config.public.template_name
 
@@ -76,18 +76,18 @@ M.private = {
 
 
     local notes_file_exists =
-        M.required["workspace"].file_exists(workspace_path .. "/" .. folder_name .. config.pathsep .. path)
+        M.required["vault"].file_exists(vault_path .. "/" .. folder_name .. config.pathsep .. path)
 
-    M.required["workspace"].create_file(folder_name .. config.pathsep .. path, workspace)
+    M.required["vault"].create_file(folder_name .. config.pathsep .. path, vault)
 
-    M.required["workspace"].create_file(folder_name .. config.pathsep .. path, workspace)
+    M.required["vault"].create_file(folder_name .. config.pathsep .. path, vault)
 
     if
         not notes_file_exists
         and M.config.public.use_template
-        and M.required["workspace"].file_exists(workspace_path .. "/" .. folder_name .. "/" .. template_name)
+        and M.required["vault"].file_exists(vault_path .. "/" .. folder_name .. "/" .. template_name)
     then
-      vim.cmd("$read " .. workspace_path .. "/" .. folder_name .. "/" .. template_name .. "| w")
+      vim.cmd("$read " .. vault_path .. "/" .. folder_name .. "/" .. template_name .. "| w")
     end
   end,
 
@@ -108,25 +108,25 @@ M.private = {
 
   --- Creates a template file
   create_template = function()
-    local workspace = M.config.public.workspace
+    local vault = M.config.public.vault
     local folder_name = M.config.public.notes_folder
     local template_name = M.config.public.template_name
 
-    M.required.workspace.create_file(
+    M.required.vault.create_file(
       folder_name .. config.pathsep .. template_name,
-      workspace or M.required.workspace.get_current_workspace()[1]
+      vault or M.required.vault.get_current_vault()[1]
     )
   end,
 
   --- Opens the toc file
   open_toc = function()
-    local workspace = M.config.public.workspace or M.required["workspace"].get_current_workspace()[1]
-    local index = mod.get_mod_config("workspace").index
+    local vault = M.config.public.vault or M.required["vault"].get_current_vault()[1]
+    local index = mod.get_mod_config("vault").index
     local folder_name = M.config.public.notes_folder
 
     -- If the toc exists, open it, if not, create it
-    if M.required.workspace.file_exists(folder_name .. config.pathsep .. index) then
-      M.required.workspace.open_file(workspace, folder_name .. config.pathsep .. index)
+    if M.required.vault.file_exists(folder_name .. config.pathsep .. index) then
+      M.required.vault.open_file(vault, folder_name .. config.pathsep .. index)
     else
       M.private.create_toc()
     end
@@ -134,10 +134,10 @@ M.private = {
 
   --- Creates or updates the toc file
   create_toc = function()
-    local workspace = M.config.public.workspace or M.required["workspace"].get_current_workspace()[1]
-    local index = mod.get_mod_config("workspace").index
-    local workspace_path = M.required["workspace"].get_workspace(workspace)
-    local workspace_name_for_link = M.config.public.workspace or ""
+    local vault = M.config.public.vault or M.required["vault"].get_current_vault()[1]
+    local index = mod.get_mod_config("vault").index
+    local vault_path = M.required["vault"].get_vault(vault)
+    local vault_name_for_link = M.config.public.vault or ""
     local folder_name = M.config.public.notes_folder
 
     -- Each entry is a table that contains tables like { yy, mm, dd, link, title }
@@ -148,10 +148,10 @@ M.private = {
     local get_fs_handle = function(path)
       path = path or ""
       local handle =
-          vim.loop.fs_scandir(workspace_path .. config.pathsep .. folder_name .. config.pathsep .. path)
+          vim.loop.fs_scandir(vault_path .. config.pathsep .. folder_name .. config.pathsep .. path)
 
       if type(handle) ~= "userdata" then
-        error(lib.lazy_string_concat("Failed to scan directory '", workspace, path, "': ", handle))
+        error(lib.lazy_string_concat("Failed to scan directory '", vault, path, "': ", handle))
       end
 
       return handle
@@ -159,12 +159,12 @@ M.private = {
 
     -- Gets the title from the metadata of a file, must be called in a vim.schedule
     local get_title = function(file)
-      local buffer = vim.fn.bufadd(workspace_path .. config.pathsep .. folder_name .. config.pathsep .. file)
-      local meta = M.required["workspace"].get_document_metadata(buffer)
+      local buffer = vim.fn.bufadd(vault_path .. config.pathsep .. folder_name .. config.pathsep .. file)
+      local meta = M.required["vault"].get_document_metadata(buffer)
       return meta.title
     end
 
-    vim.loop.fs_scandir(workspace_path .. config.pathsep .. folder_name .. config.pathsep, function(err, handle)
+    vim.loop.fs_scandir(vault_path .. config.pathsep .. folder_name .. config.pathsep, function(err, handle)
       assert(not err, lib.lazy_string_concat("Unable to generate TOC for directory '", folder_name, "' - ", err))
 
       while true do
@@ -213,7 +213,7 @@ M.private = {
                       tonumber(mname),
                       tonumber(file[1]),
                       "{:$"
-                      .. workspace_name_for_link
+                      .. vault_name_for_link
                       .. config.pathsep
                       .. M.config.public.notes_folder
                       .. config.pathsep
@@ -256,7 +256,7 @@ M.private = {
               parts[2],
               parts[3],
               "{:$"
-              .. workspace_name_for_link
+              .. vault_name_for_link
               .. config.pathsep
               .. M.config.public.notes_folder
               .. config.pathsep
@@ -296,9 +296,9 @@ M.private = {
               return output
             end
 
-        M.required["workspace"].create_file(
+        M.required["vault"].create_file(
           folder_name .. config.pathsep .. index,
-          workspace or M.required["workspace"].get_current_workspace()[1]
+          vault or M.required["vault"].get_current_vault()[1]
         )
 
         -- The current buffer now must be the toc file, so we set our toc entries there
@@ -310,12 +310,12 @@ M.private = {
 }
 
 M.config.public = {
-  -- Which workspace to use for the notes files, the base behaviour
-  -- is to use the current workspace.
+  -- Which vault to use for the notes files, the base behaviour
+  -- is to use the current vault.
   --
-  -- It is recommended to set this to a static workspace, but the most optimal
+  -- It is recommended to set this to a static vault, but the most optimal
   -- behaviour may vary from workflow to workflow.
-  workspace = nil,
+  vault = nil,
 
   -- The name for the folder in which the notes files are put.
   notes_folder = "notes",

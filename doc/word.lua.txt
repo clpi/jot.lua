@@ -28,9 +28,9 @@ SETUP                                                                 *word-setu
 require("word").setup({
   load = {
     base = { },
-    workspace = {
+    vault = {
       config = {
-        workspaces = {
+        vaults = {
           default = "~/word",
           word = "~/word"
         }

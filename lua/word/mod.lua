@@ -24,7 +24,7 @@ local M = {}
 --- @class (exact) word.mod.resolver
 --- @field completion completion
 --- @field conceal conceal
---- @field workspace workspace
+--- @field vault vault
 --- @field hl hl
 --- @field notes notes
 --- @field keys keys

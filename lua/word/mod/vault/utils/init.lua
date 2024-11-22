@@ -1,11 +1,11 @@
 --[[
-    file: workspace-Utils
-    summary: A set of utilities for the `base.workspace` init.
+    file: vault-Utils
+    summary: A set of utilities for the `base.vault` init.
     internal: true
     ---
-This internal subinit implements some basic utility functions for [`base.workspace`](@base.workspace).
+This internal subinit implements some basic utility functions for [`base.vault`](@base.vault).
 Currently the only exposed API function is `expand_path`, which takes a path like `$name/my/location` and
-converts `$name` into the full path of the workspace called `name`.
+converts `$name` into the full path of the vault called `name`.
 --]]
 
 local Path = require("pathlib")
@@ -13,11 +13,11 @@ local Path = require("pathlib")
 local word = require("word")
 local log, mod = word.log, word.mod
 
-local init = word.mod.create("workspace.utils")
+local init = word.mod.create("vault.utils")
 
----@class base.workspace.utils
+---@class base.vault.utils
 init.public = {
-  ---Resolve `$<workspace>/path/to/file` and return the real path
+  ---Resolve `$<vault>/path/to/file` and return the real path
   ---@param path string | PathlibPath # path
   ---@param raw_path boolean? # If true, returns resolved path, otherwise, returns resolved path
   ---and append ".word"
@@ -32,28 +32,28 @@ init.public = {
     end
     local filepath = Path(path)
     -- Expand special chars like `$`
-    local custom_workspace_path = filepath:match("^%$([^/\\]*)[/\\]")
-    if custom_workspace_path then
-      ---@type base.workspace
-      local ws = mod.get_mod("workspace")
-      if not workspace then
+    local custom_vault_path = filepath:match("^%$([^/\\]*)[/\\]")
+    if custom_vault_path then
+      ---@type base.vault
+      local ws = mod.get_mod("vault")
+      if not vault then
         log.error(table.concat({
-          "Unable to jump to link with custom workspace: `default.workspace` is not loaded.",
-          "Please load the init in order to get workspace support.",
+          "Unable to jump to link with custom vault: `default.vault` is not loaded.",
+          "Please load the init in order to get vault support.",
         }, " "))
         return
       end
-      -- If the user has given an empty workspace name (i.e. `$/myfile`)
-      if custom_workspace_path:len() == 0 then
-        filepath = ws.get_current_workspace()[2] / filepath:relative_to(Path("$"))
-      else -- If the user provided a workspace name (i.e. `$my-workspace/myfile`)
-        local workspace = ws.get_workspace(custom_workspace_path)
-        if not workspace then
-          local msg = "Unable to expand path: workspace '%s' does not exist"
-          log.warn(string.format(msg, custom_workspace_path))
+      -- If the user has given an empty vault name (i.e. `$/myfile`)
+      if custom_vault_path:len() == 0 then
+        filepath = ws.get_current_vault()[2] / filepath:relative_to(Path("$"))
+      else -- If the user provided a vault name (i.e. `$my-vault/myfile`)
+        local vault = ws.get_vault(custom_vault_path)
+        if not vault then
+          local msg = "Unable to expand path: vault '%s' does not exist"
+          log.warn(string.format(msg, custom_vault_path))
           return
         end
-        filepath = ws / filepath:relative_to(Path("$" .. custom_workspace_path))
+        filepath = ws / filepath:relative_to(Path("$" .. custom_vault_path))
       end
     elseif filepath:is_relative() then
       relative = true
@@ -93,7 +93,7 @@ init.public = {
     end
   end,
 
-  ---Resolve `$<workspace>/path/to/file` and return the real path
+  ---Resolve `$<vault>/path/to/file` and return the real path
   -- NOTE: Use `expand_pathlib` which returns a PathlibPath object instead.
   ---
   ---\@deprecate Use `expand_pathlib` which returns a PathlibPath object instead. TODO: deprecate this <2024-03-27>

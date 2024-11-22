@@ -33,7 +33,7 @@
 
 ## Requirements
 
-> [!Info]
+> [!Note]
 >
 > `word.lua` must have at least [neovim 0.10+](https://neovim.io)
 
@@ -205,7 +205,7 @@ Rocks install mini.lua
 ## Config
 
 ```lua
--- Setup the initial configuration
+-- Setup the initial config
 require("word").setup({})
 
 ```

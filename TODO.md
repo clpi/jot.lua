@@ -8,4 +8,5 @@
 - [ ] Add other package manager support
 - [ ] **Support [blink-cmp] and** [nvim-cmp] and [magazine-cmp] when possible
 - [ ] Support `rst`, limited `.txt` and `md`?
-- [ ] *IMPORTANT* Remove `pathlib.nvim` dependency
+- [ ] _IMPORTANT_ Remove `pathlib.nvim` dependency
+- [ ] `mod` encrypt, export

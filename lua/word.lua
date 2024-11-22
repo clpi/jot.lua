@@ -14,9 +14,7 @@ W = {
   },
   callbacks = require("word.util.callback"),
   config = require("word.config"),
-  lsp = require("word.lsp"),
   cmd = require("word.cmd"),
-  ui = require("word.ui"),
   log = require("word.util.log"),
   util = {
     util = require("word.util"),
