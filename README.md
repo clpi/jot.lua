@@ -66,8 +66,6 @@
     end,
     dependencies = {
       "nvim-telescope/telescope.nvim",
-      "MunifTanjim/nui.nvim",
-      "nvim-neotest/nvim-nio",
       "pysan3/pathlib.nvim",
       "nvim-lua/plenary-nvim",
     }
@@ -90,10 +88,8 @@
 
 ```vim
 Plug "nvim-telescope/telescope.nvim"
-Plug 'MunifTanjim/nui.nvim'
 Plug 'nvim-lua/plenary-nvim'
 Plug "pysan3/pathlib.nvim"
-Plug "nvim-neotest/nvim-nio"
 Plug "clpi/word.lua", {
     \ "branch" : "master",
     \ "do"     : ':lua require([[word]]).setup({
@@ -126,9 +122,7 @@ Plug "clpi/word.lua", {
 ```vim
 Plugin 'nvim-lua/plenary-nvim'
 Plugin "pysan3/pathlib.nvim"
-Plugin "nvim-neotest/nvim-nio"
 Plugin 'nvim-telescope/telescope.nvim'
-Plugin 'MunifTanjim/nui.nvim'
 Plugin 'clpi/word.lua'
 ```
 
@@ -148,8 +142,6 @@ Plugin 'clpi/word.lua'
 
 ```vim
 call dein#add('pysan3/pathlib.nvim')
-call dein#add('nvim-neotest/nvim-nio')
-call dein#add('MunifTanjim/nui.nvim')
 call dein#add('nvim-telescope/telescope.nvim')
 call dein#add('clpi/word.lua')
 ```
@@ -173,14 +165,23 @@ use {
   "clp/word.lua",
   requires = {
         "nvim-telescope/telescope.nvim",
-        "nvim-nio",
-        "nui.nvim",
         "plenary.nvim",
         "pathlib.nvim"
   },
   tag = "*",
   config = function()
-      require("word").setup()
+      require("word").setup({
+        mods = {
+          config = {},
+          workspace = {
+            config = {
+              workspaces = {
+                notes = "~/notes"
+              }
+            }
+          }
+        }
+      })
   end,
 }
 ```
@@ -220,7 +221,7 @@ use {
 > Not yet tested
 
 ```lua
-Rocks install mini.lua
+:Rocks install mini.lua
 ```
 
 </details>

@@ -32,9 +32,7 @@ require("word").setup({
     "nvim-treesitter/nvim-treesitter",
     "nvim-telescope/telescope.nvim",
     "nvim-lua/plenary.nvim",
-    "MunifTanjim/nui.nvim",
     "pysan3/pathlib.nvim",
-    "nvim-neotest/nvim-nio",
   },
   config = function()
     require("word").setup {
