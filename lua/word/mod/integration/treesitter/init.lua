@@ -144,7 +144,37 @@ init.config.public = {
 
 ---@class treesitter
 init.public = {
+  queries = {},
   parser_path = nil,
+
+  parse = function(language, query)
+    local result = init.public.queries[query]
+    if result == nil then
+      result = vim.treesitter.query.parse(language, query)
+      init.public.queries[query] = result
+    end
+    return result
+  end,
+
+  ---@param language string
+  ---@param injection render.md.Injection?
+  inject = function(language, injection)
+    if injection == nil then
+      return
+    end
+
+    local query = ''
+    local files = vim.treesitter.query.get_files(language, 'injections')
+    for _, file in ipairs(files) do
+      local f = io.open(file, 'r')
+      if f ~= nil then
+        query = query .. f:read('*all') .. '\n'
+        f:close()
+      end
+    end
+    query = query .. injection.query
+    pcall(vim.treesitter.query.set, language, 'injections', query)
+  end,
   --- Gives back an instance of `nvim-treesitter.ts_utils`
   ---@return table #`nvim-treesitter.ts_utils`
   get_ts_utils = function()
@@ -261,7 +291,25 @@ init.public = {
 
     return init.public.search_tree(tree, node_type)
   end,
+  fix_indent = function(text)
+    local _l = "";
+    local leading_spaces;
 
+    if text:sub(-1) ~= "\n" then text = text .. "\n" end
+
+    for line in text:gmatch("(.-)\n") do
+      if not leading_spaces then
+        leading_spaces = line:match("^%s+");
+      end
+
+      line = line:gsub("^" .. leading_spaces, "");
+      _l = _l .. line .. "\n";
+    end
+
+    _l = _l:gsub("(\n)$", "");
+
+    return _l;
+  end,
   search_tree = function(tree, node_type)
     local result = {}
     local root = tree:root()

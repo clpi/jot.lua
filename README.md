@@ -176,6 +176,7 @@ use {
         "pysan3/pathlib.nvim"
   },
   tag = "*",
+  branch = 'master',
   config = function()
       require("word").setup({
         mods = {
@@ -227,7 +228,7 @@ use {
 >
 > Not yet tested
 
-```lua
+```
 :Rocks install mini.lua
 ```
 
@@ -246,6 +247,7 @@ require("word").setup({
       config = {
         default = 'home',
         workspaces = {
+          notes = "~/notes",
           home = "~/notes"
         }
       }
@@ -259,6 +261,24 @@ require("word").setup({
 > [!Note]
 >
 > Still early on in development!
+
+### Modules
+
+- `config` - configuration settings
+
+### Default Modules
+
+- `workspace` for managing workspaces
+- `notes` for managing notes
+- `data` for managing data
+  - `data.tag` for managing tags
+  - `data.meta` for managing metadata
+  - `data.sync` for managing sync
+  - `data.log` for managing logs
+  - `data.dirs` for managing directories
+- `links` for managing links
+
+`...`
 
 ## Todo
 

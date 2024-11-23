@@ -48,7 +48,7 @@ function W.setup(conf)
   if W.util.buf.check_md() or not con.user.lazy then
     W.enter_md(false)
   else
-    W.config.setup_maps()
+    W.config:setup_maps()
     W.config.setup_opts()
     -- a.nvim_create_user_command("WordInit", function()
     --   vim.cmd.delcommand("WordInit")

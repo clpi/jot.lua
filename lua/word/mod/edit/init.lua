@@ -1,5 +1,7 @@
 local M = require("word.mod").create("edit", {
   "toc", "todo",
+  "indent",
+  "link",
 })
 local word = require("word")
 local config, lib, log, mod = word.cfg, word.lib, word.log, word.mod

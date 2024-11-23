@@ -1,5 +1,6 @@
 index.md
 .vscode
+lib/
 **notes/
 /luarocks
 /lua_modules

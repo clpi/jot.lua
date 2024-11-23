@@ -24,6 +24,7 @@ return mod.create_meta(
   'template',
   'parse',
   'search',
+  "edit.indent",
   "edit",
   -- "code",
   -- "export",

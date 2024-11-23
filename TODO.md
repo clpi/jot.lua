@@ -1,5 +1,6 @@
 # TODO
 
+- [x] Get heading indentation to work
 - [ ] Bring at least a few scaffolded modules to functionality
 - [ ] Automate flake creation through GH Actions
 - [ ] Fix rudimentary commands ported over to bring to base functionality
