@@ -11,3 +11,4 @@
 - [ ] Support `rst`, limited `.txt` and `md`?
 - [ ] _IMPORTANT_ Remove `pathlib.nvim` dependency
 - [ ] `mod` encrypt, export, track, metadata
+- [ ] Create release workflow
