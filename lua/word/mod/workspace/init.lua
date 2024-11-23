@@ -8,7 +8,7 @@ local M = mod.create("workspace")
 M.setup = function()
   return {
     success = true,
-    requires = { "ui", "data", },
+    requires = { "ui", "data", 'note', "data.dirs" },
   }
 end
 
@@ -78,7 +78,7 @@ M.config.public = {
   -- set to the Neovim current working directory on boot.
   ---@type table<string, PathlibPath>
   workspaces = {
-    default = require("pathlib").cwd(),
+    default = Path.cwd(),
   },
   -- The name for the index file.
   --
@@ -101,6 +101,20 @@ M.private = {
   ---@type { [1]: string, [2]: PathlibPath }
   current_workspace = { "default", Path.cwd() },
 }
+M.get_word_files = function(ws)
+  local res = {}
+  local w = M.public.get_workspace(ws)
+  if not w then return end
+  for path in w:fs_iterdir(true, 20) do
+    if path:is_file(true) and path:suffix() == ".md" then
+      table.insert(res, path)
+    end
+  end
+  return res
+end
+M.current = function()
+  return M.private.current_workspace
+end
 
 ---@class default.workspace
 M.public = {
@@ -118,10 +132,9 @@ M.public = {
       host_file = vim.fn.expand("%:p")
     end
     local filepath = Path(path)
-    -- Expand special chars like `$`
     local custom_workspace_path = filepath:match("^%$([^/\\]*)[/\\]")
     if custom_workspace_path then
-      ---@type workspace
+      ---@type mod.workspace
       local ws = mod.get_mod("workspace")
       if not workspace then
         log.error(table.concat({
@@ -188,7 +201,7 @@ M.public = {
   ---@param raw_path boolean? # If true, returns resolved path, otherwise, returns resolved path and append ".word"
   ---@return string? # Resolved path. If path does not start with `$` or not absolute, adds relative from current file.
   expand_path = function(path, raw_path)
-    local res = init.public.expand_pathlib(path, raw_path)
+    local res = M.public.expand_pathlib(path, raw_path)
     return res and res:tostring() or nil
   end,
   get_workspaces = function()
@@ -330,8 +343,8 @@ M.public = {
   end,
 
   ---@class default.workspace.create_file_opts
-  ---@field no_open? boolean do not open the file after creation?
-  ---@field force? boolean overwrite file if it already exists?
+  ---@field ['opts.no_open']? boolean do not open the file after creation?
+  ---@field ['opts.force']? boolean overwrite file if it already exists?
 
   --- Takes in a path (can include directories) and creates a .word file from that path
   ---@param path string|PathlibPath a path to place the .word file in
@@ -430,6 +443,61 @@ M.public = {
       local uri = vim.uri_from_fname(tostring(filepath))
       return vim.uri_to_bufnr(uri)
     end
+  end,
+  --- Returns a list of all files relative path from a `workspace_name`
+  ---@param workspace_name string
+  ---@return PathlibPath[]|nil
+  get_note_files = function(workspace_name)
+    local workspace = M.public.get_workspace(workspace_name)
+    if not workspace then
+      return
+    end
+    local n = M.required['note'].config.public.note_dir
+    local nd = Path(workspace / n)
+    local res = {} ---@type table<PathlibPath>
+    for path in nd:fs_iterdir(true, 20) do
+      if path:is_file(true) and path:suffix() == ".md" then
+        table.insert(res, path)
+      end
+    end
+    return res
+  end,
+  --- Returns a list of all files relative path from a `workspace_name`
+  ---@param workspace_name string
+  ---@return PathlibPath[]|nil
+  get_dirs = function(workspace_name)
+    local res = {}
+    local workspace = M.public.get_workspace(workspace_name)
+    if not workspace then
+      return
+    end
+
+    for path in workspace:fs_iterdir(true, 20) do
+      if path:is_file(false) then
+        table.insert(res, path)
+      end
+    end
+
+    return res
+  end,
+  --- Returns a list of all files relative path from a `workspace_name`
+  ---@param workspace_name string
+  ---@return PathlibPath[]|nil
+  get_files = function(workspace_name)
+    local res = {}
+    local workspace = M.public.get_workspace(workspace_name)
+
+    if not workspace then
+      return
+    end
+
+    for path in workspace:fs_iterdir(true, 20) do
+      if path:is_file(true) then
+        table.insert(res, path)
+      end
+    end
+
+    return res
   end,
   --- Returns a list of all files relative path from a `workspace_name`
   ---@param workspace_name string

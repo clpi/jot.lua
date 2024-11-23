@@ -46,7 +46,7 @@ M.load = function()
     success = true,
     requires = {
       "workspace",
-      "query",
+      "integration.treesitter",
     },
   }
 end

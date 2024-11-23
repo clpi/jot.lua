@@ -1,29 +1,11 @@
---[[
-    file: TOC
-    title: A Bird's Eye View of Norg Documents
-    description: The TOC init generates a table of contents for a given Norg buffer.
-    summary: Generates a table of contents for a given Norg buffer.
-    ---
-
-The TOC init exposes a single command - `:word toc`. This command can be executed with one of three
-optional arguments: `left`, `right` and `qflist`.
-
-When `left` or `right` is supplied, the Table of Contents split is placed on that side of the screen.
-When the `qflist` argument is provided, the whole table of contents is sent to the Neovim quickfix list,
-should that be more convenient for you.
-
-When in the TOC view, `<CR>` can be pressed on any of the entries to move to that location in the respective
-Norg document. The TOC view updates automatically when switching buffers.
---]]
-
 local word = require("word")
 local inits, utils, log = word.mod, word.utils, word.log
 
-local init = inits.create("insert.toc")
+local init = inits.create("edit.toc")
 
 init.setup = function()
   return {
-    requires = { "query", "ui", "cmd" },
+    requires = { "integration.treesitter", "ui", "cmd" },
   }
 end
 
@@ -50,7 +32,7 @@ init.load = function()
         vim.schedule(function()
           if vim.bo.filetype == "markdown" then
             next_open_is_auto = true
-            vim.cmd([[Word insert toc]])
+            vim.cmd([[Word edit toc]])
           end
         end)
       end,
@@ -135,7 +117,7 @@ init.public = {
   parse_toc_macro = function(buffer)
     local toc, toc_name = false, nil
 
-    local success = init.required["query"].execute_query(
+    local success = init.required["integration.treesitter"].execute_query(
       [[
                 (infirm_tag
                     (tag_name) @name
@@ -146,11 +128,11 @@ init.public = {
 
         if
             capture_name == "name"
-            and init.required["query"].get_node_text(node, buffer):lower() == "toc"
+            and init.required["integration.treesitter"].get_node_text(node, buffer):lower() == "toc"
         then
           toc = true
         elseif capture_name == "parameters" and toc then
-          toc_name = init.required["query"].get_node_text(node, buffer)
+          toc_name = init.required["integration.treesitter"].get_node_text(node, buffer)
           return true
         end
       end,
@@ -192,9 +174,9 @@ init.public = {
 
         if prefix and title then
           local prefix_text =
-              init.required["query"].get_node_text(prefix, original_buffer)
+              init.required["integration.treesitter"].get_node_text(prefix, original_buffer)
           local title_text =
-              init.required["query"].get_node_text(title, original_buffer)
+              init.required["integration.treesitter"].get_node_text(title, original_buffer)
 
           if prefix_text:sub(1, 1) ~= "*" and prefix_text:match("^%W%W") then
             prefix_text = table.concat({ prefix_text:sub(1, 1), " " })
@@ -281,7 +263,7 @@ init.public = {
         )]]
         )
 
-    local norg_root = init.required["query"].get_document_root(norg_buffer)
+    local norg_root = init.required["integration.treesitter"].get_document_root(norg_buffer)
     if not norg_root then
       return
     end

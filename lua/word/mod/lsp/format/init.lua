@@ -9,7 +9,7 @@ M.load = function()
   return {
     success = true,
     requires = {
-      "query",
+      "integration.treesitter",
       "workspace",
     },
   }
@@ -19,7 +19,7 @@ local workspace, workspace, ts
 M.load = function()
   -- TODO: how would I get types in here?
   ---@type treesitter
-  ts = M.required["query"]
+  ts = M.required["integration.treesitter"]
   workspace = M.required["workspace"]
 end
 

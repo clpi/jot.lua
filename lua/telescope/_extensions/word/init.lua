@@ -1,5 +1,6 @@
 local hastel, tel = pcall(require, "telescope")
 local hasact, act = pcall(require, "telescope.actions")
+local wp = require("telescope._extensions.word.picker")
 -- local set = require("telescope.actions.set")
 -- local sta = require("telescope.actions.state")
 -- local edi = require("telescope.pickers.entry_display")
@@ -7,7 +8,8 @@ local hasact, act = pcall(require, "telescope.actions")
 local haspic, pic = pcall(require, "telescope.pickers")
 local hassrt, srt = pcall(require, "telescope.sorters")
 local hasfnd, fnd = pcall(require, "telescope.finders")
-local haspre, pre = pcall(require,"telescope.previewers"))
+local haspre, pre = pcall(require, "telescope.previewers")
+-- local haspre, pre = pcall(require,"telescope.")
 local hasbui, bui = pcall(require, "telescope.builtin")
 -- local win = require("telescope.pickers.window")
 
@@ -69,6 +71,9 @@ end
 return tel.register_extension {
   -- setup = word.setup,
   exports = {
-    -- word = require("telescope.builtin").find_files
+    word = require("telescope.builtin").find_files,
+    find_word = require("_extensions.word.picker.find_md"),
+    linkables = require("lua.telescope._extensions.word.picker.linkable"),
+    workspace = require=
   }
 }

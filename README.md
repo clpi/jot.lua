@@ -6,7 +6,7 @@
 
 ---
 
-> [!Warning]
+> [!Important]
 >
 > `word.lua` is **BEGINNING DEVELOPMENT**
 
@@ -283,6 +283,7 @@ special thanks goes to [nvim-neorg/neorg](https://github.com/nvim-neorg/neorg) f
 thank you and keep updated!
 
 - [The `word.lua` book](https://word.cli.st)
+- [The `word.lua` wiki](https://github.com/clpi/word.lua/wiki)
 - [`word.lua` on luarocks](https://luarocks.org/inits/clpi/word.lua)
 - [`word.lua` on dotfyle](https://dotfyle.com/plugins/clpi/word.lua)
 

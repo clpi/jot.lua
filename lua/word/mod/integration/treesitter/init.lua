@@ -1,26 +1,7 @@
---[[
-    file: Treesitter-Integration
-    title: Snazzy Treesitter Integration
-    summary: A init designed to integrate Treesitter into word.
-    embed: https://user-images.githubusercontent.com/76052559/151668244-9805afc4-8c50-4925-85ec-1098aff5ede6.gif
-    internal: true
-    ---
-
-## Keybinds
-
-This init exposes the following keybinds (see [`core.keybinds`](@core.keybinds) for instructions on
-mapping them):
-
-- `word.treesitter.next.heading` - jump to the next heading
-- `word.treesitter.next.link` - jump to the next link
-- `word.treesitter.previous.heading` - jump to the previous heading
-- `word.treesitter.previous.link` - jump to the previous link
---]]
-
 local word = require("word")
 local lib, log, inits, utils = word.lib, word.log, word.mod, word.utils
 
-local init = inits.create("query")
+local init = inits.create("integration.treesitter")
 
 init.private = {
   ts_utils = nil,

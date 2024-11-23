@@ -10,15 +10,15 @@ vim.cmd [[
 local word = require("word")
 word.setup(
   {
-    load = {
+    mods = {
+      config = {},
       workspace = {
         config = {
           workspaces = {
-            book = "./book"
+            book = "./docs/src"
           }
         }
       },
-      base = {},
     }
   }
 )

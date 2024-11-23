@@ -170,7 +170,7 @@ local Path = require("pathlib")
 init.setup = function()
   return {
     requires = {
-      "query",
+      "integration.treesitter",
       "cmd",
     },
   }
@@ -223,7 +223,7 @@ end
 init.public = {
   code = function(buffer)
     ---@type base.treesitter
-    local treesitter = init.required["query"]
+    local treesitter = init.required["integration.treesitter"]
     local parsed_document_metadata = treesitter.get_document_metadata(buffer) or {}
     local code_settings = parsed_document_metadata.code or {}
     local options = {

@@ -30,7 +30,7 @@ M.setup = function()
     success = true,
     requires = {
       "workspace",
-      "query",
+      "integration.treesitter",
     },
   }
 end

@@ -3,17 +3,20 @@
 Welcome -- to the `word.lua` book. I hope this helps!
 
 - [Intro](./index.md)
+- [Intro](./intro.md)
 - [Philosophy](./philosophy.md)
-- [About](./about.md)
 - [Setup](./setup.md)
+- [About](./about.md)
 
   - [Options](./about/options.md)
   - [Commands](./about/commands.md)
   - [Autocommands](./about/autocommands.md)
+  - [Compare](./about/compare.md)
 
 - [Configuring](./config.md)
 
   - [Setting up](./config/setting-up.md)
+  - [Keymaps](./config/keymaps.md)
   - [Basic](./config/basic.md)
   - [Advanced](./config/advanced.md)
 
@@ -30,7 +33,6 @@ Welcome -- to the `word.lua` book. I hope this helps!
   - [Highlights](./customizing/highlights.md)
 
 - [Export](./export.md)
-
   - [Frameworks](./publish/frameworks.md)
   - [org](./export/org.md)
 
@@ -40,11 +42,19 @@ Welcome -- to the `word.lua` book. I hope this helps!
   - [Blog](./publish/blog.md)
   - [Digital garden](./publish/digital_garden.md)
 
-- [Support](./support.md)
+- [Plans](./plans/index.md)
+  - [Near](./plans/near.md)
+  - [Far](./plans/far.md)
 
+- [Support](./support.md)
   - [Issues](./contributing/issues.md)
   - [Contributing](./contributing/discussions.md)
   - [Sponsorship](./contributing/sponsorship.md)
+- [Tools](./tools/index.md)
+
+  - [Mobile](./tools/mobile.md)
+  - [Desktop](./tools/desktop.md)
+  - [Cli](./tools/cli.md)
 
 - [Contributing](./contributing/intro.md)
 - [Final thoughts](./final_thoughts.md)

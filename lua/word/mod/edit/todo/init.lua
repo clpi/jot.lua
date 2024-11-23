@@ -1,34 +1,10 @@
---[[
-    file: Todo-Items
-    title: Todo Item Swiss Army Knife
-    summary: init for implementing todo lists.
-    ---
-This init handles the whole concept of toggling TODO items, as well as updating
-parent and/or children items alongside the current item.
-
-The following keybinds are exposed (with their default binds):
-- `<Plug>(word.qol.todo-items.todo.task-done)` (`<LocalLeader>td`)
-- `<Plug>(word.qol.todo-items.todo.task-undone)` (`<LocalLeader>tu`)
-- `<Plug>(word.qol.todo-items.todo.task-pending)` (`<LocalLeader>tp`)
-- `<Plug>(word.qol.todo-items.todo.task-on_hold)` (`<LocalLeader>th`)
-- `<Plug>(word.qol.todo-items.todo.task-cancelled)` (`<LocalLeader>tc`)
-- `<Plug>(word.qol.todo-items.todo.task-recurring)` (`<LocalLeader>tr`)
-- `<Plug>(word.qol.todo-items.todo.task-important)` (`<LocalLeader>ti`)
-- `<Plug>(word.qol.todo-items.todo.task-cycle)` (`<C-Space>`)
-- `<Plug>(word.qol.todo-items.todo.task-cycle-reverse)` (no default keybind)
-
-With your cursor on a line that contains an item with a TODO attribute, press
-any of the above keys to toggle the state of that particular item.
-Parent items of the same type and children items of the same type are update accordingly.
---]]
-
 local word = require("word")
 local log, inits = word.log, word.mod
 
-local init = inits.create("insert.todo")
+local init = inits.create("edit.todo")
 
 init.setup = function()
-  return { success = true, requires = { "query" } }
+  return { success = true, requires = { "integration.treesitter" } }
 end
 
 init.load = function()
@@ -227,7 +203,7 @@ init.private = {
       return
     end
 
-    local range = init.required["query"].get_node_range(first_status_extension)
+    local range = init.required["integration.treesitter"].get_node_range(first_status_extension)
 
     -- Replace the line where the todo item is situated
     vim.api.nvim_buf_set_text(
@@ -260,7 +236,7 @@ init.private = {
   --- Tries to locate a todo node under the cursor
   ---@return userdata? #The node if it was located, else nil
   get_todo_from_cursor = function(buf, line)
-    local node_at_cursor = init.required["query"].get_first_node_on_line(buf, line)
+    local node_at_cursor = init.required["integration.treesitter"].get_first_node_on_line(buf, line)
 
     if not node_at_cursor then
       return
@@ -334,7 +310,7 @@ init.private = {
 
       vim.api.nvim_buf_set_text(buf, row, column, row, column, { "(" .. char .. ") " })
     else
-      local range = init.required["query"].get_node_range(first_status_extension)
+      local range = init.required["integration.treesitter"].get_node_range(first_status_extension)
 
       vim.api.nvim_buf_set_text(
         buf,

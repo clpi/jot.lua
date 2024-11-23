@@ -22,13 +22,13 @@ M.setup = function()
   return {
     success = true,
     requires = {
-      "query",
+      "integration.treesitter",
     },
   }
 end
 
 M.load = function()
-  -- ts = mod.required["query"]
+  -- ts = mod.required["integration.treesitter"]
 end
 
 M.private = {

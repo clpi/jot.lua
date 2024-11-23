@@ -1,7 +1,9 @@
+local M = require("word.mod").create("edit", {
+  "toc", "todo",
+})
 local word = require("word")
 local config, lib, log, mod = word.cfg, word.lib, word.log, word.mod
 
-local M = mod.create("move")
 
 M.setup = function()
   return {

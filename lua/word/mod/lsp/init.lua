@@ -19,7 +19,7 @@ M.setup = function()
   return {
     success = true,
     requires = {
-      "query",
+      "integration.treesitter",
       "workspace",
       "cmd",
       "ui.popup",
@@ -102,7 +102,7 @@ M.load = function()
       },
     },
   })
-  ts = M.required["query"]
+  ts = M.required["integration.treesitter"]
   workspace = M.required["workspace"]
   refactor = M.required["lsp.refactor"]
   format = M.required["lsp.format"]

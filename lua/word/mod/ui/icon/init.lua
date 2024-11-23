@@ -74,7 +74,7 @@ module.setup = function()
   return {
     success = true,
     requires = {
-      "query",
+      "integration.treesitter",
     },
   }
 end
@@ -1113,7 +1113,7 @@ local function prettify_range(bufid, row_start_0b, row_end_0bex)
   -- TODO: optimize
   row_end_0bex = math.min(row_end_0bex + 1, vim.api.nvim_buf_line_count(bufid))
 
-  local treesitter_module = module.required["query"]
+  local treesitter_module = module.required["integration.treesitter"]
   local document_root = treesitter_module.get_document_root(bufid)
   assert(document_root)
 

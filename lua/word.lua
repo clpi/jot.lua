@@ -23,6 +23,8 @@ W = {
   lib = require("word.util.lib")
 }
 
+_G.Mod = W.mod
+
 local con, log, modu, utils = require "word.config".config, W.log, W.mod, W.utils
 local a, f, ext = vim.api, vim.fn, vim.tbl_deep_extend
 
