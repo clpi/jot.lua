@@ -74,7 +74,7 @@ return tel.register_extension {
     todo = bui.live_grep,
     lsp = bui.lsp_definitions,
     books = bui.fd,
-    find_word = require("telescope._extensions.word.picker.find_md"),
+    find_word = require("telescope._extensions.word.picker.files"),
     linkables = require("telescope._extensions.word.picker.linkable"),
     workspace = require("telescope._extensions.word.picker.workspace")
   }

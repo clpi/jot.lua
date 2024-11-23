@@ -4,6 +4,7 @@ local c = coroutine
 local async = require("table")
 local s = require("string")
 local io = require("io")
+local e = require("os")
 
 local i, o, e = io.stdin, io.stdout, io.stderr
 os.execute("ls")

@@ -22,9 +22,18 @@ their titles.
 local word = require("word")
 local config, lib, log, mod = require("word.config").config, word.lib, word.log, word.mod
 
-local M = mod.create("note")
+local M = Mod.create("note")
 
 
+M.weekdays = {
+  "Sunday",
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+}
 M.months = {
   "January",
   "February",
@@ -39,12 +48,30 @@ M.months = {
   "November",
   "December",
 }
-
-
+M.number_to_weekday = function(n)
+  return M.weekday[n]
+end
+M.number_to_month = function(n)
+  return M.months[n]
+end
+M.year = tonumber(os.date("%Y"))
+M.month = tonumber(os.date("%m"))
+M.day = tonumber(os.date("%d"))
+M.timetable = {
+  year = M.year,
+  month = M.month,
+  day = M.day,
+  hour = 0,
+  min = 0,
+  sec = 0,
+}
+M.time = os.time()
+M.weekday = tonumber(os.date("%w", os.time(M.timetable)))
 M.setup = function()
   return {
     success = true,
     requires = {
+      "data",
       "workspace",
       "integration.treesitter",
     },
@@ -57,13 +84,50 @@ M.private = {
 
   end,
   year_index = function()
-
+    local yr = os.date("%Y")
+    local ws = M.config.public.workspace or M.required.workspace.get_current_workspace()[1]
+    local ws_path = M.required.workspace.get_workspace(ws)
+    local ix = M.config.public.note_folder .. config.pathsep .. yr .. config.pathsep .. "index.md"
+    local path = ws_path .. config.pathsep .. ix
+    local index_exists = M.required.workspace.file_exists(path)
+    if index_exists then
+      M.required.workspace.open_file(ws, ix)
+    else
+      M.required.workspace.create_file(ix, ws)
+      M.required.workspace.open_file(ws, ix)
+    end
   end,
   month_index = function()
+    local yr = os.date("%Y")
+    local mo = os.date("%m")
+    local ws = M.config.public.workspace or M.required.workspace.get_current_workspace()[1]
+    local ws_path = M.required.workspace.get_workspace(ws)
+    local ix = M.config.public.note_folder ..
+        config.pathsep .. yr .. config.pathsep .. mo .. config.pathsep .. "index.md"
+    local path = ws_path .. config.pathsep .. ix
+    local index_exists = M.required.workspace.file_exists(path)
+    if index_exists then
+      M.required.workspace.open_file(ws, ix)
+    else
+      M.required.workspace.create_file(ix, ws)
+      M.required.workspace.open_file(ws, ix)
+    end
+  end,
+  select_month = function()
 
   end,
-  open_index = function()
-
+  note_index = function()
+    local ws = M.config.public.workspace or M.required.workspace.get_current_workspace()[1]
+    local ws_path = M.required.workspace.get_workspace(ws)
+    local ix = M.config.public.note_folder .. config.pathsep .. "index.md"
+    local path = ws_path .. config.pathsep .. ix
+    local index_exists = M.required.workspace.file_exists(path)
+    if index_exists then
+      M.required.workspace.open_file(ws, ix)
+    else
+      M.required.workspace.create_file(ix, ws)
+      M.required.workspace.open_file(ws, ix)
+    end
   end,
   --- Opens a note entry at the given time
   ---@param time? number #The time to open the note entry at as returned by `os.time()`
@@ -612,7 +676,7 @@ end
 M.on_event = function(event)
   if event.split_type[1] == "cmd" then
     if event.split_type[2] == "note.index" then
-      M.private.open_index()
+      M.private.note_index()
     elseif event.split_type[2] == "note.week" or event.split_type[2] == "note.week.index" then
       M.private.week_index()
     elseif event.split_type[2] == "note.week.previous" then
@@ -708,67 +772,4 @@ M.events.subscribed = {
   },
 }
 
-M.examples = {
-  ["Changing TOC format to divide year in quarters"] = function()
-    -- In your ["note"] options, change toc_format to a function like this:
-
-    require("word").setup({
-      load = {
-        -- ...
-        ["note"] = {
-          config = {
-            -- ...
-            toc_format = function(entries)
-              -- Convert the entries into a certain format
-
-              local output = {}
-              local current_year
-              local current_quarter
-              local last_quarter
-              local current_month
-              for _, entry in ipairs(entries) do
-                -- Don't print the year if it hasn't changed
-                if not current_year or current_year < entry[1] then
-                  current_year = entry[1]
-                  current_month = nil
-                  table.insert(output, "* " .. current_year)
-                end
-
-                -- Check to which quarter the current month corresponds to
-                if entry[2] <= 3 then
-                  current_quarter = 1
-                elseif entry[2] <= 6 then
-                  current_quarter = 2
-                elseif entry[2] <= 9 then
-                  current_quarter = 3
-                else
-                  current_quarter = 4
-                end
-
-                -- If the current month corresponds to another quarter, print it
-                if current_quarter ~= last_quarter then
-                  table.insert(output, "** Quarter " .. current_quarter)
-                  last_quarter = current_quarter
-                end
-
-                -- Don't print the month if it hasn't changed
-                if not current_month or current_month < entry[2] then
-                  current_month = entry[2]
-                  table.insert(output, "*** Month " .. current_month)
-                end
-
-                -- Prints the file link
-                table.insert(output, "   " .. entry[4] .. string.format("[%s]", entry[5]))
-              end
-
-              return output
-            end,
-            -- ...
-          },
-        },
-      },
-    })
-  end,
-
-}
 return M

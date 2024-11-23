@@ -9,7 +9,6 @@
 
 local uv = vim.loop or vim.uv
 local lu = vim.lsp.util
-local co = coroutine
 local cb = require("word.util.callback")
 local config = require("word.config").config
 local log = require("word.util.log")
@@ -72,7 +71,7 @@ _G.Mod = {}
 --- @param name string The name of the new init. Modake sure this is unique. The recommended naming convention is `category.mod_name` or `category.subcategory.mod_name`.
 --- @param imports? string[] A list of imports to attach to the init. Import data is requestable via `init.required`. Use paths relative to the current init.
 --- @return word.mod
-function Mod.create(name, imports)
+function _G.Mod.create(name, imports)
   ---@type word.mod
   -- local new_mod = require("word.mod.default").default_mod
   local new_mod = {
@@ -148,7 +147,7 @@ end
 --- @param name string The name of the new metainit. Modake sure this is unique. The recommended naming convention is `category.mod_name` or `category.subcategory.mod_name`.
 --- @param ... string A list of init names to load.
 --- @return word.mod
-Mod.create_meta = function(name, ...)
+_G.Mod.create_meta = function(name, ...)
   local m = Mod.create(name)
 
   m.config.public.enable = { ... }
@@ -406,9 +405,9 @@ end
 --- @param mod_name string A path to a init on disk. A path seperator in word is '.', not '/'.
 --- @param cfg table? A config that reflects the structure of `word.config.user.setup["init.name"].config`.
 --- @return boolean # Whether the init was successfully loaded.
-function Mod.setup_mod(mod_name, cfg)
+function _G.Mod.setup_mod(mod_name, cfg)
   -- Don't bother loading the init from disk if it's already loaded
-  if Mod.is_mod_loaded(mod_name) then
+  if _G.Mod.is_mod_loaded(mod_name) then
     return true
   end
 
@@ -418,8 +417,8 @@ function Mod.setup_mod(mod_name, cfg)
   -- If the init is nil for some reason return false
   if not modl then
     log.error(
-      "Unable to load init",
-      mod_name,
+      "Unable to load init" ..
+      mod_name ..
       "- loaded file returned nil. Be sure to return the table created by mod.create() at the end of your init.lua file!"
     )
     return false
@@ -429,8 +428,8 @@ function Mod.setup_mod(mod_name, cfg)
   -- We obviously can't do anything meaningful with that!
   if modl == true then
     log.error(
-      "An error has occurred when loading",
-      mod_name,
+      "An error has occurred when loading" ..
+      mod_name ..
       "- loaded file didn't return anything meaningful. Be sure to return the table created by mod.create() at the end of your init.lua file!"
     )
     return false
@@ -452,7 +451,7 @@ end
 --- Has the same principle of operation as load_mod_from_table(), except it then sets up the parent init's "required" table, allowing the parent to access the child as if it were a dependency.
 --- @param init word.mod A valid table as returned by mod.create()
 --- @param parent_mod string|word.mod If a string, then the parent is searched for in the loaded mod. If a table, then the init is treated as a valid init as returned by mod.create()
-function Mod.setup_mod_as_dependency_from_table(init, parent_mod)
+function _G.Mod.setup_mod_as_dependency_from_table(init, parent_mod)
   if Mod.setup_mod_from_table(init) then
     if type(parent_mod) == "string" then
       Mod.loaded_mod[parent_mod].required[init.name] = init.public
@@ -466,7 +465,7 @@ end
 --- @param mod_name string A path to a init on disk. A path seperator in word is '.', not '/'
 --- @param parent_mod string The name of the parent init. This is the init which the dependency will be attached to.
 --- @param cfg? table A config that reflects the structure of word.config.user.setup["init.name"].config
-function Mod.setup_mod_as_dependency(mod_name, parent_mod, cfg)
+function _G.Mod.setup_mod_as_dependency(mod_name, parent_mod, cfg)
   if Mod.setup_mod(mod_name, cfg) and Mod.is_mod_loaded(parent_mod) then
     Mod.loaded_mod[parent_mod].required[mod_name] = Mod.get_mod_config(mod_name)
   end
@@ -476,7 +475,7 @@ end
 --- @generic T
 --- @param mod_name `T` The name of the init to retrieve.
 --- @return T?
-function Mod.get_mod(mod_name)
+function _G.Mod.get_mod(mod_name)
   if not Mod.is_mod_loaded(mod_name) then
     log.trace("Attempt to get init with name", mod_name, "failed - init is not loaded.")
     return
@@ -488,7 +487,7 @@ end
 --- Returns the init.config.public table if the init is loaded
 --- @param mod_name string The name of the init to retrieve (init must be loaded)
 --- @return table?
-function Mod.get_mod_config(mod_name)
+function _G.Mod.get_mod_config(mod_name)
   if not Mod.is_mod_loaded(mod_name) then
     log.trace("Attempt to get init config with name", mod_name, "failed - init is not loaded.")
     return
@@ -500,14 +499,14 @@ end
 --- Returns true if init with name mod_name is loaded, false otherwise
 --- @param mod_name string The name of an arbitrary init
 --- @return boolean
-function Mod.is_mod_loaded(mod_name)
+function _G.Mod.is_mod_loaded(mod_name)
   return Mod.loaded_mod[mod_name] ~= nil
 end
 
 --- Reads the init's public table and looks for a version variable, then converts it from a string into a table, like so: `{ major = <number>, minor = <number>, patch = <number> }`.
 --- @param mod_name string The name of a valid, loaded init.
 --- @return table? parsed_version
-function Mod.get_mod_version(mod_name)
+function _G.Mod.get_mod_version(mod_name)
   -- If the init isn't loaded then don't bother retrieving its version
   if not Mod.is_mod_loaded(mod_name) then
     log.trace("Attempt to get init version with name", mod_name, "failed - init is not loaded.")
@@ -529,7 +528,7 @@ end
 --- Executes `callback` once `init` is a valid and loaded init, else the callback gets instantly executed.
 --- @param mod_name string The name of the init to listen for.
 --- @param callback fun(mod_public_table: word.mod.public) The callback to execute.
-function Mod.await(mod_name, callback)
+function _G.Mod.await(mod_name, callback)
   if Mod.is_mod_loaded(mod_name) then
     callback(assert(Mod.get_mod(mod_name)))
     return
@@ -610,7 +609,7 @@ end
 --        If type == 'some_plugin.events.my_event', this function will return { 'some_plugin', 'my_event' }
 --- @param type string The full path of a init event
 --- @return string[]?
-function Mod.split_event_type(type)
+function _G.Mod.split_event_type(type)
   local start_str, end_str = type:find("%.events%.")
 
   local split_event_type = { type:sub(0, start_str - 1), type:sub(end_str + 1) }
@@ -627,7 +626,7 @@ end
 --- @param init word.mod A reference to the init invoking the function
 --- @param type string A full path to a valid event type (e.g. `init.events.some_event`)
 --- @return word.event?
-function Mod.get_event_template(init, type)
+function _G.Mod.get_event_template(init, type)
   -- You can't get the event template of a type if the type isn't loaded
   if not Mod.is_mod_loaded(init.name) then
     log.info("Unable to get event of type", type, "with init", init.name)
@@ -733,7 +732,7 @@ end
 --- Sends an event to all subscribed mod. The event contains the filename, filehead, cursor position and line content as a bonus.
 --- @param event word.event An event, usually created by `mod.create_event()`.
 --- @param callback function? A callback to be invoked after all events have been asynchronously broadcast
-function Mod.broadcast_event(event, callback)
+function _G.Mod.broadcast_event(event, callback)
   -- Broadcast the event to all mod
   if not event.split_type then
     log.error("Unable to broadcast event of type", event.type, "- invalid event name")
@@ -768,7 +767,7 @@ end
 --- Instead of broadcasting to all loaded mod, `send_event()` only sends to one init.
 --- @param recipient string The name of a loaded init that will be the recipient of the event.
 --- @param event word.event An event, usually created by `mod.create_event()`.
-function Mod.send_event(recipient, event)
+function _G.Mod.send_event(recipient, event)
   -- If the recipient is not loaded then there's no reason to send an event to it
   if not Mod.is_mod_loaded(recipient) then
     log.warn("Unable to send event to init", recipient, "- the init is not loaded.")

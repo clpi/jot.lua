@@ -3,6 +3,11 @@ all: slint llint clean
 v:
   nvim -u test/minit.lua
 
+w:
+  ./scripts/bin/word
+
+t:
+  nvim --headless --noplugin -u test/minit.lua
 slint :
   stylua --check .
 
@@ -22,4 +27,3 @@ install:
 
 book:
   cd docs && mdbook build
-

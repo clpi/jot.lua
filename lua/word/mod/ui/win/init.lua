@@ -37,6 +37,18 @@ M.public = {
     local win = vim.api.nvim_open_win(buf, true, opts)
     return { buf, win }
   end,
+  win = function(bufnr)
+    vim.api.nvim_open_win(bufnr, false, {
+      relative = "win",
+      width = vim.api.nvim_win_get_width(0) - 0,
+      height = 100,
+      row = 0,
+      col = 0,
+      focusable = false,
+      style = "minimal",
+      noautocmd = true,
+    })
+  end,
   create_new = function()
     local content = [[
   # Hello World

@@ -1,10 +1,10 @@
 local word = require("word")
 local lib, mod, utils, log = word.lib, word.mod, word.utils, word.log
 
-local init = mod.create("code", { 'run' })
+local M = Mod.create("code", { 'run' })
 local Path = require("pathlib")
 
-init.setup = function()
+M.setup = function()
   return {
     requires = {
       "integration.treesitter",
@@ -13,7 +13,7 @@ init.setup = function()
   }
 end
 
-init.load = function()
+M.load = function()
   mod.await("cmd", function(cmd)
     cmd.add_commands_from_table({
       code = {
@@ -34,7 +34,7 @@ init.load = function()
     })
   end)
 
-  if init.config.public.code_on_write then
+  if M.config.public.code_on_write then
     local augroup = vim.api.nvim_create_augroup("word_auto_code", { clear = true })
     vim.api.nvim_create_autocmd("BufWritePost", {
       desc = "code the current file on write",
@@ -57,10 +57,10 @@ local function get_comment_string(language)
 end
 
 ---@class base.code
-init.public = {
+M.public = {
   code = function(buffer)
     ---@type base.treesitter
-    local treesitter = init.required["integration.treesitter"]
+    local treesitter = M.required["integration.treesitter"]
     local parsed_document_metadata = treesitter.get_document_metadata(buffer) or {}
     local code_settings = parsed_document_metadata.code or {}
     local options = {
@@ -122,7 +122,7 @@ init.public = {
       if capture == "tag" then
         local ok, parsed_tag = pcall(treesitter.get_tag_info, node, true)
         if not ok then
-          if init.config.public.indent_errors == "print" then
+          if M.config.public.indent_errors == "print" then
             print(parsed_tag)
           else
             log.error(parsed_tag)
@@ -283,8 +283,27 @@ init.public = {
     return codes
   end,
 }
-
-init.config.public = {
+M.public = {
+  cursorInCodeBlock = function(cursor_row, reverse)
+    if reverse == nil or reverse == false then
+      reverse = false
+    else
+      reverse = true
+    end
+    local lines = reverse and vim.api.nvim_buf_get_lines(0, cursor_row - 1, -1, false)
+        or vim.api.nvim_buf_get_lines(0, 0, cursor_row, false)
+    local fences = 0
+    for _, line_text in ipairs(lines) do
+      local _, count = string.gsub(line_text, '^```', '```')
+      fences = fences + count
+    end
+    if fences % 2 == 0 then
+      return false
+    end
+    return true
+  end
+}
+M.config.public = {
   -- Notify when there is nothing to code (INFO) or when the content is empty (WARN).
   report_on_empty = true,
 
@@ -299,12 +318,12 @@ init.config.public = {
   indent_errors = "notify",
 }
 
-init.on_event = function(event)
+M.on_event = function(event)
   if event.type == "cmd.events.base.code.current-file" then
-    local codes = init.public.code(event.buffer)
+    local codes = M.public.code(event.buffer)
 
     if not codes or vim.tbl_isempty(codes) then
-      if init.config.public.report_on_empty then
+      if M.config.public.report_on_empty then
         utils.notify("Nothing to code!", vim.log.levels.INFO)
       end
       return
@@ -325,7 +344,7 @@ init.on_event = function(event)
         assert(not err and fd, lib.lazy_string_concat("Failed to open file '", file, "' for tangling: ", err))
 
         local write_content = table.concat(content, "\n")
-        if init.config.public.report_on_empty and write_content:len() == 0 then
+        if M.config.public.report_on_empty and write_content:len() == 0 then
           vim.schedule(function()
             utils.notify(string.format("coded content for %s is empty.", file), vim.log.levels.WARN)
           end)
@@ -353,11 +372,11 @@ init.on_event = function(event)
   end
 end
 
-init.events.subscribed = {
+M.events.subscribed = {
   ["cmd"] = {
     ["code.current-file"] = true,
     ["code.directory"] = true,
   },
 }
 
-return init
+return M

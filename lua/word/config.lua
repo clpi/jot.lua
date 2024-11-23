@@ -15,7 +15,6 @@ local f = vim.fn
 --- @field arguments table<string, string>                   A list of arguments provided to the `:wordStart` function in the form of `key=value` pairs. Only applicable when `user_config.lazy_loading` is `true`.
 --- @field manual boolean?                                   Used if word was manually loaded via `:wordStart`. Only applicable when `user_config.lazy_loading` is `true`.
 --- @field mods table<string, word.configuration.init> Acts as a copy of the user's configuration that may be modified at runtime.
---- @field word_version string                               The version of the file format to be used throughout word. Used internally.
 --- @field os_info OperatingSystem                           The operating system that word is currently running under.
 --- @field pathsep "\\"|"/"                                  The operating system that word is currently running under.
 --- @field started boolean                                   Set to `true` when word is fully initialized.
@@ -33,7 +32,9 @@ local f = vim.fn
 -- TODO: What goes below this line until the next notice used to belong to mod
 C.config = {
   user = {
+    mods = {
 
+    }
   },
 
   data = f.stdpath("data") .. "/word.mpack",
@@ -41,6 +42,7 @@ C.config = {
   ft = {
     md = true,
     rmd = true,
+    mdx = true,
     markdown = true
   },
 
@@ -50,7 +52,6 @@ C.config = {
 
   -- word_version = wv.word_version,
   -- version = wv.version,
-  word_version = "0.1.0",
   version = "0.1.0",
 
   os_info = os_info,
@@ -66,20 +67,20 @@ C.word_version = "0.1.0"
 C.setup_telescope = function()
 end
 C.n = function(k, c)
-  vim.api.nvim_set_keymap("n", k, c, { noremap = true, silent = true })
+  vim.api.nvim_set_keymap("n", k, c, { silent = true })
 end
 C.ni = function(k, c)
-  vim.api.nvim_set_keymap("n", k, c, { noremap = true, silent = false })
+  vim.api.nvim_set_keymap({ "n", "i" }, k, c, { silent = true })
 end
-function C:setup_maps()
-  self.n(",wi", "<CMD>Word index<CR>")
-  self.n(",wn", "<CMD>Word note today<CR>")
-  self.n(",w", "<CMD>Word note yesterday<CR>")
-  self.n(",wt", "<CMD>Word note tomorrow<CR>")
-  self.n(",ww", "<CMD>Telescope word workspace<CR>")
-  self.n(",ww", "<CMD>Telescope word todo<CR>")
-  self.n(",wl", "<CMD>Word lsp lens<CR>")
-  self.n(",wa", "<CMD>Word lsp action<CR>")
+function C.setup_maps()
+  vim.api.nvim_set_keymap(",wi", "<CMD>Word index<CR>", {})
+  vim.api.nvim_set_keymap(",wn", "<CMD>Word note today<CR>", {})
+  vim.api.nvim_set_keymap(",w", "<CMD>Word note yesterday<CR>", {})
+  vim.api.nvim_set_keymap(",wt", "<CMD>Word note tomorrow<CR>", {})
+  vim.api.nvim_set_keymap(",ww", "<CMD>Telescope word workspace<CR>", {})
+  vim.api.nvim_set_keymap(",ww", "<CMD>Telescope word todo<CR>", {})
+  vim.api.nvim_set_keymap(",wl", "<CMD>Word lsp lens<CR>", {})
+  vim.api.nvim_set_keymap(",wa", "<CMD>Word lsp action<CR>", {})
 end
 
 C.setup_opts = function()

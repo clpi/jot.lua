@@ -341,6 +341,9 @@ M.public = {
       })
     end)
   end,
+  select_workspace = function()
+
+  end,
 
   ---@class default.workspace.create_file_opts
   ---@field ['opts.no_open']? boolean do not open the file after creation?

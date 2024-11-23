@@ -3,9 +3,9 @@ local Path = require("plenary.path")
 local mod = word.mod
 local log = word.log
 
-local M = mod.create("lsp.format")
+local M = Mod.create("lsp.format")
 
-M.load = function()
+M.setup = function()
   return {
     success = true,
     requires = {
@@ -15,6 +15,9 @@ M.load = function()
   }
 end
 
+M.format_document = function()
+
+end
 local workspace, workspace, ts
 M.load = function()
   -- TODO: how would I get types in here?

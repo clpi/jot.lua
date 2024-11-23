@@ -1,6 +1,9 @@
 index.md
 .vscode
 lib/
+**node_modules
+ext/
+**.ropeproject/
 **notes/
 /luarocks
 /lua_modules

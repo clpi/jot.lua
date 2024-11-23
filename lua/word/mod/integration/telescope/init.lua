@@ -11,7 +11,7 @@ end
 M.private           = {
   picker_names = {
     "linkable",
-    "find_md",
+    "files",
     -- "insert_link",
     -- "insert_file_link",
     -- "search_headings",
@@ -38,6 +38,7 @@ end
 M.events.subscribed = {
   cmd = {
     ["cmd.integration.telescope.find.files"] = true,
+    ["cmd.integration.telescope.find.linkable"] = true,
     ["cmd.integration.telescope.find.workspace"] = true,
   }
 }
@@ -48,6 +49,11 @@ M.load              = function()
         args = 0,
         name = "integration.telescope.find",
         subcommands = {
+          linkable = {
+            name = "cmd.integration.telescope.find.linkable",
+            args = 0,
+
+          },
           files = {
             name = "cmd.integration.telescope.find.files",
             args = 0,

@@ -1,9 +1,9 @@
-local utils = require("telescope._extensions.word.util")
+local util = require("telescope._extensions.word.util")
 
 return function(opts)
   opts = opts or {}
 
-  local current_workspace = utils.get_current_workspace()
+  local current_workspace = util.get_current_workspace()
 
   if not current_workspace then
     return

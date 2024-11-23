@@ -14,6 +14,7 @@ M.setup = function()
       "ui.popup",
       "ui.inline",
       "ui.win",
+      'ui.progress',
       "workspace",
       "integration.treesitter",
     },
@@ -88,12 +89,13 @@ M.private = {
 
   --- Opens a log entry for tomorrow's date
   log_tomorrow = function()
+    -- M.required['ui.progress'].start()
     M.required['ui.win'].create_new()
   end,
 
   --- Opens a log entry for yesterday's date
   log_yesterday = function()
-    M.private.open_log(os.time() - 24 * 60 * 60)
+    M.required['ui.win'].win(0)
   end,
 
   --- Opens a log entry for new's date
@@ -101,7 +103,7 @@ M.private = {
     vim.ui.input({
       prompt = "New log name: ",
       default = nil,
-      completion = logs,
+      completion = M.public.logs,
     })
     M.private.open_log()
   end,
@@ -348,6 +350,7 @@ M.config.private = {
 
 ---@class base.log
 M.public = {
+  logs = {},
   version = "0.1.0",
 }
 

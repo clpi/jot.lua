@@ -8,7 +8,7 @@ local wordld, word = pcall(require, 'word')
 assert(wordld, "word is not loaded - load it before telescope")
 
 local function get_md_files()
-  local ws = word.mod.get_mod("workspace") ---@type mod.workspace
+  local ws = Mod.get_mod("workspace") ---@type mod.workspace
   if not ws then return nil end
   local cw = ws.get_current_workspace()
   local mdf = ws.get_word_files(cw[1])

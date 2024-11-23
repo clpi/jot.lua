@@ -13,7 +13,21 @@ local lib, mod, u = word.lib, word.mod, word.utils
 
 local M = mod.create("link")
 u.ns("word-link")
-
+M.pathType = function(path, anchor)
+  if not path then
+    return nil
+  elseif string.find(path, '^file:') then
+    return 'file'
+  elseif string.find(path, "https://") then
+    return 'url'
+  elseif string.find(path, '^@') then
+    return 'citation'
+  elseif path == '' and anchor then
+    return 'anchor'
+  else
+    return 'nb_page'
+  end
+end
 M.setup = function()
   return {
     success = true,

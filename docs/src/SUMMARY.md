@@ -2,7 +2,6 @@
 
 Welcome -- to the `word.lua` book. I hope this helps!
 
-- [Intro](./index.md)
 - [Intro](./intro.md)
 - [Philosophy](./philosophy.md)
 - [Setup](./setup.md)
@@ -60,3 +59,4 @@ Welcome -- to the `word.lua` book. I hope this helps!
 - [Final thoughts](./final_thoughts.md)
 - [Roadmap](./roadmap.md)
 - [Credits](./credits.md)
+- [Map](./index.md)

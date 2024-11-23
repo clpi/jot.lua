@@ -5,6 +5,7 @@ local wp = require("telescope._extensions.word.picker")
 -- local sta = require("telescope.actions.state")
 -- local edi = require("telescope.pickers.entry_display")
 -- local cfg = require("telescope.config")
+local haspic, pic = pcall(require, "telescope.actions.state")
 local haspic, pic = pcall(require, "telescope.pickers")
 local hassrt, srt = pcall(require, "telescope.sorters")
 local hasfnd, fnd = pcall(require, "telescope.finders")
@@ -72,8 +73,8 @@ return tel.register_extension {
   -- setup = word.setup,
   exports = {
     word = require("telescope.builtin").find_files,
-    find_word = require("_extensions.word.picker.find_md"),
+    find_word = require("_extensions.word.picker.files"),
     linkables = require("lua.telescope._extensions.word.picker.linkable"),
-    workspace = require=
+    workspace = require("lua.telescope._extensions.word.picker.workspace"),
   }
 }

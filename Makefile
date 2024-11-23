@@ -1,5 +1,8 @@
 all: slint llint clean
 
+
+v:
+	nvim --no-plugins -u test/minit.lua
 tv:
   nvim -u test/config/init.lua
 

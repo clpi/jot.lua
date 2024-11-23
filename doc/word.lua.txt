@@ -24,33 +24,22 @@ INSTALLATION                                                        *word-instal
 SETUP                                                                 *word-setup*
 ================================================================================
 
-lazy.nvim ~
-
->lua
+```lua
 require("word").setup({
-  dependencies = {
-    "nvim-treesitter/nvim-treesitter",
-    "nvim-telescope/telescope.nvim",
-    "nvim-lua/plenary.nvim",
-    "pysan3/pathlib.nvim",
-  },
-  config = function()
-    require("word").setup {
-      mod = {
-        config = { },
-        workspace = {
-          config = {
-            workspaces = {
-              default = "~/word",
-              notes = "~/notes"
-            }
-          }
+  load = {
+    base = { },
+    vault = {
+      config = {
+        vaults = {
+          default = "~/word",
+          word = "~/word"
         }
       }
     }
-  end,
+
+  }
 })
-<
+````
 
 CONFIG                                                               *word-config*
 ================================================================================
@@ -78,8 +67,8 @@ KEYMAPS                                                             *word-keymap
 TODO                                                                   *word-todo*
 ================================================================================
 
-- [ ] Separate commands and mods `(11/15 22:43)`
-- [ ] Docgen `(11/15 22:43)`
+- [ ] Separate commands and mods `(11/15 22:43)` 
+- [ ] Docgen `(11/15 22:43)` 
 - [ ] Easy linking of files by title, and easy colloqial hierarchy `(11/1522:43)`
 - [ ] Easy tagging of tracked todos, easy disparate categ. of todos
 

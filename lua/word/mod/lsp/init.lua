@@ -1,5 +1,4 @@
 ---@brief lsp
-
 local mod = require("word.mod")
 local log = require('word.util.log')
 
@@ -33,7 +32,20 @@ M.setup = function()
   }
 end
 
+---@class word.lsp
 M.config.public = {
+  diagnostic = {
+
+  },
+  format = {
+
+  },
+  lens = {
+
+  },
+  hint = {
+
+  },
   completion = {
     -- Enable or disable the completion provider
     enable = true,
@@ -47,16 +59,59 @@ local workspace ---@type workspace
 local refactor ---@type lsp.refactor
 local format ---@type lsp.format
 local ts ---@type query
-local lsp_completion ---@type lsp.completion
+local cmp ---@type lsp.completion
 
 M.load = function()
-  M.required["cmd"].add_commands_from_table({
+  M.required.cmd.add_commands_from_table({
     lsp = {
       min_args = 0,
       max_args = 1,
       name = "lsp",
       condition = "markdown",
       subcommands = {
+        start = {
+          args = 0,
+          name = "lsp.workspace",
+          subcommands = {
+            config = {
+              args = 0,
+              name = 'lsp.workspace.config'
+            },
+            folders = {
+              args = 0,
+              name = "lsp.workspace.folders"
+            }
+
+          },
+        },
+        start = {
+          args = 0,
+          name = "lsp.start"
+        },
+        restart = {
+          args = 0,
+          name = "lsp.restart"
+        },
+        stop = {
+          args = 0,
+          name = "lsp.stop"
+        },
+        info = {
+          args = 0,
+          name = "lsp.info"
+        },
+        definition = {
+          args = 0,
+          name = "lsp.definition"
+        },
+        typeDefinition = {
+          args = 0,
+          name = "lsp.typeDefinition"
+        },
+        delaration = {
+          args = 0,
+          name = "lsp.declaration"
+        },
         command = {
           args = 0,
           name = "lsp.command"
@@ -73,12 +128,21 @@ M.load = function()
           args = 0,
           name = "lsp.hint"
         },
+        semantic = {
+          args = 0,
+          name = "lsp.semantic"
+        },
         diagnostic = {
           args = 0,
           name = "lsp.diagnostic"
         },
         format = {
+          args = 0,
           name = "lsp.format"
+        },
+        references = {
+          args = 1,
+          name = "lsp.references"
         },
         refactor = {
           args = 1,
@@ -106,7 +170,7 @@ M.load = function()
   workspace = M.required["workspace"]
   refactor = M.required["lsp.refactor"]
   format = M.required["lsp.format"]
-  lsp_completion = M.required["lsp.completion"]
+  cmp = M.required["lsp.completion"]
 
   vim.api.nvim_create_autocmd("FileType", {
     pattern = "markdown",
@@ -138,7 +202,7 @@ M.private.handlers = {
         },
       },
       serverInfo = {
-        name = "wordls",
+        name = "word",
         version = "0.0.1",
       },
     }
@@ -163,6 +227,12 @@ M.private.handlers = {
     callback(nil, initializeResult)
   end,
 
+  ["textDocument/moniker"] = function(params, callback, _notify_reply_callback)
+  end,
+  ["workspace/applyEdit"] = function(params, callback, _notify_reply_callback)
+  end,
+  ["textDocument/documentLink"] = function(params, callback, _notify_reply_callback)
+  end,
   ["textDocument/hover"] = function(params, callback, _notify_reply_callback)
     local buf = vim.uri_to_bufnr(params.textDocument.uri)
     local node = ts.get_first_node_on_line(buf, params.position.line)
@@ -181,8 +251,11 @@ M.private.handlers = {
     format.format_document(params.textDocument.uri, callback)
   end,
 
+  ["textDocument/inlineValue"] = function(params, _callback, _notify_reply_callback)
+  end,
   ["textDocument/inlayHint"] = function(params, _callback, _notify_reply_callback)
     local buf = vim.uri_to_bufnr(params.textDocument.uri)
+    vim.lsp.inlay_hint.enable(true, { bufnr = buf })
     local hints = {}
     for _, node in ipairs(ts.get_nodes(buf)) do
       if node:type() == "heading1" then
@@ -262,13 +335,13 @@ M.private.handlers = {
   ["textDocument/completion"] = function(p, c, _)
     -- Attempt to hijack completion for categories completions
     if M.config.public.completion.categories then
-      local cats = lsp_completion.category_completion()
+      local cats = cmp.category_completion()
       if cats and not vim.tbl_isempty(cats) then
-        c(nil, lsp_completion.category_completion())
+        c(nil, cmp.category_completion())
         return
       end
     end
-    lsp_completion.completion_handler(p, c, _)
+    cmp.completion_handler(p, c, _)
   end,
 
   ["textDocument/prepareRename"] = function(params, callback, _notify_reply_callback)
@@ -366,10 +439,10 @@ M.private.handlers = {
   end,
   ["workspace/symbol"] = function(params, _callback, _notify_reply_callback)
   end,
-  ["textDocument/semanticTokens/full"] = function(params, _callback, _notify_reply_callback)
-  end,
-  ["textDocument/semanticTokens/full/delta"] = function(params, _callback, _notify_reply_callback)
-  end,
+  -- ["textDocument/semanticTokens/full"] = function(params, _callback, _notify_reply_callback)
+  -- end,
+  -- ["textDocument/semanticTokens/full/delta"] = function(params, _callback, _notify_reply_callback)
+  -- end,
   ["textDocument/publishDiagnostics"] = function(params, _callback, _notify_reply_callback)
   end,
   ["textDocument/prepareTypeHierarchy"] = function(params, _callback, _notify_reply_callback)
@@ -418,6 +491,7 @@ M.private.handlers = {
         })
       end
     end
+    vim.lsp.codelens.display(codeLens, buf, params.textDocument.uri)
     callback(nil, codeLens)
   end,
 
@@ -454,42 +528,82 @@ M.private.handlers = {
 }
 
 M.private.start_lsp = function()
-  -- setup and attach the shell LSP for file renaming
-  -- https://github.com/jmbuhr/otter.nvim/pull/137/files
-  vim.lsp.start({
-    name = "wordls",
-    handlers = M.private.handlers,
-    cmd = function(_dispatchers)
-      local members = {
-        trace = "messages",
-        request = function(method, params, callback, notify_reply_callback)
-          if M.private.handlers[method] then
-            M.private.handlers[method](params, callback, notify_reply_callback)
-          else
-            log.debug("Unexpected LSP method: " .. method)
-          end
-        end,
-        notify = function(_method, _params) end,
-        is_closing = function() end,
-        terminate = function() end,
-      }
-      return members
-    end,
-    filetypes = { "markdown" },
-    root_dir = tostring(workspace.get_current_workspace()[2]),
-  })
+  vim.lsp.start(
+  ---@type vim.lsp.ClientConfig
+    {
+      name = "word",
+      workspace_folders = M.required.workspace.get_dirs(),
+      before_init = function(_params, _config)
+        -- print('init word')
+      end,
+      ---@type vim.lsp.Client.Flags
+      flags = {
+
+      },
+      handlers = M.private.handlers,
+      cmd = function(_dispatchers)
+        local members = {
+          trace = "messages",
+          request = function(method, params, callback, notify_reply_callback)
+            if M.private.handlers[method] then
+              M.private.handlers[method](params, callback, notify_reply_callback)
+            else
+              log.debug("Unexpected LSP method: " .. method)
+            end
+          end,
+          notify = function(_method, _params) end,
+          is_closing = function() end,
+          terminate = function() end,
+        }
+        return members
+      end,
+      filetypes = { "markdown" },
+      root_dir = tostring(workspace.get_current_workspace()[2]),
+    })
+  -- vim.api.nvim_create_autocmd('LspAttach', {
+  --   callback = function(args)
+  --     local client = vim.lsp.get_client_by_id(args.data.client_id)
+  --     if client.supports_method('textDocument/implementation') then
+  --       -- Create a keymap for vim.lsp.buf.implementation
+  --     end
+  --     if client.supports_method('textDocument/completion') then
+  --       -- Enable auto-completion
+  --       vim.lsp.completion.enable(true, client.id, args.buf, { autotrigger = true })
+  --     end
+  --     if client.supports_method('textDocument/formatting') then
+  --       -- Format the current buffer on save
+  --       vim.api.nvim_create_autocmd('BufWritePre', {
+  --         buffer = args.buf,
+  --         callback = function()
+  --           vim.lsp.buf.format({ bufnr = args.buf, id = client.id })
+  --         end,
+  --       })
+  --     end
+  --   end,
+  -- })
 end
 
 M.events.subscribed = {
   cmd = {
+    ["lsp.start"] = true,
+    ["lsp.restart"] = true,
+    ["lsp.stop"] = true,
+    ["lsp.info"] = true,
+    ["lsp.workspace"] = true,
+    ["lsp.workspace.folders"] = true,
+    ["lsp.workspace.config"] = true,
     ["lsp.actions"] = true,
     ["lsp.references"] = true,
-    ["lsp.implementations"] = true,
-    ["lsp.typedefinition"] = true,
+    ["lsp.implementation"] = true,
+    ["lsp.semantic"] = true,
+    ["lsp.typeDefinition"] = true,
+    ["lsp.declaration"] = true,
+    ["lsp.definition"] = true,
     ["lsp.lens"] = true,
-    ["lsp.commands"] = true,
+    ["lsp.command"] = true,
     ["lsp.hint"] = true,
     ["lsp.diagnostic"] = true,
+    ["lsp.workspace"] = true,
     ["lsp.format"] = true,
     ["lsp.refactor"] = true,
     ["lsp.rename"] = true,
@@ -519,6 +633,58 @@ M.private["lsp.rename.file"] = function(event)
   end
 end
 
+M.private["lsp.hint"] = function(event)
+  vim.ui.input({
+    prompt = "lsp.hint"
+  })
+end
+M.private["lsp.format"] = function(event)
+  vim.ui.select({
+    "hi",
+    "there",
+    "big",
+    "guy",
+  }, {
+    prompt = "Select a format",
+  }, function(selected)
+    if selected then
+      format.format_document(vim.api.nvim_buf_get_name(0))
+    end
+  end)
+end
+M.private["lsp.command"] = function(event)
+  vim.ui.select({
+
+  })
+end
+M.private["lsp.semantic"] = function(event)
+end
+M.private["lsp.implementation"] = function(event)
+end
+M.private["lsp.declaration"] = function(event)
+end
+M.private["lsp.typeDefinition"] = function(event)
+end
+M.private["lsp.definition"] = function(event)
+end
+M.private["lsp.lens"] = function(event)
+end
+M.private["lsp.workspace"] = function(event)
+  vim.lsp.util.open_floating_preview {
+  }
+end
+M.private["lsp.workspace.config"] = function(event)
+  vim.lsp.util.open_floating_preview {
+  }
+end
+M.private["lsp.workspace.folders"] = function(event)
+  vim.lsp.util.open_floating_preview {
+  }
+end
+M.private["lsp.action"] = function(event)
+  vim.lsp.util.open_floating_preview {
+  }
+end
 M.private["lsp.rename.heading"] = function(event)
   local line_number = event.cursor_position[1]
   local prefix = string.match(event.line_content, "^%s*%*+ ")
@@ -535,6 +701,15 @@ M.private["lsp.rename.heading"] = function(event)
       refactor.rename_heading(line_number, text)
     end)
   end)
+end
+
+M.run_dict = function()
+  vim.lsp.start({
+    name = 'lsp.sh',
+    cmd = { "lsp.sh" },
+    workspace_folders = M.required.workspace.get_dirs(),
+    root_dir = tostring(M.required.workspace.get_current_workspace()[2]),
+  })
 end
 
 return M
