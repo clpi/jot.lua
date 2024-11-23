@@ -6,8 +6,12 @@ v:
 w:
   ./scripts/bin/word
 
+wl:
+  ./scripts/bin/wordls
+
 t:
   nvim --headless --noplugin -u test/minit.lua
+
 slint :
   stylua --check .
 
@@ -26,4 +30,7 @@ install:
 
 
 book:
-  cd docs && mdbook build
+  cd book && mdbook build
+
+books:
+  cd book && mdbook serve

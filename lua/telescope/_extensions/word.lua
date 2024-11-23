@@ -71,10 +71,12 @@ return tel.register_extension {
   -- setup = word.setup,
   exports = {
     word = require("telescope.builtin").find_files,
+    note = require("telescope._extensions.word.picker.note"),
+    lsp = require("telescope._extensions.word.picker.lsp"),
+    workspace = require("telescope._extensions.word.picker.workspace"),
     todo = bui.live_grep,
-    lsp = bui.lsp_definitions,
     books = bui.fd,
-    find_word = require("telescope._extensions.word.picker.files"),
+    files = require("telescope._extensions.word.picker.files"),
     linkables = require("telescope._extensions.word.picker.linkable"),
     workspace = require("telescope._extensions.word.picker.workspace")
   }
