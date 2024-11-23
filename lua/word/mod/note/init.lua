@@ -25,7 +25,7 @@ local config, lib, log, mod = require("word.config").config, word.lib, word.log,
 local M = Mod.create("note")
 
 
-M.weekdays = {
+M.public.weekdays = {
   "Sunday",
   "Monday",
   "Tuesday",
@@ -34,7 +34,7 @@ M.weekdays = {
   "Friday",
   "Saturday",
 }
-M.months = {
+M.public.months = {
   "January",
   "February",
   "March",
@@ -48,30 +48,36 @@ M.months = {
   "November",
   "December",
 }
-M.number_to_weekday = function(n)
+M.public.number_to_weekday = function(n)
   return M.weekday[n]
 end
-M.number_to_month = function(n)
+M.public.number_to_month = function(n)
   return M.months[n]
 end
-M.year = tonumber(os.date("%Y"))
-M.month = tonumber(os.date("%m"))
-M.day = tonumber(os.date("%d"))
-M.timetable = {
-  year = M.year,
-  month = M.month,
+M.maps = function()
+  vim.api.nvim_set_keymap("n", ",wn", "<CMD>Word note today<CR>", { silent = true })
+  vim.api.nvim_set_keymap("n", ",wy", "<CMD>Word note yesterday<CR>", { silent = true })
+  vim.api.nvim_set_keymap("n", ",wt", "<CMD>Word note tomorrow<CR>", { silent = true })
+end
+M.public.year = tonumber(os.date("%Y"))
+M.public.month = tonumber(os.date("%m"))
+M.public.day = tonumber(os.date("%d"))
+M.public.timetable = {
+  year = M.public.year,
+  month = M.public.month,
   day = M.day,
   hour = 0,
   min = 0,
   sec = 0,
 }
-M.time = os.time()
-M.weekday = tonumber(os.date("%w", os.time(M.timetable)))
+M.public.time = os.time()
+M.public.weekday = tonumber(os.date("%w", os.time(M.timetable)))
 M.setup = function()
   return {
     success = true,
     requires = {
       "data",
+      "template",
       "workspace",
       "integration.treesitter",
     },
@@ -675,7 +681,9 @@ end
 
 M.on_event = function(event)
   if event.split_type[1] == "cmd" then
-    if event.split_type[2] == "note.index" then
+    if event.split_type[2] == "note" then
+      M.private.note_index()
+    elseif event.split_type[2] == "note.index" then
       M.private.note_index()
     elseif event.split_type[2] == "note.week" or event.split_type[2] == "note.week.index" then
       M.private.week_index()
@@ -749,6 +757,8 @@ M.events.subscribed = {
     ["note.month"] = true,
     ["note.week"] = true,
     ["note.year"] = true,
+    ["note"] = true,
+
     ["note.month.previous"] = true,
     ["note.week.previous"] = true,
     ["note.year.previous"] = true,
