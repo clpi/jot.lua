@@ -1422,7 +1422,7 @@ end
 
 module.load = function()
   local icon =
-      module.imported[module.name .. "." .. module.config.public.icon].config.private
+      module.import[module.name .. "." .. module.config.public.icon].config.private
       ["icon_" .. module.config.public.icon]
   if not icon then
     log.error(

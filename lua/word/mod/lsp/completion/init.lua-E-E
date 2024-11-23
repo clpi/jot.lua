@@ -819,7 +819,7 @@ M.private = {
   end,
 
   load_search = function()
-    if mod.load_mod("search") then
+    if mod.setup_mod("search") then
       search = mod.get_mod("search")
     end
   end,

@@ -87,7 +87,7 @@ return {
 
     start("word Keybinds")
 
-    modules.load_module("core.keybinds")
+    modules.setup_module("core.keybinds")
     local keybinds = modules.get_module("core.keybinds")
     local keybinds_config = modules.get_module_config("core.keybinds")
 

@@ -21,8 +21,8 @@ local init = mod.create("ui", {
 })
 
 init.load = function()
-  for _, imported in pairs(init.imported) do
-    init.public = vim.tbl_extend("force", init.public, imported.public)
+  for _, i in pairs(init.import) do
+    init.public = vim.tbl_extend("force", init.public, i.public)
   end
 end
 init.setup = function()

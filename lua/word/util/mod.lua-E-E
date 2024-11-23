@@ -27,7 +27,7 @@ C.create_meta = function(name, ...)
     end)()
 
     for _, mname in ipairs(m.config.public.enable) do
-      M.load_mod(mname)
+      M.setup_mod(mname)
     end
   end
 

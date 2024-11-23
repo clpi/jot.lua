@@ -33,7 +33,7 @@ end
 
 M.on_event = function(event)
   if event.type == "cmd.events.mod.setup" then
-    local ok = pcall(mod.load_mod, event.content[1])
+    local ok = pcall(mod.setup_mod, event.content[1])
 
     if not ok then
       vim.notify(string.format("init `%s` does not exist!", event.content[1]), vim.log.levels.ERROR, {})

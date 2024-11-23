@@ -1,21 +1,16 @@
-local M      = Mod.create("integration.telescope")
-local k      = vim.keymap.set
+local M             = Mod.create("integration.telescope")
+local k             = vim.keymap.set
 
-M.setup      = function()
+M.setup             = function()
   return {
     success = true,
     requires = { "cmd", "workspace" }
   }
 end
 
-M.private    = {
+M.private           = {
   picker_names = {
     "linkable",
-    "lsp",
-    "link",
-    "todo",
-    "actions",
-    "note",
     "files",
     -- "insert_link",
     -- "insert_file_link",
@@ -29,7 +24,7 @@ M.private    = {
     -- "backlinks.header_backlinks",
   },
 }
-M.pickers    = function()
+M.pickers           = function()
   local r = {}
   for _, pic in ipairs(M.private.picker_names) do
     local ht, te = pcall(require, "telescope._extensions.word.picker." .. pic)
@@ -40,69 +35,26 @@ M.pickers    = function()
   end
   return r
 end
-M.subscribed = {
+M.events.subscribed = {
   cmd = {
-    ["integration.telescope.lsp"] = true,
-    ["integration.telescope.workspace"] = true,
-    ["integration.telescope.note"] = true,
-    ["integration.telescope"] = true,
-    ["integration.telescope.files"] = true,
-    ["integration.telescope.actions"] = true,
-    ["integration.telescope.commands"] = true,
-    ["integration.telescope.todo"] = true,
-    ["integration.telescope.linkable"] = true,
-    ["integration.telescope.link"] = true,
+    ["cmd.integration.telescope.find.files"] = true,
+    ["cmd.integration.telescope.find.workspace"] = true,
   }
 }
-M.load       = function()
+M.load              = function()
   Mod.await("cmd", function(cmd)
     cmd.add_commands_from_table {
-      telescope = {
+      find = {
         args = 0,
-        name = "integration.telescope",
+        name = "integration.telescope.find",
         subcommands = {
-          commands = {
-            name = "integration.telescope.commands",
-            args = 0,
-
-          },
-          actions = {
-            name = "integration.telescope.actions",
-            args = 0,
-
-          },
-          link = {
-            name = "integration.telescope.link",
-            args = 0,
-
-          },
-          todo = {
-            name = "integration.telescope.todo",
-            args = 0,
-
-          },
-          linkable = {
-            name = "integration.telescope.linkable",
-            args = 0,
-
-          },
           files = {
-            name = "integration.telescope.files",
-            args = 0,
-
-          },
-          lsp = {
-            name = "integration.telescope.lsp",
-            args = 0,
-
-          },
-          note = {
-            name = "integration.telescope.note",
+            name = "cmd.integration.telescope.find.files",
             args = 0,
 
           },
           workspace = {
-            name = "integration.telescope.workspace",
+            name = "cmd.integration.telescope.find.workspace",
             args = 0,
 
           },
@@ -121,24 +73,10 @@ M.load       = function()
   end
 end
 
-M.on_event   = function(event)
-  if event.type == "integration.telescope" then
-  elseif event.type == "integration.telescope.link" then
+M.on_event          = function(event)
+  if event.type == "cmd.events.integration.telescope.find.files" then
     vim.cmd [[Telescope word find_word]]
-  elseif event.type == "integration.telescope.workspace" then
-    vim.cmd [[Telescope word find_word]]
-  elseif event.type == "integration.telescope.actions" then
-    vim.cmd [[Telescope word find_word]]
-  elseif event.type == "integration.telescope.commands" then
-    vim.cmd [[Telescope word find_word]]
-  elseif event.type == "integration.telescope.todo" then
-    vim.cmd [[Telescope word find_word]]
-  elseif event.type == "integration.telescope.lsp" then
-    vim.cmd [[Telescope word find_word]]
-  elseif event.type == "integration.telescope.files" then
-    vim.cmd [[Telescope word find_word]]
-    require("telescope._extensions.word.picker.files")()
-  elseif event.type == "integration.telescope.workspace" then
+  elseif event.type == "cmd.events.integration.telescope.find.workspace" then
     vim.cmd [[Telescope word workspace]]
     require("telescope._extensions.word.picker.workspace")()
   end

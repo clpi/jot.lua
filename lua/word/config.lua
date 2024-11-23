@@ -71,22 +71,18 @@ C.n = function(k, c)
   vim.api.nvim_set_keymap("n", k, c, { silent = true })
 end
 C.ni = function(k, c)
-  vim.api.nvim_set_keymap({ "n", "i" }, k, c, { silent = true })
+  vim.keymap.set({ "n", "i" }, k, c, { silent = true })
 end
 C.setup_maps = function()
-  vim.api.nvim_set_keymap(",wi", "<CMD>Word index<CR>", { silent = true })
-  vim.api.nvim_set_keymap(",wn", "<CMD>Word note today<CR>", { silent = true })
-  vim.api.nvim_set_keymap(",w", "<CMD>Word note yesterday<CR>", { silent = true })
-  vim.api.nvim_set_keymap(",wt", "<CMD>Word note tomorrow<CR>", { silent = true })
-  vim.api.nvim_set_keymap(",ww", "<CMD>Telescope word workspace<CR>", { silent = true })
-  vim.api.nvim_set_keymap(",ww", "<CMD>Telescope word todo<CR>", { silent = true })
-  vim.api.nvim_set_keymap(",wl", "<CMD>Word lsp lens<CR>", { silent = true })
-  vim.api.nvim_set_keymap(",wa", "<CMD>Word lsp action<CR>", { silent = true })
+  vim.api.nvim_set_keymap("n", ",wi", "<CMD>Word index<CR>", { silent = true })
+  vim.api.nvim_set_keymap("n", ",ww", "<CMD>Telescope word workspace<CR>", { silent = true })
+  vim.api.nvim_set_keymap("n", ",ww", "<CMD>Telescope word todo<CR>", { silent = true })
+  vim.api.nvim_set_keymap("n", ",wl", "<CMD>Word lsp lens<CR>", { silent = true })
+  vim.api.nvim_set_keymap("n", ",wa", "<CMD>Word lsp action<CR>", { silent = true })
 end
 
 C.setup_opts = function()
   vim.o.conceallevel = 2
   vim.o.concealcursor = [[nc]]
-  vim.o.shellslash = true
 end
 return C

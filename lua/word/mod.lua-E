@@ -7,6 +7,7 @@ local utils = require("word.util")
 
 
 _G.Mod = {}
+-- local cmd = require("word.cmd")
 
 --- @alias word.mod.public { version: string, [any]: any }
 
@@ -54,6 +55,7 @@ _G.Mod = {}
 --- @field test? fun() Function that is invoked once the init is considered "stable", i.e. after all dependencies are loaded. Perform your main loading routine here.
 --- @field bench? fun() Function that is invoked once the init is considered "stable", i.e. after all dependencies are loaded. Perform your main loading routine here.
 --- @field name string The name of the init.
+--- @field pre_load? fun() Function that is invoked after all mod are loaded. Useful if you want the word environment to be fully set up before performing some task.
 --- @field post_load? fun() Function that is invoked after all mod are loaded. Useful if you want the word environment to be fully set up before performing some task.
 --- @field path string The full path to the init (a more verbose version of `name`). Moday be used in lua's `require()` statements.
 --- @field public private? table A convenience table to place all of your private variables that you don't want to expose.
@@ -64,9 +66,12 @@ _G.Mod = {}
 --- @field on_event fun(event: word.event) A callback that is invoked any time an event the init has subscribed to has fired.
 --- Returns a new word init, exposing all the necessary function and variables.
 --- @param name string The name of the new init. Modake sure this is unique. The recommended naming convention is `category.mod_name` or `category.subcategory.mod_name`.
+--- @param imports? string[] A list of imports to attach to the init. Import data is requestable via `init.required`. Use paths relative to the current init.
 --- @return word.mod
-_G.Mod.default_mod = function(name)
-  return {
+function _G.Mod.create(name, imports)
+  -- local new_mod = require("word.mod.default").default_mod
+  ---@type word.mod
+  local new_mod = {
     setup = function()
       return {
         success = true,
@@ -82,6 +87,9 @@ _G.Mod.default_mod = function(name)
     load = function()
     end,
     on_event = function()
+    end,
+    pre_load = function()
+
     end,
     post_load = function()
     end,
@@ -116,16 +124,9 @@ _G.Mod.default_mod = function(name)
     end,
 
   }
-end
--- local cmd = require("word.cmd")
 
---- @param name string The name of the new init. Modake sure this is unique. The recommended naming convention is `category.mod_name` or `category.subcategory.mod_name`.
---- @param imports? string[] A list of imports to attach to the init. Import data is requestable via `init.required`. Use paths relative to the current init.
---- @return word.mod
-function _G.Mod.create(name, imports)
-  -- local new_mod = require("word.mod.default").default_mod
-  ---@type word.mod
-  local new_mod = Mod.default_mod(name)
+  vim.api.nvim_create_namespace(new_mod.setup().namespace)
+
   if imports then
     for _, imp in ipairs(imports) do
       local fullpath = table.concat({ name, imp }, ".")
@@ -143,8 +144,6 @@ function _G.Mod.create(name, imports)
   if name then
     new_mod.name = name
     new_mod.path = "mod." .. name
-    new_mod.namespace = "word/" .. name
-    vim.api.nvim_create_namespace(new_mod.namespace)
   end
 
   return new_mod
