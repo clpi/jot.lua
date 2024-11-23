@@ -1,12 +1,12 @@
 local d = require("word")
 local lib, mod = d.lib, d.mod
 
-local M = mod.create("data.sync")
+local M = Mod.create("data.sync")
 
 M.load = function()
-  mod.await("cmd", function(cmd)
+  Mod.await("cmd", function(cmd)
     cmd.add_commands_from_table({
-      ["sync"] = {
+      sync = {
         subcommands = {
           update = {
             args = 0,

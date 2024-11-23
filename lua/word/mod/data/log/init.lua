@@ -10,7 +10,6 @@ M.setup = function()
   return {
     success = true,
     requires = {
-      -- 'data',
       "ui.popup",
       "ui.inline",
       "ui.win",

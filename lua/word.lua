@@ -1,17 +1,16 @@
---- @author clpi
---- @file word.lua
--- core = {
---   core = require("word.core"),
--- },
-W = {
+---@author clpi
+---@file word.lua
+---@version 0.1.0
+---@package word.lua
+---@module "word"
+---@see github.com/clpi/word.lua
+local W = {
+  cfg = require("word.config").config,
   health = require("word.health"),
   mod = require("word.mod"),
   version = require("word.config").version,
-  cfg = require("word.config").config,
   config = require("word.config"),
-  -- config = require('word.config').config,
   callbacks = require("word.util.callback"),
-  event = require("word.util.callback"),
   log = require("word.util.log"),
   util = {
     util = require("word.util"),
@@ -122,6 +121,7 @@ function W.enter_md(manual, args)
     filehead = "",
     cursor_position = { 0, 0 },
     referrer = "config", -- TODO: consider editing out? Not sure base
+    topic = "started",
     line_content = "",
     broadcast = true,
     buffer = a.nvim_get_current_buf(),

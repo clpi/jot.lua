@@ -1,12 +1,3 @@
---- @brief [[
---- Base file for mod.
---- This file contains the base implementation for "mod", building blocks of the word environment.
---- @brief ]]
-
--- TODO: What goes below this line until the next notice used to belong to mod.base
--- We need to find a way to make these constructors easier to maintain and more efficient
-
-
 local uv = vim.loop or vim.uv
 local lu = vim.lsp.util
 local cb = require("word.util.callback")

@@ -1,4 +1,4 @@
-local D = require("word.mod").create("data.dirs")
+local D = Mod.create("data.dirs")
 
 local path = require("plenary.path")
 local Path = require("pathlib")
@@ -25,6 +25,9 @@ D.private = {
 
 D.setup = function()
   return {
+    requires = {
+      'workspace'
+    },
     success = true
   }
 end
@@ -68,6 +71,10 @@ D.public = {
   }
 
 }
+
+D.on_event = function(e)
+
+end
 
 
 return D

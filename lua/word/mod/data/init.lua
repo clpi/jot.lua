@@ -10,7 +10,8 @@ local M = require("word.mod").create("data", {
   -- 'log',
   'tag',
   'meta',
-  'code',
+  'snippet',
+  'export',
   'dirs',
   'save'
 })
