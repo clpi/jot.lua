@@ -2,11 +2,6 @@ local mod = require("word.mod")
 
 return mod.create_meta(
 -- "integration.treesitter"  ,
--- "encrypt",
--- "agenda",
--- "job",
--- "tag",
--- "autocmd",
 -- "config",
   "edit",
   "integration.telescope",

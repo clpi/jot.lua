@@ -1,9 +1,9 @@
 local word = require("word")
-local lib, log, inits, utils = word.lib, word.log, word.mod, word.utils
+local lib, log, mod, utils = word.lib, word.log, word.mod, word.utils
 
-local init = inits.create("integration.treesitter")
+local M = Mod.create("integration.treesitter")
 
-init.private = {
+M.private = {
   ts_utils = nil,
   link_query = [[
                 (link) @next-segment
@@ -34,33 +34,33 @@ init.private = {
              ]],
 }
 
-init.setup = function()
+M.setup = function()
   return { success = true, requires = { "ui.hl" } }
 end
 
-init.load = function()
+M.load = function()
   local success, ts_utils = pcall(require, "nvim-treesitter.ts_utils")
 
   assert(success, "Unable to load nvim-treesitter.ts_utils :(")
 
-  if init.config.public.configure_parsers then
+  if M.config.public.configure_parsers then
     -- luacheck: push ignore
 
     local parser_configs = require("nvim-treesitter.parsers").get_parser_configs()
 
     -- parser_configs.word = {
-    -- install_info = init.config.public.parser_configs.word,
+    -- install_info = M.config.public.parser_configs.word,
     -- }
 
     -- parser_configs.markdown_inline = {
-    -- install_info = init.config.public.parser_configs.markdown_inline,
+    -- install_info = M.config.public.parser_configs.markdown_inline,
     -- }
 
-    inits.await("cmd", function(wordcmd)
+    Mod.await("cmd", function(wordcmd)
       wordcmd.add_commands_from_table({
-        ["sync"] = {
+        treesitter = {
           args = 0,
-          name = "sync",
+          name = "treesitter",
         },
       })
     end)
@@ -71,9 +71,9 @@ init.load = function()
     --   pattern = "*.md",
     --   once = true,
     --   callback = function()
-    --     init.public.parser_path = vim.api.nvim_get_runtime_file("parser/word.so", false)[1]
+    --     M.public.parser_path = vim.api.nvim_get_runtime_file("parser/word.so", false)[1]
     --
-    --     if init.public.parser_path then
+    --     if M.public.parser_path then
     --       return
     --     end
     --
@@ -90,31 +90,31 @@ init.load = function()
     -- })
   end
 
-  init.private.ts_utils = ts_utils
+  M.private.ts_utils = ts_utils
 
   vim.keymap.set(
     "",
     "<Plug>(word.treesitter.next.heading)",
-    lib.wrap(init.public.goto_next_query_match, init.private.heading_query)
+    lib.wrap(M.public.goto_next_query_match, M.private.heading_query)
   )
   vim.keymap.set(
     "",
     "<Plug>(word.treesitter.next.link)",
-    lib.wrap(init.public.goto_next_query_match, init.private.link_query)
+    lib.wrap(M.public.goto_next_query_match, M.private.link_query)
   )
   vim.keymap.set(
     "",
     "<Plug>(word.treesitter.previous.heading)",
-    lib.wrap(init.public.goto_previous_query_match, init.private.heading_query)
+    lib.wrap(M.public.goto_previous_query_match, M.private.heading_query)
   )
   vim.keymap.set(
     "",
     "<Plug>(word.treesitter.previous.link)",
-    lib.wrap(init.public.goto_previous_query_match, init.private.link_query)
+    lib.wrap(M.public.goto_previous_query_match, M.private.link_query)
   )
 end
 
-init.config.public = {
+M.config.public = {
   --- If true will auto-configure the parsers to use the recommended setup.
   --  Set to false only if you know what you're doing, or if the setting messes
   --  with your personal configuration.
@@ -143,15 +143,15 @@ init.config.public = {
 }
 
 ---@class treesitter
-init.public = {
+M.public = {
   queries = {},
   parser_path = nil,
 
   parse = function(language, query)
-    local result = init.public.queries[query]
+    local result = M.public.queries[query]
     if result == nil then
       result = vim.treesitter.query.parse(language, query)
-      init.public.queries[query] = result
+      M.public.queries[query] = result
     end
     return result
   end,
@@ -178,7 +178,7 @@ init.public = {
   --- Gives back an instance of `nvim-treesitter.ts_utils`
   ---@return table #`nvim-treesitter.ts_utils`
   get_ts_utils = function()
-    return init.private.ts_utils
+    return M.private.ts_utils
   end,
   --- Jumps to the next match of a query in the current buffer
   ---@param query_string string Query with `@next-segment` captures
@@ -186,7 +186,7 @@ init.public = {
     local cursor = vim.api.nvim_win_get_cursor(0)
     local line_number, col_number = cursor[1], cursor[2]
 
-    local document_root = init.public.get_document_root(0)
+    local document_root = M.public.get_document_root(0)
 
     if not document_root then
       return
@@ -205,7 +205,7 @@ init.public = {
 
         -- Find and go to the first matching node that starts after the current cursor position.
         if (start_line == line_number and start_col > col_number) or start_line > line_number then
-          init.private.ts_utils.goto_node(node) ---@diagnostic disable-line -- TODO: type error workaround <pysan3>
+          M.private.ts_utils.goto_node(node) ---@diagnostic disable-line -- TODO: type error workaround <pysan3>
           return
         end
       end
@@ -219,7 +219,7 @@ init.public = {
     local cursor = vim.api.nvim_win_get_cursor(0)
     local line_number, col_number = cursor[1], cursor[2]
 
-    local document_root = init.public.get_document_root(0)
+    local document_root = M.public.get_document_root(0)
 
     if not document_root then
       return
@@ -247,7 +247,7 @@ init.public = {
       ::continue::
     end
     if final_node then
-      init.private.ts_utils.goto_node(final_node) ---@diagnostic disable-line -- TODO: type error workaround <pysan3>
+      M.private.ts_utils.goto_node(final_node) ---@diagnostic disable-line -- TODO: type error workaround <pysan3>
     end
   end,
   ---  Gets all nodes of a given type from the AST
@@ -267,7 +267,7 @@ init.public = {
 
     -- Do we need to go through each tree? lol
     vim.treesitter.get_parser(opts.buf, opts.ft):for_each_tree(function(tree)
-      table.insert(result, init.public.search_tree(tree, node_type))
+      table.insert(result, M.public.search_tree(tree, node_type))
     end)
 
     return vim.iter(result):flatten():totable()
@@ -289,7 +289,7 @@ init.public = {
       return {}
     end
 
-    return init.public.search_tree(tree, node_type)
+    return M.public.search_tree(tree, node_type)
   end,
   fix_indent = function(text)
     local _l = "";
@@ -418,11 +418,11 @@ init.public = {
     if not node1 or not node2 then
       return
     end
-    local range1 = init.public.node_to_lsp_range(node1)
-    local range2 = init.public.node_to_lsp_range(node2)
+    local range1 = M.public.node_to_lsp_range(node1)
+    local range2 = M.public.node_to_lsp_range(node2)
 
-    local text1 = init.public.get_node_text(node1, bufnr)
-    local text2 = init.public.get_node_text(node2, bufnr)
+    local text1 = M.public.get_node_text(node1, bufnr)
+    local text2 = M.public.get_node_text(node2, bufnr)
 
     if not text1 or not text2 then
       return
@@ -598,19 +598,19 @@ init.public = {
       if vim.endswith(child:type(), "_carryover_set") then
         for subchild in child:iter_children() do
           if vim.endswith(subchild:type(), "_carryover") then
-            local meta = init.public.get_tag_info(subchild, throw)
+            local meta = M.public.get_tag_info(subchild, throw)
 
             table.insert(attributes, meta)
           end
         end
       elseif child:type() == "tag_name" then
         -- If we're dealing with the tag name then append the text of the tag_name node to this table
-        table.insert(resulting_name, vim.split(init.public.get_node_text(child), "\n")[1]) ---@diagnostic disable-line -- TODO: type error workaround <pysan3>
+        table.insert(resulting_name, vim.split(M.public.get_node_text(child), "\n")[1]) ---@diagnostic disable-line -- TODO: type error workaround <pysan3>
       elseif child:type() == "tag_parameters" then
-        table.insert(params, vim.split(init.public.get_node_text(child), "\n")[1]) ---@diagnostic disable-line -- TODO: type error workaround <pysan3>
+        table.insert(params, vim.split(M.public.get_node_text(child), "\n")[1]) ---@diagnostic disable-line -- TODO: type error workaround <pysan3>
       elseif child:type() == "ranged_verbatim_tag_content" then
         -- If we're dealing with tag content then retrieve that content
-        content = vim.split(init.public.get_node_text(child), "\n") ---@diagnostic disable-line -- TODO: type error workaround <pysan3>
+        content = vim.split(M.public.get_node_text(child), "\n") ---@diagnostic disable-line -- TODO: type error workaround <pysan3>
         _, content_start_column = child:range()
       end
     end
@@ -728,7 +728,7 @@ init.public = {
       stop_type = { stop_type }
     end
 
-    local document_root = init.public.get_document_root(buf)
+    local document_root = M.public.get_document_root(buf)
 
     if not document_root then
       return
@@ -767,7 +767,7 @@ init.public = {
   get_document_metadata = function(source, no_trim)
     source = source or 0
 
-    local word_parser, iter_src = init.public.get_ts_parser(source)
+    local word_parser, iter_src = M.public.get_ts_parser(source)
     if not word_parser then
       return
     end
@@ -785,10 +785,10 @@ init.public = {
     local function parse_data(node, src)
       return lib.match(node:type())({
         string = function()
-          return trim(init.public.get_node_text(node, src))
+          return trim(M.public.get_node_text(node, src))
         end,
         number = function()
-          return tonumber(init.public.get_node_text(node, src))
+          return tonumber(M.public.get_node_text(node, src))
         end,
         array = function()
           local resulting_array = {}
@@ -820,7 +820,7 @@ init.public = {
               goto continue
             end
 
-            local key_content = trim(init.public.get_node_text(key, src))
+            local key_content = trim(M.public.get_node_text(key, src))
 
             resulting_object[key_content] = (value and parse_data(value, src) or vim.NIL)
 
@@ -859,7 +859,7 @@ init.public = {
     local meta_node
     for id, node in word_query:iter_captures(word_tree:root(), iter_src) do
       if word_query.captures[id] == "tag_name" then
-        local tag_name = trim(init.public.get_node_text(node, iter_src))
+        local tag_name = trim(M.public.get_node_text(node, iter_src))
         if tag_name == "document.meta" then
           meta_node = node:next_named_sibling() or vim.NIL
           break
@@ -871,7 +871,7 @@ init.public = {
       return result
     end
 
-    local meta_source = init.public.get_node_text(meta_node, iter_src)
+    local meta_source = M.public.get_node_text(meta_node, iter_src)
 
     local markdown_inline_parser = vim.treesitter.get_string_parser(meta_source, "markdown_inline")
 
@@ -883,12 +883,12 @@ init.public = {
 
     for id, node in meta_query:iter_captures(markdown_inline_tree:root(), meta_source) do
       if meta_query.captures[id] == "key" then
-        local key = trim(init.public.get_node_text(node, meta_source))
+        local key = trim(M.public.get_node_text(node, meta_source))
 
         local val
         if key == "title" then
           -- force title's value as string type
-          val = trim(init.public.get_node_text(node:next_named_sibling(), meta_source))
+          val = trim(M.public.get_node_text(node:next_named_sibling(), meta_source))
         else
           val = node:next_named_sibling() and parse_data(node:next_named_sibling(), meta_source) or vim.NIL
         end
@@ -908,7 +908,7 @@ init.public = {
   ---@param finish number? #The end line for the query
   execute_query = function(query_string, callback, source, start, finish)
     local query = utils.ts_parse_query("markdown", query_string)
-    local word_parser, iter_src = init.public.get_ts_parser(source)
+    local word_parser, iter_src = M.public.get_ts_parser(source)
 
     if not word_parser then
       return false
@@ -998,7 +998,7 @@ local function install_word_ts()
   end
 end
 
-init.on_event = function(event)
+M.on_event = function(event)
   if event.split_type[2] == "sync" then
     local ok, err = pcall(install_word_ts)
 
@@ -1011,10 +1011,10 @@ init.on_event = function(event)
   end
 end
 
-init.events.subscribed = {
-  ["cmd"] = {
-    ["sync"] = true,
+M.events.subscribed = {
+  cmd = {
+    ['integration.treesitter'] = true,
   },
 }
 
-return init
+return M

@@ -10,6 +10,8 @@ local M = mod.create("lsp", {
   "semantic",
   "action",
   "hint",
+  "workspace",
+  "symbol",
   "diagnostic",
   "completion",
 })

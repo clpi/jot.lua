@@ -1,16 +1,14 @@
 local hastel, tel = pcall(require, "telescope")
 local hasact, act = pcall(require, "telescope.actions")
--- local set = require("telescope.actions.set")
--- local sta = require("telescope.actions.state")
--- local edi = require("telescope.pickers.entry_display")
--- local cfg = require("telescope.config")
+local set = require("telescope.actions.set")
+local sta = require("telescope.actions.state")
+local edi = require("telescope.pickers.entry_display")
 local haspic, pic = pcall(require, "telescope.pickers")
 local hassrt, srt = pcall(require, "telescope.sorters")
 local hasfnd, fnd = pcall(require, "telescope.finders")
 local haspre, pre = pcall(require, "telescope.previewers")
--- local haspre, pre = pcall(require,"telescope.")
 local hasbui, bui = pcall(require, "telescope.builtin")
--- local win = require("telescope.pickers.window")
+local win = require("telescope.pickers.window")
 
 local has_word, word = pcall(require, "word")
 
@@ -54,30 +52,38 @@ function M.custom_picker()
   }):find()
 end
 
-function M.setup()
-  tel.register_extension({
+function M.register()
+  return tel.register_extension({
     exports = {
-      notes = M.custom_picker(),
-      headings = bui.live_grep(),
-      grep = bui.live_grep()
+      word = require("telescope.builtin").find_files,
+      note = require("telescope._extensions.word.picker.note"),
+      lsp = require("telescope._extensions.word.picker.lsp"),
+      workspace = require("telescope._extensions.word.picker.workspace"),
+      todo = require("telescope._extensions.word.picker.todo"),
+      books = bui.fd,
+      media = bui.fd,
+      template = bui.fd,
+      snippet = bui.fd,
+      saved = bui.fd,
+      images = bui.fd,
+      log = bui.fd,
+      commands = bui.fd,
+      tag = bui.fd,
+      plugin = bui.fd,
+      config = bui.fd,
+      actions = require("telescope._extensions.word.picker.actions"),
+      files = require("telescope._extensions.word.picker.files"),
+      linkables = require("telescope._extensions.word.picker.linkable"),
+      link = require("telescope._extensions.word.picker.link")
     }
   })
-  tel.setup_extension("word")
+end
+
+function M.setup()
+  M.register()
+  -- tel.setup_extension("word")
 end
 
 -- return M
 --
-return tel.register_extension {
-  -- setup = word.setup,
-  exports = {
-    word = require("telescope.builtin").find_files,
-    note = require("telescope._extensions.word.picker.note"),
-    lsp = require("telescope._extensions.word.picker.lsp"),
-    workspace = require("telescope._extensions.word.picker.workspace"),
-    todo = bui.live_grep,
-    books = bui.fd,
-    files = require("telescope._extensions.word.picker.files"),
-    linkables = require("telescope._extensions.word.picker.linkable"),
-    workspace = require("telescope._extensions.word.picker.workspace")
-  }
-}
+return M

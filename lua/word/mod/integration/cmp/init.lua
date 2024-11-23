@@ -1,1 +1,5 @@
-local M = Mod.create("integration.telescope")
+local M = Mod.create("integration.cmp")
+
+local has_cmp, cmp = pcall(require, "cmp")
+
+return M

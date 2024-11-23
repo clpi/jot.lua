@@ -5,12 +5,13 @@
     Internal: true
     ---
 --]]
-local M = require("word.mod").create("data", {
+local M = Mod.create("data", {
   "sync",
-  -- 'log',
+  'log',
   'tag',
   'meta',
   'snippet',
+  'encrypt',
   'export',
   'dirs',
   'save'
