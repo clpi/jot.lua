@@ -10,4 +10,13 @@ M.setup = function()
   }
 end
 
+M.load = function()
+end
+
+M.config.public = {
+  fields = {
+
+  },
+}
+
 return M

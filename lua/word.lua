@@ -8,22 +8,22 @@ W = {
   mod = require("word.mod"),
   version = require("word.config").version,
   cfg = require("word.config").config,
+  config = require("word.config"),
   -- config = require('word.config').config,
-  callbacks = require("word.event"),
-  event = require("word.event"),
+  callbacks = require("word.util.callback"),
+  event = require("word.util.callback"),
   log = require("word.util.log"),
   util = {
     util = require("word.util"),
     fs = require("word.util.fs"),
     log = require("word.util.log"),
     buf = require("word.util.buf"),
-    cb = require("word.event"),
+    -- cb = require("word.event.cb"),
   },
   utils = require("word.util"),
   lib = require("word.util.lib")
 }
 
-_G.Mod = W.mod
 
 local con, log, modu, utils = require "word.config".config, W.log, W.mod, W.utils
 local a, f, ext = vim.api, vim.fn, vim.tbl_deep_extend
@@ -48,6 +48,8 @@ function W.setup(conf)
   if W.util.buf.check_md() or not con.user.lazy then
     W.enter_md(false)
   else
+    W.config.setup_maps()
+    W.config.setup_opts()
     -- a.nvim_create_user_command("WordInit", function()
     --   vim.cmd.delcommand("WordInit")
     --   W.enter_md(true)
@@ -110,6 +112,7 @@ function W.enter_md(manual, args)
   con.started = true
 
   -- Lets the entire word environment know that word has started!
+  -- event.pub("word_started", nil)
   modu.broadcast_event({
     type = "started",
     split_type = {
@@ -130,12 +133,6 @@ function W.enter_md(manual, args)
   vim.api.nvim_exec_autocmds("User", {
     pattern = "WordStarted", -- wordInit
   })
-end
-
---- Returns whether or not word is loaded
---- @return boolean
-function W.is_loaded()
-  return con.started
 end
 
 -- require("telescope").setup_extension("word")

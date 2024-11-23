@@ -12,6 +12,9 @@ local log, mod = word.log, word.mod
 local init = mod.create("ui", {
   -- "icon",
   -- "calendar",
+  -- "win",
+  -- "conceal",
+  'win',
   "dashboard",
   'hl',
   "popup",
@@ -25,6 +28,7 @@ end
 init.setup = function()
   return {
     namespace = vim.api.nvim_create_namespace("word/ui"),
+    requires = {},
     success = true,
   }
 end

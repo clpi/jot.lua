@@ -1,3 +1,4 @@
-local M = require('word.mod').create('lsp.action')
+local M = Mod.create('lsp.action')
+
 
 return M

@@ -1,18 +1,7 @@
---[[
-    file: todo
-    title: See Your Progress at a Glance
-    description: The introspector init displays progress for nested tasks.
-    summary: init for displaying progress of completed subtasks in the virtual line.
-    ---
-
-When an item with a TODO status has children with their own TODOs this init enables virtual text in the top level item and displays the
-progress of the subtasks. By base it displays in the format of `[completed/total] (progress%)`.
---]]
 local word = require("word")
 -- local u = require("dorm.utils").ns
-local mod = word.mod
 
-local init = mod.create("todo")
+local init = Mod.create("todo")
 
 init.private = {
   namespace = vim.api.nvim_create_namespace("word/todo"),

@@ -9,7 +9,7 @@
 
 local uv = vim.loop or vim.uv
 local lu = vim.lsp.util
-local co = coroutine
+local co = require "coroutine"
 local cb = require("word.util.callback")
 local config = require("word.config").config
 local log = require("word.util.log")
@@ -25,7 +25,7 @@ _G.Mod = {}
 --- @field completion? completion
 --- @field ["ui.icon"]? ui.icon
 --- @field workspace workspace
---- @field ["ui.icon"] ui.icon
+--- @field ["ui.hl"] ui.hl
 --- @field note note
 --- @field keys keys
 --- @field link link
@@ -33,7 +33,7 @@ _G.Mod = {}
 --- @field code code
 --- @field todo todo
 --- @field ui ui
---- @field ["ui.calendar.month"] ui.calendar.month
+--- @field ["ui.calendar.month"] calendar.views.monthly
 --- @field ["workspace"] workspace
 --- @field ["ui.popup"] ui.popup
 
@@ -112,8 +112,8 @@ function Mod.create(name, imports)
     },
     required = {
     },
-    examples = {
-    },
+    -- examples = {
+    -- },
     imported = {
     },
     tests = function()
@@ -441,7 +441,7 @@ function Mod.setup_mod(mod_name, cfg)
     modl.config.custom = cfg
     modl.config.public = utils.extend(modl.config.public, cfg)
   else
-    modl.config.custom = config.mods[mod_name]
+    modl.config.custom = config[mod_name]
     modl.config.public = utils.extend(modl.config.public, modl.config.custom or {})
   end
 

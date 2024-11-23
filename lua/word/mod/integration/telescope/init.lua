@@ -1,14 +1,14 @@
-local M = Mod.create("integration.telescope")
-local k = vim.keymap.set
+local M             = Mod.create("integration.telescope")
+local k             = vim.keymap.set
 
-M.setup = function()
+M.setup             = function()
   return {
     success = true,
-    requires = { "workspace" }
+    requires = { "cmd", "workspace" }
   }
 end
 
-M.private = {
+M.private           = {
   picker_names = {
     "linkable",
     "find_md",
@@ -24,7 +24,7 @@ M.private = {
     -- "backlinks.header_backlinks",
   },
 }
-M.pickers = function()
+M.pickers           = function()
   local r = {}
   for _, pic in ipairs(M.private.picker_names) do
     local ht, te = pcall(require, "telescope._extensions.word.picker." .. pic)
@@ -35,13 +35,50 @@ M.pickers = function()
   end
   return r
 end
-M.load = function()
+M.events.subscribed = {
+  cmd = {
+    ["cmd.integration.telescope.find.files"] = true,
+    ["cmd.integration.telescope.find.workspace"] = true,
+  }
+}
+M.load              = function()
+  Mod.await("cmd", function(cmd)
+    cmd.add_commands_from_table {
+      find = {
+        args = 0,
+        name = "integration.telescope.find",
+        subcommands = {
+          files = {
+            name = "cmd.integration.telescope.find.files",
+            args = 0,
+
+          },
+          workspace = {
+            name = "cmd.integration.telescope.find.workspace",
+            args = 0,
+
+          },
+
+        }
+      }
+
+    }
+  end)
   local hast, t = pcall(require, "telescope")
   assert(hast, t)
   t.load_extension("word")
   for _, pic in ipairs(M.private.picker_names) do
     -- t.load_extension(pic)
     k("n", "<plug>word.telescope." .. pic .. "", M.pickers()[pic])
+  end
+end
+
+M.on_event          = function(event)
+  if event.type == "cmd.events.integration.telescope.find.files" then
+    vim.cmd [[Telescope word find_word]]
+  elseif event.type == "cmd.events.integration.telescope.find.workspace" then
+    vim.cmd [[Telescope word workspace]]
+    require("telescope._extensions.word.picker.workspace")()
   end
 end
 

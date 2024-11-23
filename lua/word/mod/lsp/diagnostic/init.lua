@@ -1,3 +1,3 @@
-local M = require('word.mod').create('lsp.diagnostic')
+local M = Mod.create('lsp.diagnostic')
 
 return M

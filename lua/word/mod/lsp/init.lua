@@ -148,6 +148,13 @@ M.private.handlers = {
         triggerCharacters = { "@", "/", "|", "-", "(", " ", ".", ":", "#", "*", "^", "[" },
         resolveProvider = false,
         completionItem = {
+          tagSupport = {
+            valueSet = { 1 },
+          },
+          snippetSupport = true,
+          preselectSupport = true,
+          deprecatedSupport = true,
+          commitCharactersSupport = true,
           labelDetailsSupport = true,
         },
       }

@@ -1,0 +1,11 @@
+[package]
+name = "word"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "word"
+path = "src/lib.rs"
+
+[dependencies]
+neovim-lib

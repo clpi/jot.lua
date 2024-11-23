@@ -1,3 +1,3 @@
-local M = require('word.mod').create('data.save')
+local M = Mod.create('data.save')
 
 return M

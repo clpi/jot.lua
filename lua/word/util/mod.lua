@@ -9,7 +9,7 @@ C.create_meta = function(name, ...)
     return { success = true }
   end
 
-  m.setup = function()
+  m.load = function()
     m.config.public.enable = (function()
       if not m.config.public.disable then
         return m.config.public.enable

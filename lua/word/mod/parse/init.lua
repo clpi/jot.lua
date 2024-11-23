@@ -1,8 +1,8 @@
-local mod = require("word.mod")
+local P = Mod.create("parse", { "scan" })
 
-local P = mod.create("search")
+local p = vim.lpeg
 
-p = vim.lpeg
+
 
 
 return P

@@ -33,9 +33,7 @@ local f = vim.fn
 -- TODO: What goes below this line until the next notice used to belong to mod
 C.config = {
   user = {
-    mods = {
 
-    }
   },
 
   data = f.stdpath("data") .. "/word.mpack",
@@ -67,7 +65,21 @@ C.word_version = "0.1.0"
 
 C.setup_telescope = function()
 end
-C.setup_maps = function()
+C.n = function(k, c)
+  vim.api.nvim_set_keymap("n", k, c, { noremap = true, silent = true })
+end
+C.ni = function(k, c)
+  vim.api.nvim_set_keymap("n", k, c, { noremap = true, silent = false })
+end
+function C:setup_maps()
+  self.n(",wi", "<CMD>Word index<CR>")
+  self.n(",wn", "<CMD>Word note today<CR>")
+  self.n(",w", "<CMD>Word note yesterday<CR>")
+  self.n(",wt", "<CMD>Word note tomorrow<CR>")
+  self.n(",ww", "<CMD>Telescope word workspace<CR>")
+  self.n(",ww", "<CMD>Telescope word todo<CR>")
+  self.n(",wl", "<CMD>Word lsp lens<CR>")
+  self.n(",wa", "<CMD>Word lsp action<CR>")
 end
 
 C.setup_opts = function()

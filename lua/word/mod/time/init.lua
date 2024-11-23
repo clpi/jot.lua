@@ -226,6 +226,31 @@ local timezone_list = {
 
 ---@class time
 init.public = {
+  get_tz_offset = function()
+    -- http://lua-users.org/wiki/TimeZon
+    -- return the timezone offset in seconds, as it was on the time given by ts
+    -- Eric Feliksik
+    local utcdate = os.date("!*t", 0)
+    local localdate = os.date("*t", 0)
+    localdate.isdst = false   -- this is the trick
+    return os.difftime(os.time(localdate), os.time(utcdate)) ---@diagnostic disable-line -- TODO: type error workaround <pysan3>
+  end,
+  get_tz = function()
+    -- generate a ISO-8601 timestamp
+    -- example: 2023-09-05T09:09:11-0500
+    --
+    local timezone_config = init.config.public.timezone
+    if timezone_config == "utc" then
+      return os.date("!%Y-%m-%dT%H:%M:%S+0000")
+    elseif timezone_config == "implicit-local" then
+      return os.date("%Y-%m-%dT%H:%M:%S")
+    else
+      -- assert(timezone_config == "local")
+      local tz_offset = get_timezone_offset()
+      local h, m = math.modf(tz_offset / 3600)
+      return os.date("%Y-%m-%dT%H:%M:%S") .. string.format("%+.4d", h * 100 + m * 60)
+    end
+  end
   --- Converts a parsed date with `parse_date` to a lua date.
   ---@param parsed_date Date #The date to convert
   ---@return osdate #A Lua date

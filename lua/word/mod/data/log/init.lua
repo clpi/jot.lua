@@ -1,63 +1,42 @@
---[[
-    file: log
-    title: Dear log...
-    description: The log M allows you to take personal log with zero friction.
-    summary: Easily track a log within word.
-    ---
-The log M exposes a total of six commands.
-The first three, `:word log today|yesterday|tomorrow`, allow you to access entries
-for a given time relative to today. A file will be opened with the respective date as a `.word` file.
-
-The fourth command, `:word log custom`, allows you to specify a custom date as an argument.
-The date must be formatted according to the `YYYY-mm-dd` format, e.g. `2023-01-01`.
-
-The `:word log template` command creates a template file which will be used as the base whenever
-a new log entry is created.
-
-Last but not least, the `:word log toc open|update` commands open or create/update a Table of Contents
-file found in the root of the log. This file contains link to all other log entries, alongside
-their titles.
---]]
-
 local word = require("word")
+local co = require("coroutine")
 local config, lib, log, mod = word.cfg, word.lib, word.log, word.mod
 
-local M = mod.create("log")
+local M = mod.create("data.log")
 
 
-M.months = {
-  "January",
-  "February",
-  "March",
-  "April",
-  "May",
-  "June",
-  "July",
-  "August",
-  "September",
-  "October",
-  "November",
-  "December",
-}
-
-
-M.load = function()
+M.setup = function()
+  vim.api.nvim_create_namespace("word/data/log")
   return {
     success = true,
     requires = {
+      -- 'data',
+      "ui.popup",
+      "ui.inline",
+      "ui.win",
       "workspace",
       "integration.treesitter",
     },
   }
 end
 
-
 M.private = {
-  open_month = function()
+  logs = {},
+  count = 0,
+}
+M.data = M.required['data']
+-- M.get = M.data.retrieve
+-- M.set = M.data.set
+M.private = {
+  get_log = function()
 
   end,
   open_index = function()
 
+  end,
+  get_logs = function()
+    M.get['log.count'] = 0
+    M.get['log.logs'] = {}
   end,
   --- Opens a log entry at the given time
   ---@param time? number #The time to open the log entry at as returned by `os.time()`
@@ -109,7 +88,7 @@ M.private = {
 
   --- Opens a log entry for tomorrow's date
   log_tomorrow = function()
-    M.private.open_log(os.time() + 24 * 60 * 60)
+    M.required['ui.win'].create_new()
   end,
 
   --- Opens a log entry for yesterday's date
@@ -117,8 +96,13 @@ M.private = {
     M.private.open_log(os.time() - 24 * 60 * 60)
   end,
 
-  --- Opens a log entry for today's date
-  log_today = function()
+  --- Opens a log entry for new's date
+  log_new = function()
+    vim.ui.input({
+      prompt = "New log name: ",
+      default = nil,
+      completion = logs,
+    })
     M.private.open_log()
   end,
 
@@ -382,7 +366,7 @@ M.load = function()
           month = { max_args = 1, name = "log.month" },
           tomorrow = { args = 0, name = "log.tomorrow" },
           yesterday = { args = 0, name = "log.yesterday" },
-          today = { args = 0, name = "log.today" },
+          new = { args = 0, name = "log.new" },
           custom = { max_args = 1, name = "log.custom" }, -- format :yyyy-mm-dd
           template = { args = 0, name = "log.template" },
           toc = {
@@ -433,8 +417,8 @@ M.on_event = function(event)
       else
         M.private.open_log(nil, event.content[1])
       end
-    elseif event.split_type[2] == "log.today" then
-      M.private.log_today()
+    elseif event.split_type[2] == "log.new" then
+      M.private.log_new()
     elseif event.split_type[2] == "log.template" then
       M.private.create_template()
     elseif event.split_type[2] == "log.toc.open" then
@@ -451,7 +435,7 @@ M.events.subscribed = {
     ["log.month"] = true,
     ["log.yesterday"] = true,
     ["log.tomorrow"] = true,
-    ["log.today"] = true,
+    ["log.new"] = true,
     ["log.custom"] = true,
     ["log.template"] = true,
     ["log.toc.update"] = true,
