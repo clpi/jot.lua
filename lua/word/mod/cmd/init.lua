@@ -473,6 +473,10 @@ M.on_event = function(event)
     end
   end
 
+  if event.type == "cmd.events.mod.unload" then
+
+  end
+
   if event.type == "cmd.events.mod.list" then
     local Popup = require("nui.popup")
 
@@ -518,6 +522,7 @@ end
 M.events.subscribed = {
   cmd = {
     -- ["mod.new"] = true,
+    ["mod.unload"] = true,
     ["mod.load"] = true,
     ["mod.list"] = true,
   },

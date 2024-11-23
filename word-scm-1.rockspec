@@ -33,7 +33,6 @@ end
 
 dependencies = {
   "lua == 5.1",
-  "plenary.nvim == 0.1.4",
   "pathlib.nvim ~> 2.2",
 }
 

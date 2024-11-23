@@ -25,11 +25,11 @@
 
 ## Introduction
 
-- **word.lua** is a [neovim](#) plugin intended to bring the extensibility of [org-mode](#) or [neorg](github.com/nvim-neorg/neorg) in the comfort of [markdown](#).
+- `word.lua` is a [neovim](#) plugin intended to bring the extensibility of [org-mode](#) or [neorg](github.com/nvim-neorg/neorg) with the **comfort** of [markdown](#).
 
-- we want to be able to take notes like developers, without shutting ourselves out of the entire ecosystem built around markdown.
+- we want to be able to take notes like developers, without leaving behind all the ecosystem benefits of markdown.
 
-- it's a work in progress with an initial project structure based on the structure of neorg, and will be updated regularly
+- it's a work in progress and will be updated regularly
 
 ## Requirements
 
@@ -57,6 +57,7 @@
           workspace = {
             config = {
               workspaces = {
+                default = "~/word",
                 notes = "~/notes"
               }
             }
@@ -65,9 +66,10 @@
       })
     end,
     dependencies = {
-      "nvim-telescope/telescope.nvim",
+      "nvim-lua/plenary.nvim",
+      "MunifTanjim/nui.nvim",
       "pysan3/pathlib.nvim",
-      "nvim-lua/plenary-nvim",
+      "nvim-telescope/telescope.nvim", -- optional
     }
 }
 ```
@@ -88,7 +90,8 @@
 
 ```vim
 Plug "nvim-telescope/telescope.nvim"
-Plug 'nvim-lua/plenary-nvim'
+Plug "nvim-lua/plenary.nvim",
+Plug "MunifTanjim/nui.nvim",
 Plug "pysan3/pathlib.nvim"
 Plug "clpi/word.lua", {
     \ "branch" : "master",
@@ -120,9 +123,10 @@ Plug "clpi/word.lua", {
 > Not yet tested
 
 ```vim
-Plugin 'nvim-lua/plenary-nvim'
 Plugin "pysan3/pathlib.nvim"
 Plugin 'nvim-telescope/telescope.nvim'
+Plugin "nvim-lua/plenary.nvim",
+Plugin "MunifTanjim/nui.nvim",
 Plugin 'clpi/word.lua'
 ```
 
@@ -141,6 +145,8 @@ Plugin 'clpi/word.lua'
 > Not yet tested
 
 ```vim
+call dein#add("nvim-lua/plenary.nvim")
+call dein#add("MunifTanjim/nui.nvim")
 call dein#add('pysan3/pathlib.nvim')
 call dein#add('nvim-telescope/telescope.nvim')
 call dein#add('clpi/word.lua')
@@ -165,8 +171,9 @@ use {
   "clp/word.lua",
   requires = {
         "nvim-telescope/telescope.nvim",
-        "plenary.nvim",
-        "pathlib.nvim"
+        "nvim-lua/plenary.nvim",
+        "MunifTanjim/nui.nvim",
+        "pysan3/pathlib.nvim"
   },
   tag = "*",
   config = function()
@@ -270,6 +277,8 @@ require("word").setup({
 `word.lua` is a project by [clpi](github.com/clpi) and is licensed under the [MIT](./LICENSE) license. For information about **contributing**, please consult the [CONTRIBUTING.md](./CONTRIBUTING.md) file.
 
 special thanks goes to [nvim-neorg/neorg](https://github.com/nvim-neorg/neorg) for providing the inspiration and basis of this project.
+
+---
 
 thank you and keep updated!
 
