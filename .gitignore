@@ -10,3 +10,5 @@ ext/
 /.luarocks
 .direnv
 .pre-commit-config.yaml
+/doc/tags
+**.book/

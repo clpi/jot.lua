@@ -1,0 +1,8 @@
+#!/usr/bin/env codon run
+
+import os
+import sys
+
+os.system("echo 'hi there")
+
+# vim:ft=python

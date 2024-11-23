@@ -63,6 +63,9 @@ end
 
 local unpack = unpack or table.unpack
 
+Log.debug = function(inp)
+  -- print("ERROR: ", inp)
+end
 Log.warn = function(inp)
   -- print("ERROR: ", inp)
 end

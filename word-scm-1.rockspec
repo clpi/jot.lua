@@ -57,3 +57,4 @@ build = {
     "doc",
   }
 }
+--vim:ft=lua

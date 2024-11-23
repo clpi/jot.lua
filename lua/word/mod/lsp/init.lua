@@ -60,11 +60,26 @@ M.config.public = {
 local workspace ---@type workspace
 local refactor ---@type lsp.refactor
 local format ---@type lsp.format
-local ts ---@type query
+local ts ---@type treesitter
 local cmp ---@type lsp.completion
 
 M.load = function()
   M.required.cmd.add_commands_from_table({
+    rename = {
+      args = 1,
+      name = "rename",
+      subcommands = {
+        file = {
+          min_args = 0,
+          max_args = 1,
+          name = "rename.file",
+        },
+        heading = {
+          args = 0,
+          name = "rename.heading",
+        },
+      },
+    },
     lsp = {
       min_args = 0,
       max_args = 1,
@@ -150,21 +165,6 @@ M.load = function()
           args = 1,
           name = "lsp.refactor"
         },
-        rename = {
-          args = 1,
-          name = "lsp.rename",
-          subcommands = {
-            file = {
-              min_args = 0,
-              max_args = 1,
-              name = "lsp.rename.file",
-            },
-            heading = {
-              args = 0,
-              name = "lsp.rename.heading",
-            },
-          },
-        },
       },
     },
   })
@@ -181,7 +181,7 @@ M.load = function()
 end
 
 M.private.handlers = {
-  ["initialize"] = function(_params, callback, _notify_reply_callback)
+  initialize = function(_params, callback, _notify_reply_callback)
     local initializeResult = {
       capabilities = {
         renameProvider = {
@@ -605,12 +605,11 @@ M.events.subscribed = {
     ["lsp.command"] = true,
     ["lsp.hint"] = true,
     ["lsp.diagnostic"] = true,
-    ["lsp.workspace"] = true,
     ["lsp.format"] = true,
     ["lsp.refactor"] = true,
-    ["lsp.rename"] = true,
-    ["lsp.rename.file"] = true,
-    ["lsp.rename.heading"] = true,
+    ["rename"] = true,
+    ["rename.file"] = true,
+    ["rename.heading"] = true,
   },
 }
 
@@ -687,7 +686,7 @@ M.private["lsp.action"] = function(event)
   vim.lsp.util.open_floating_preview {
   }
 end
-M.private["lsp.rename.heading"] = function(event)
+M.private["rename.heading"] = function(event)
   local line_number = event.cursor_position[1]
   local prefix = string.match(event.line_content, "^%s*%*+ ")
   if not prefix then -- this is a very very simple check that we're on a heading line. We use TS in the actual rename_heading function

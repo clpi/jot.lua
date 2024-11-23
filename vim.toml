@@ -5,6 +5,15 @@ name = "vim"
 [vim]
 any = true
 
+[before_each.args]
+any = true
+[it]
+any = true
+[describe]
+any = true
+[assert]
+any = true
+
 [jit]
 any = true
 

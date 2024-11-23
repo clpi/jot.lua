@@ -90,6 +90,7 @@
 
 ```vim
 Plug "nvim-telescope/telescope.nvim"
+Plug "nvim-treesitter/treesitter.nvim"
 Plug "nvim-lua/plenary.nvim",
 Plug "MunifTanjim/nui.nvim",
 Plug "pysan3/pathlib.nvim"

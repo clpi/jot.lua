@@ -12,9 +12,7 @@
 ---@class word.word
 local W = {
   cfg = require("word.config").config,
-  health = require("word.health"),
   mod = require("word.mod"),
-  version = require("word.config").version,
   config = require("word.config"),
   callbacks = require("word.util.callback"),
   log = require("word.util.log"),
@@ -41,7 +39,6 @@ local a, f, ext = vim.api, vim.fn, vim.tbl_deep_extend
 --- @see config.user
 --- @see word.configuration.user
 function W.setup(conf)
-  assert(utils.is_minimum_version(0, 10, 0), "must have nvim 0.10.0+")
   conf = conf or { mods = {} }
   if conf.mods == nil then conf.mods = {} end
   con.user = utils.extend(con.user, conf)
