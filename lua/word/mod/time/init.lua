@@ -250,7 +250,7 @@ init.public = {
       local h, m = math.modf(tz_offset / 3600)
       return os.date("%Y-%m-%dT%H:%M:%S") .. string.format("%+.4d", h * 100 + m * 60)
     end
-  end
+  end,
   --- Converts a parsed date with `parse_date` to a lua date.
   ---@param parsed_date Date #The date to convert
   ---@return osdate #A Lua date

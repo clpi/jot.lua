@@ -18,19 +18,17 @@ local W = {
   log = require("word.util.log"),
   util = {
     util = require("word.util"),
-    fs = require("word.util.fs"),
     log = require("word.util.log"),
     buf = require("word.util.buf"),
     -- cb = require("word.event.cb"),
   },
   utils = require("word.util"),
-  lib = require("word.util.lib")
+  lib = require("word.util.lib"),
 }
 
-
-local con, log, modu, utils = require "word.config".config, W.log, W.mod, W.utils
+local con, log, modu, utils =
+    require("word.config").config, W.log, W.mod, W.utils
 local a, f, ext = vim.api, vim.fn, vim.tbl_deep_extend
-
 
 --- @init "word.config"
 
@@ -40,7 +38,9 @@ local a, f, ext = vim.api, vim.fn, vim.tbl_deep_extend
 --- @see word.configuration.user
 function W.setup(conf)
   conf = conf or { mods = {} }
-  if conf.mods == nil then conf.mods = {} end
+  if conf.mods == nil then
+    conf.mods = {}
+  end
   con.user = utils.extend(con.user, conf)
   log.new(con.user.logger or log.get_base_config(), true)
   require("word.config").setup_maps()
@@ -97,7 +97,7 @@ function W.enter_md(manual, args)
   modu.broadcast_event({
     type = "loaded",
     split_type = {
-      "loaded"
+      "loaded",
     },
     filename = "",
     filehead = "",
@@ -114,6 +114,8 @@ function W.enter_md(manual, args)
     pattern = "WordLoaded", --
   })
 end
+
+_G.V = vim
 
 -- require("telescope").setup_extension("word")
 return W

@@ -1,6 +1,10 @@
 local word = require("word")
 local lib, log, mod, utils = word.lib, word.log, word.mod, word.utils
 
+local u = require("nvim-treesitter.utils")
+local loc = require("nvim-treesitter.locals")
+local tsu = require("nvim-treesitter.ts_utils")
+
 local M = Mod.create("integration.treesitter")
 
 M.private = {

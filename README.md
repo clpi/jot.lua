@@ -277,7 +277,18 @@ require("word").setup({
   - `data.sync` for managing sync
   - `data.log` for managing logs
   - `data.dirs` for managing directories
+  - `data.snippets` for snippets
+- `ui` for ui actions
+  - `ui.popup` for popup windows
+  - `ui.chat` for chat services
+  - `ui.win` for window creation
+- `lsp` for lsp services
+  - `lsp.completion` for completion
+  - `lsp.format` for formatting
+  - `lsp.actions` for codeactions
+  - `lsp.lens` for codelens
 - `links` for managing links
+- 
 
 `...`
 

@@ -3,6 +3,10 @@ local word = require("word")
 
 local init = Mod.create("todo")
 
+init.maps = function()
+  Map.nmap(",wt", "<CMD>Telescope word todo<CR>")
+end
+
 init.private = {
   namespace = vim.api.nvim_create_namespace("word/todo"),
 
@@ -81,8 +85,16 @@ end
 --- Errors if the target buffer is not a word buffer.
 ---@param buffer number #The buffer ID to attach to.
 function init.public.attach_introspector(buffer)
-  if not vim.api.nvim_buf_is_valid(buffer) or vim.bo[buffer].filetype ~= "markdown" then
-    error(string.format("Could not attach to buffer %d, buffer is not a word file!", buffer))
+  if
+    not vim.api.nvim_buf_is_valid(buffer)
+    or vim.bo[buffer].filetype ~= "markdown"
+  then
+    error(
+      string.format(
+        "Could not attach to buffer %d, buffer is not a word file!",
+        buffer
+      )
+    )
   end
 
   init.required["integration.treesitter"].execute_query(
@@ -109,13 +121,22 @@ function init.public.attach_introspector(buffer)
       first = math.min(first, vim.api.nvim_buf_line_count(buf) - 1)
 
       ---@type TSNode?
-      local node = init.required["integration.treesitter"].get_first_node_on_line(buf, first)
+      local node =
+        init.required["integration.treesitter"].get_first_node_on_line(
+          buf,
+          first
+        )
 
       if not node then
         return
       end
 
-      vim.api.nvim_buf_clear_namespace(buffer, init.private.namespace, first + 1, first + 1)
+      vim.api.nvim_buf_clear_namespace(
+        buffer,
+        init.private.namespace,
+        first + 1,
+        first + 1
+      )
 
       local function introspect(start_node)
         local parent = start_node
@@ -134,12 +155,18 @@ function init.public.attach_introspector(buffer)
 
       introspect(node)
 
-      local node_above = init.required["integration.treesitter"].get_first_node_on_line(buf, first - 1)
+      local node_above =
+        init.required["integration.treesitter"].get_first_node_on_line(
+          buf,
+          first - 1
+        )
 
       do
         local todo_status = node_above:named_child(1)
 
-        if todo_status and todo_status:type() == "detached_modifier_extension" then
+        if
+          todo_status and todo_status:type() == "detached_modifier_extension"
+        then
           introspect(node_above)
         end
       end
@@ -166,7 +193,10 @@ function init.public.calculate_items(node)
 
   -- Go through all the children of the current todo item node and count the amount of "done" children
   for child in node:iter_children() do
-    if child:named_child(1) and child:named_child(1):type() == "detached_modifier_extension" then
+    if
+      child:named_child(1)
+      and child:named_child(1):type() == "detached_modifier_extension"
+    then
       for status in child:named_child(1):iter_children() do
         if status:type():match("^todo_item_") then
           local type = status:type():match("^todo_item_(.+)$")
@@ -200,7 +230,12 @@ function init.public.perform_introspection(buffer, node)
 
   local line, col = node:start()
 
-  vim.api.nvim_buf_clear_namespace(buffer, init.private.namespace, line, line + 1)
+  vim.api.nvim_buf_clear_namespace(
+    buffer,
+    init.private.namespace,
+    line,
+    line + 1
+  )
 
   if total == 0 then
     return

@@ -1,16 +1,16 @@
-U                 = {}
+U = {}
 
-local log         = require("word.util.log")
+U.maps = require("word.util.maps")
+
+local log = require("word.util.log")
 
 local c, f, a, ts = vim.cmd, vim.fn, vim.api, vim.treesitter
 
-
-U.autocmd   = a.nvim_create_autocmd
-U.cmd       = a.nvim_create_command
-U.ns        = a.nvim_create_namespace
+U.autocmd = a.nvim_create_autocmd
+U.cmd = a.nvim_create_command
+U.ns = a.nvim_create_namespace
 U.win_valid = a.nvim_win_is_valid
-U.buf_ext   = a.nvim_bug_get_extmarks
-
+U.buf_ext = a.nvim_bug_get_extmarks
 
 local version = vim.version() -- TODO: Move to a more local scope
 
@@ -77,7 +77,7 @@ function U.get_language_list(values)
 
   for _, syntax in pairs(regex_files) do
     if ts_files[syntax] then
-      ret[syntax] = { type = "integration.treesitter"   }
+      ret[syntax] = { type = "integration.treesitter" }
     else
       ret[syntax] = { type = "syntax" }
     end
@@ -173,7 +173,9 @@ function U.parse_version_string(version_string)
       local num = tonumber(split_version[i])
 
       if not num then
-        log.warn("Invalid version provided, string cannot be converted to integral type.")
+        log.warn(
+          "Invalid version provided, string cannot be converted to integral type."
+        )
         return
       end
 

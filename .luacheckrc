@@ -25,5 +25,8 @@ std = "max+busted"
 ignore = {
   "631", -- max_line_length
   "212",
-  "122"
+  "122",
+  "411",
+  "412",
+  "422"
 }

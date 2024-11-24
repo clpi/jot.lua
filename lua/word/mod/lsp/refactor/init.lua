@@ -1,15 +1,5 @@
---[[
-    file: Refactor-M
-    title: Refactoring things for the LSP
-    summary: A helper M for all the refactoring operations the LSP can use
-    internal: true
-    ---
-
-No commands here, just functions that refactor things.
---]]
-
-local word = require("word")
 local Path = require("pathlib")
+local word = require("word")
 local mod = word.mod
 local log = word.log
 
@@ -33,6 +23,33 @@ end
 
 ---@class lsp.refactor
 M.public = {
+  rename = {
+    file = {
+      ---@type lsp.RenameFileOptions
+      opts = {
+        ignoreIfExists = true,
+        overwrite = true,
+      }
+
+    },
+    ---@type lsp.RenameClientCapabilities
+    capabilities = {
+      honorsChangeAnnotations = true,
+      prepareSupport = true,
+      prepareSupportDefaultBehavior = 1,
+      dynamicRegistration = true,
+
+    },
+    ---@type lsp.RenameOptions
+    opts = {
+      prepareProvider = true,
+      workDoneProgress = true,
+
+    }
+
+
+
+  },
   ---move the current file from one location to another, and update all the links to/from the file
   ---in the current workspace. Deletes the buffer of the original file if it exists
   ---@param current_path string
@@ -48,7 +65,11 @@ M.public = {
 
     if Path(new_path):exists() then
       log.error(
-        ("Cannot move file `%s` to `%s` becuase `%s` already exists."):format(current_path, new_path, new_path)
+        ("Cannot move file `%s` to `%s` becuase `%s` already exists."):format(
+          current_path,
+          new_path,
+          new_path
+        )
       )
       return false
     end
@@ -59,27 +80,34 @@ M.public = {
     ---@type lsp.WorkspaceEdit
     local wsEdit = { changes = {} }
     ---@param link Link
-    local current_file_changes = M.private.fix_links(current_path, function(link)
-      local range = link.file and link.file.range
-      local link_str = link.file and link.file.text
-      local raw = false
-      if link.type and link.type.text == "/ " then
-        range = link.text.range -- don't ask me why the parser does this
-        link_str = link.text.text
-        raw = true
-      end
-      if not range then
-        return
-      end
-      local link_path, rel = workspace.expand_pathlib(link_str, raw, current_path)
-      if link_path and rel then
-        -- it's relative to the file location, so we might have to change it
-        local lp = Path(tostring(link_path)):relative_to(Path(new_path), true):resolve():remove_suffix(".md")
-        if lp then
-          return tostring(lp), unpack(range)
+    local current_file_changes = M.private.fix_links(
+      current_path,
+      function(link)
+        local range = link.file and link.file.range
+        local link_str = link.file and link.file.text
+        local raw = false
+        if link.type and link.type.text == "/ " then
+          range = link.text.range -- don't ask me why the parser does this
+          link_str = link.text.text
+          raw = true
+        end
+        if not range then
+          return
+        end
+        local link_path, rel =
+            workspace.expand_pathlib(link_str, raw, current_path)
+        if link_path and rel then
+          -- it's relative to the file location, so we might have to change it
+          local lp = Path(tostring(link_path))
+              :relative_to(Path(new_path), true)
+              :resolve()
+              :remove_suffix(".md")
+          if lp then
+            return tostring(lp), unpack(range)
+          end
         end
       end
-    end)
+    )
     if #current_file_changes > 0 then
       total_changed.files = total_changed.files + 1
       total_changed.links = total_changed.links + #current_file_changes
@@ -165,7 +193,8 @@ M.public = {
     line_number = line_number - 1
     local buf = vim.api.nvim_get_current_buf()
     local node = ts.get_first_node_on_line(buf, line_number)
-    local line = vim.api.nvim_buf_get_lines(buf, line_number, line_number + 1, false)
+    local line =
+        vim.api.nvim_buf_get_lines(buf, line_number, line_number + 1, false)
     local prefix = line[1]:match("^%*+ ")
     local new_prefix = new_heading:match("^%*+ ")
     local new_name = new_heading:sub(#new_prefix + 1)
@@ -194,7 +223,11 @@ M.public = {
       local link_prefix = link.type and link.type.text
       local link_heading = link.text and link.text.text
       -- NOTE: This will not work for {:path/to/current/file:# heading} but who would do that..
-      if not link.file and (link_prefix == "# " or link_prefix == prefix) and link_heading == title_text then
+      if
+          not link.file
+          and (link_prefix == "# " or link_prefix == prefix)
+          and link_heading == title_text
+      then
         local p = new_prefix
         if link_prefix == "# " then
           p = "# "
@@ -242,7 +275,8 @@ M.public = {
           return
         end
 
-        local link_path, _ = workspace.expand_pathlib(link_str, false, current_path)
+        local link_path, _ =
+            workspace.expand_pathlib(link_str, false, current_path)
         local link_heading = link.text and link.text.text
         local link_prefix = link.type and link.type.text
         if not link_heading or not link_prefix then

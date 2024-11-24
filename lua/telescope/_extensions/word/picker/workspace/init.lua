@@ -62,7 +62,7 @@ return function(options)
             table.insert(lines, "Files:")
 
             if not files[workspace.name] then
-              files[workspace.name] = word.mod.get_mod("workspace").get_norg_files(workspace.name)
+              files[workspace.name] = word.mod.get_mod("workspace").get_word_files(workspace.name)
             end
             for _, file in ipairs(files[workspace.name]) do
               table.insert(lines, tostring(file))

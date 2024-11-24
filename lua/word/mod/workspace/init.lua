@@ -1,15 +1,21 @@
 local Path = require("pathlib")
 
 local word = require("word")
-local log, mod, utils = word.log, require('word.mod'), word.utils
+local log, mod, utils = word.log, require("word.mod"), word.utils
 
 local M = mod.create("workspace")
 
 M.setup = function()
   return {
     success = true,
-    requires = { "ui", "data", 'note', "data.dirs" },
+    requires = { "ui", "data", "note", "data.dirs" },
   }
+end
+
+M.maps = function()
+  Map.nmap(",ww", "<CMD>Telescope word workspace<CR>")
+  Map.nmap(",w,", "<CMD>Word workspace default<CR>")
+  Map.nmap(",wd", "<CMD>Word workspace default<CR>")
 end
 
 M.load = function()
@@ -17,9 +23,9 @@ M.load = function()
   for name, workspace_location in pairs(M.config.public.workspaces) do
     -- M.config.public.workspaces[name] = vim.fn.expand(vim.fn.fnameescape(workspace_location)) ---@diagnostic disable-line -- TODO: type error workaround <pysan3>
     -- print(name, workspace_location)
-    M.config.public.workspaces[name] = Path(workspace_location):resolve():to_absolute()
+    M.config.public.workspaces[name] =
+        Path(workspace_location):resolve():to_absolute()
   end
-
 
   -- vim.keymap.set("<c-\\><c-\\>", "<Plug>(word.workspace.new-note)", M.public.new_note)
 
@@ -46,9 +52,8 @@ M.load = function()
           },
         })
       end)
-    end
-  }
-  )
+    end,
+  })
   -- Synchronize default.cmd autocompletions
   M.public.sync()
 
@@ -101,23 +106,25 @@ M.private = {
   ---@type { [1]: string, [2]: PathlibPath }
   current_workspace = { "default", Path.cwd() },
 }
-M.get_word_files = function(ws)
-  local res = {}
-  local w = M.public.get_workspace(ws)
-  if not w then return end
-  for path in w:fs_iterdir(true, 20) do
-    if path:is_file(true) and path:suffix() == ".md" then
-      table.insert(res, path)
-    end
-  end
-  return res
-end
-M.current = function()
-  return M.private.current_workspace
-end
 
----@class default.workspace
+---@class workspace
 M.public = {
+  current = function()
+    return M.private.current_workspace
+  end,
+  files = function(ws)
+    local res = {}
+    local w = M.public.get_workspace(ws)
+    if not w then
+      return
+    end
+    for path in w:fs_iterdir(true, 20) do
+      if path:is_file(true) and path:suffix() == ".md" then
+        table.insert(res, path)
+      end
+    end
+    return res
+  end,
   ---Resolve `$<workspace>/path/to/file` and return the real path
   ---@param path string | PathlibPath # path
   ---@param raw_path boolean? # If true, returns resolved path, otherwise, returns resolved path
@@ -145,7 +152,8 @@ M.public = {
       end
       -- If the user has given an empty workspace name (i.e. `$/myfile`)
       if custom_workspace_path:len() == 0 then
-        filepath = ws.get_current_workspace()[2] / filepath:relative_to(Path("$"))
+        filepath = ws.get_current_workspace()[2]
+            / filepath:relative_to(Path("$"))
       else -- If the user provided a workspace name (i.e. `$my-workspace/myfile`)
         local workspace = ws.get_workspace(custom_workspace_path)
         if not workspace then
@@ -164,7 +172,10 @@ M.public = {
     end
     -- requested to expand word file
     if not raw_path then
-      if type(path) == "string" and (path:sub(#path) == "/" or path:sub(#path) == "\\") then
+      if
+          type(path) == "string"
+          and (path:sub(#path) == "/" or path:sub(#path) == "\\")
+      then
         -- if path ends with `/`, it is an invalid request!
         log.error(table.concat({
           "md file location cannot point to a directory.",
@@ -231,7 +242,11 @@ M.public = {
 
     -- If the workspace does not exist then error out
     if not workspace then
-      log.warn("Unable to set workspace to", workspace, "- that workspace does not exist")
+      log.warn(
+        "Unable to set workspace to",
+        workspace,
+        "- that workspace does not exist"
+      )
       return false
     end
 
@@ -277,7 +292,11 @@ M.public = {
     -- Broadcast the workspace_added event with the newly added workspace as the content
     mod.broadcast_event(
       assert(
-        mod.create_event(M, "workspace.events.workspace_added", { workspace_name, workspace_path })
+        mod.create_event(
+          M,
+          "workspace.events.workspace_added",
+          { workspace_name, workspace_path }
+        )
       )
     )
 
@@ -302,7 +321,9 @@ M.public = {
     -- Find a matching workspace
     for workspace, location in pairs(M.config.public.workspaces) do
       if workspace ~= "default" then
-        if file:is_relative_to(location) and location:depth() > longest_match then
+        if
+            file:is_relative_to(location) and location:depth() > longest_match
+        then
           ws_name = workspace
           longest_match = location:depth()
         end
@@ -341,9 +362,7 @@ M.public = {
       })
     end)
   end,
-  select_workspace = function()
-
-  end,
+  select_workspace = function() end,
 
   ---@class default.workspace.create_file_opts
   ---@field ['opts.no_open']? boolean do not open the file after creation?
@@ -373,10 +392,13 @@ M.public = {
     local destination = (fullpath / path):add_suffix(".md")
 
     -- Generate parents just in case
-    destination:parent_assert():mkdir(Path.const.o755 + 4 * math.pow(8, 4), true) -- 40755(oct)
+    destination
+        :parent_assert()
+        :mkdir(Path.const.o755 + 4 * math.pow(8, 4), true) -- 40755(oct)
 
     -- Create or overwrite the file
-    local fd = destination:fs_open(opts.force and "w" or "a", Path.const.o644, false)
+    local fd =
+        destination:fs_open(opts.force and "w" or "a", Path.const.o644, false)
     if fd then
       vim.loop.fs_close(fd)
     end
@@ -384,7 +406,13 @@ M.public = {
     -- Broadcast file creation event
     local bufnr = M.public.get_file_bufnr(destination:tostring())
     mod.broadcast_event(
-      assert(mod.create_event(M, "workspace.events.file_created", { buffer = bufnr, opts = opts }))
+      assert(
+        mod.create_event(
+          M,
+          "workspace.events.file_created",
+          { buffer = bufnr, opts = opts }
+        )
+      )
     )
 
     if not opts.no_open then
@@ -411,7 +439,9 @@ M.public = {
     local data = mod.get_mod("data")
 
     if not data then
-      log.trace("M `default.data` not loaded, refusing to load last user's workspace.")
+      log.trace(
+        "M `default.data` not loaded, refusing to load last user's workspace."
+      )
       return
     end
 
@@ -423,7 +453,11 @@ M.public = {
     local workspace_path = M.public.get_workspace(last_workspace)
 
     if not workspace_path then
-      log.trace("Unable to switch to workspace '" .. last_workspace .. "'. The workspace does not exist.")
+      log.trace(
+        "Unable to switch to workspace '"
+        .. last_workspace
+        .. "'. The workspace does not exist."
+      )
       return
     end
 
@@ -455,10 +489,10 @@ M.public = {
     if not workspace then
       return
     end
-    local n = M.required['note'].config.public.note_dir
-    local nd = Path(workspace / n)
+    local n = M.required["note"].config.public.note_dir
+    local wn = Path(workspace / n)
     local res = {} ---@type table<PathlibPath>
-    for path in nd:fs_iterdir(true, 20) do
+    for path in wn:fs_iterdir(true, 20) do
       if path:is_file(true) and path:suffix() == ".md" then
         table.insert(res, path)
       end
@@ -529,7 +563,9 @@ M.public = {
 
     -- If the workspace does not exist then give the user a nice error and bail
     if not ws_match then
-      log.error('Unable to switch to workspace - "' .. workspace .. '" does not exist')
+      log.error(
+        'Unable to switch to workspace - "' .. workspace .. '" does not exist'
+      )
       return
     end
 
@@ -599,7 +635,9 @@ M.on_event = function(event)
           return
         end
 
-        utils.notify("New workspace: " .. event.content[1] .. " -> " .. new_workspace)
+        utils.notify(
+          "New workspace: " .. event.content[1] .. " -> " .. new_workspace
+        )
       end)
     else -- No argument supplied, simply print the current workspace
       -- Query the current workspace
@@ -607,7 +645,9 @@ M.on_event = function(event)
       -- Nicely print it. We schedule_wrap here because people with a configured logger will have this message
       -- silenced by other trace logs
       vim.schedule(function()
-        utils.notify("Current workspace: " .. current_ws[1] .. " -> " .. current_ws[2])
+        utils.notify(
+          "Current workspace: " .. current_ws[1] .. " -> " .. current_ws[2]
+        )
       end)
     end
   end
@@ -654,8 +694,6 @@ M.events.defined = {
 M.events.subscribed = {
   workspace = {
     workspace_added = true,
-
-
 
     workspace_changed = true,
   },

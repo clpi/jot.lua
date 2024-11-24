@@ -1,21 +1,40 @@
 #!/usr/bin/env lua
 
-local c = coroutine
-local async = require("table")
-local s = require("string")
-local io = require("io")
-local e = require("os")
+S = {}
 
-local i, o, e = io.stdin, io.stdout, io.stderr
-os.execute("ls")
-local r, w = o.read, o.write
+S.server = function(disp)
+  local q = false
+  local msg = {}
+  local srv = {}
 
-o:write("Hello, World!\n" .. "")
+  ---@return boolean, integer
+  function srv.request(meth, params, cb)
+    table.insert(msg, { methd = meth, params = params })
+    if meth == "initialize" then
+      cb(nil, { capabilities = {} })
+    elseif meth == "shutdown" then
+      cb(nil, nil)
+    end
+    return true, 1
+  end
 
+  function srv.notify(meth, param)
+    if meth == "exit" then
+      disp.on_exit(0, 15)
+    end
+  end
 
+  function srv.closing()
+    return q
+  end
 
+  function srv.terminate()
+    q = true
+  end
 
+  return srv
+end
 
-w(o, os.getenv("HOME"))
+return S
 
---vim:ft=lua
+--vim:ft=lua,ts=2,et,sw=2

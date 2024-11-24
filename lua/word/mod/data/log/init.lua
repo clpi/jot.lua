@@ -1,9 +1,9 @@
-local word = require("word")
 local co = require("coroutine")
+local pop = require("plenary.popup")
+local word = require("word")
 local config, lib, log, mod = word.cfg, word.lib, word.log, word.mod
 
 local M = mod.create("data.log")
-
 
 M.setup = function()
   vim.api.nvim_create_namespace("word/data/log")
@@ -13,7 +13,7 @@ M.setup = function()
       "ui.popup",
       "ui.inline",
       "ui.win",
-      'ui.progress',
+      "ui.progress",
       "workspace",
       "integration.treesitter",
     },
@@ -24,26 +24,23 @@ M.private = {
   logs = {},
   count = 0,
 }
-M.data = M.required['data']
+M.data = M.required["data"]
 -- M.get = M.data.retrieve
 -- M.set = M.data.set
 M.private = {
-  get_log = function()
-
-  end,
-  open_index = function()
-
-  end,
+  get_log = function() end,
+  open_index = function() end,
   get_logs = function()
-    M.get['log.count'] = 0
-    M.get['log.logs'] = {}
+    M.get["log.count"] = 0
+    M.get["log.logs"] = {}
   end,
   --- Opens a log entry at the given time
   ---@param time? number #The time to open the log entry at as returned by `os.time()`
   ---@param custom_date? string #A YYYY-mm-dd string that specifies a date to open the log at instead
   open_log = function(time, custom_date)
     -- TODO(vhyrro): Change this to use word dates!
-    local workspace = M.config.public.workspace or M.required["workspace"].get_current_workspace()[1]
+    local workspace = M.config.public.workspace
+      or M.required["workspace"].get_current_workspace()[1]
     local workspace_path = M.required["workspace"].get_workspace(workspace)
     local folder_name = M.config.public.log_folder
     local template_name = M.config.public.template_name
@@ -64,37 +61,54 @@ M.private = {
     end
 
     local path = os.date(
-      type(M.config.public.strategy) == "function" and M.config.public.strategy(os.date("*t", time))
-      or M.config.public.strategy,
+      type(M.config.public.strategy) == "function"
+          and M.config.public.strategy(os.date("*t", time))
+        or M.config.public.strategy,
       time
     )
 
+    local log_file_exists = M.required["workspace"].file_exists(
+      workspace_path .. "/" .. folder_name .. config.pathsep .. path
+    )
 
-    local log_file_exists =
-        M.required["workspace"].file_exists(workspace_path .. "/" .. folder_name .. config.pathsep .. path)
+    M.required["workspace"].create_file(
+      folder_name .. config.pathsep .. path,
+      workspace
+    )
 
-    M.required["workspace"].create_file(folder_name .. config.pathsep .. path, workspace)
-
-    M.required["workspace"].create_file(folder_name .. config.pathsep .. path, workspace)
+    M.required["workspace"].create_file(
+      folder_name .. config.pathsep .. path,
+      workspace
+    )
 
     if
-        not log_file_exists
-        and M.config.public.use_template
-        and M.required["workspace"].file_exists(workspace_path .. "/" .. folder_name .. "/" .. template_name)
+      not log_file_exists
+      and M.config.public.use_template
+      and M.required["workspace"].file_exists(
+        workspace_path .. "/" .. folder_name .. "/" .. template_name
+      )
     then
-      vim.cmd("$read " .. workspace_path .. "/" .. folder_name .. "/" .. template_name .. "| w")
+      vim.cmd(
+        "$read "
+          .. workspace_path
+          .. "/"
+          .. folder_name
+          .. "/"
+          .. template_name
+          .. "| w"
+      )
     end
   end,
 
   --- Opens a log entry for tomorrow's date
   log_tomorrow = function()
     -- M.required['ui.progress'].start()
-    M.required['ui.win'].create_new()
+    M.required["ui.win"].create_new()
   end,
 
   --- Opens a log entry for yesterday's date
   log_yesterday = function()
-    M.required['ui.win'].win(0)
+    M.required["ui.win"].win(0)
   end,
 
   --- Opens a log entry for new's date
@@ -121,13 +135,19 @@ M.private = {
 
   --- Opens the toc file
   open_toc = function()
-    local workspace = M.config.public.workspace or M.required["workspace"].get_current_workspace()[1]
+    local workspace = M.config.public.workspace
+      or M.required["workspace"].get_current_workspace()[1]
     local index = mod.get_mod_config("workspace").index
     local folder_name = M.config.public.log_folder
 
     -- If the toc exists, open it, if not, create it
-    if M.required.workspace.file_exists(folder_name .. config.pathsep .. index) then
-      M.required.workspace.open_file(workspace, folder_name .. config.pathsep .. index)
+    if
+      M.required.workspace.file_exists(folder_name .. config.pathsep .. index)
+    then
+      M.required.workspace.open_file(
+        workspace,
+        folder_name .. config.pathsep .. index
+      )
     else
       M.private.create_toc()
     end
@@ -135,7 +155,8 @@ M.private = {
 
   --- Creates or updates the toc file
   create_toc = function()
-    local workspace = M.config.public.workspace or M.required["workspace"].get_current_workspace()[1]
+    local workspace = M.config.public.workspace
+      or M.required["workspace"].get_current_workspace()[1]
     local index = mod.get_mod_config("workspace").index
     local workspace_path = M.required["workspace"].get_workspace(workspace)
     local workspace_name_for_link = M.config.public.workspace or ""
@@ -148,11 +169,24 @@ M.private = {
     -- path is for each subfolder
     local get_fs_handle = function(path)
       path = path or ""
-      local handle =
-          vim.loop.fs_scandir(workspace_path .. config.pathsep .. folder_name .. config.pathsep .. path)
+      local handle = vim.loop.fs_scandir(
+        workspace_path
+          .. config.pathsep
+          .. folder_name
+          .. config.pathsep
+          .. path
+      )
 
       if type(handle) ~= "userdata" then
-        error(lib.lazy_string_concat("Failed to scan directory '", workspace, path, "': ", handle))
+        error(
+          lib.lazy_string_concat(
+            "Failed to scan directory '",
+            workspace,
+            path,
+            "': ",
+            handle
+          )
+        )
       end
 
       return handle
@@ -160,118 +194,139 @@ M.private = {
 
     -- Gets the title from the metadata of a file, must be called in a vim.schedule
     local get_title = function(file)
-      local buffer = vim.fn.bufadd(workspace_path .. config.pathsep .. folder_name .. config.pathsep .. file)
+      local buffer = vim.fn.bufadd(
+        workspace_path
+          .. config.pathsep
+          .. folder_name
+          .. config.pathsep
+          .. file
+      )
       local meta = M.required["workspace"].get_document_metadata(buffer)
       return meta.title
     end
 
-    vim.loop.fs_scandir(workspace_path .. config.pathsep .. folder_name .. config.pathsep, function(err, handle)
-      assert(not err, lib.lazy_string_concat("Unable to generate TOC for directory '", folder_name, "' - ", err))
+    vim.loop.fs_scandir(
+      workspace_path .. config.pathsep .. folder_name .. config.pathsep,
+      function(err, handle)
+        assert(
+          not err,
+          lib.lazy_string_concat(
+            "Unable to generate TOC for directory '",
+            folder_name,
+            "' - ",
+            err
+          )
+        )
 
-      while true do
-        -- Name corresponds to either a YYYY-mm-dd.word file, or just the year ("nested" strategy)
-        local name, type = vim.loop.fs_scandir_next(handle) ---@diagnostic disable-line -- TODO: type error workaround <pysan3>
+        while true do
+          -- Name corresponds to either a YYYY-mm-dd.word file, or just the year ("nested" strategy)
+          local name, type = vim.loop.fs_scandir_next(handle) ---@diagnostic disable-line -- TODO: type error workaround <pysan3>
 
-        if not name then
-          break
-        end
+          if not name then
+            break
+          end
 
-        -- Handle nested entries
-        if type == "directory" then
-          local years_handle = get_fs_handle(name)
-          while true do
-            -- mname is the month
-            local mname, mtype = vim.loop.fs_scandir_next(years_handle)
+          -- Handle nested entries
+          if type == "directory" then
+            local years_handle = get_fs_handle(name)
+            while true do
+              -- mname is the month
+              local mname, mtype = vim.loop.fs_scandir_next(years_handle)
 
-            if not mname then
-              break
-            end
+              if not mname then
+                break
+              end
 
-            if mtype == "directory" then
-              local months_handle = get_fs_handle(name .. config.pathsep .. mname)
-              while true do
-                -- dname is the day
-                local dname, dtype = vim.loop.fs_scandir_next(months_handle)
+              if mtype == "directory" then
+                local months_handle =
+                  get_fs_handle(name .. config.pathsep .. mname)
+                while true do
+                  -- dname is the day
+                  local dname, dtype = vim.loop.fs_scandir_next(months_handle)
 
-                if not dname then
-                  break
-                end
+                  if not dname then
+                    break
+                  end
 
-                -- If it's a .word file, also ensure it is a day entry
-                if dtype == "file" and string.match(dname, "%d%d%.md") then
-                  -- Split the file name
-                  local file = vim.split(dname, ".", { plain = true })
+                  -- If it's a .word file, also ensure it is a day entry
+                  if dtype == "file" and string.match(dname, "%d%d%.md") then
+                    -- Split the file name
+                    local file = vim.split(dname, ".", { plain = true })
 
-                  vim.schedule(function()
-                    -- Get the title from the metadata, else, it just base to the name of the file
-                    local title = get_title(
-                      name .. config.pathsep .. mname .. config.pathsep .. dname
-                    ) or file[1]
+                    vim.schedule(function()
+                      -- Get the title from the metadata, else, it just base to the name of the file
+                      local title = get_title(
+                        name
+                          .. config.pathsep
+                          .. mname
+                          .. config.pathsep
+                          .. dname
+                      ) or file[1]
 
-                    -- Insert a new entry
-                    table.insert(toc_entries, {
-                      tonumber(name),
-                      tonumber(mname),
-                      tonumber(file[1]),
-                      "{:$"
-                      .. workspace_name_for_link
-                      .. config.pathsep
-                      .. M.config.public.log_folder
-                      .. config.pathsep
-                      .. name
-                      .. config.pathsep
-                      .. mname
-                      .. config.pathsep
-                      .. file[1]
-                      .. ":}",
-                      title,
-                    })
-                  end)
+                      -- Insert a new entry
+                      table.insert(toc_entries, {
+                        tonumber(name),
+                        tonumber(mname),
+                        tonumber(file[1]),
+                        "{:$"
+                          .. workspace_name_for_link
+                          .. config.pathsep
+                          .. M.config.public.log_folder
+                          .. config.pathsep
+                          .. name
+                          .. config.pathsep
+                          .. mname
+                          .. config.pathsep
+                          .. file[1]
+                          .. ":}",
+                        title,
+                      })
+                    end)
+                  end
                 end
               end
             end
           end
-        end
 
-        -- Handles flat entries
-        -- If it is a .word file, but it's not any user generated file.
-        -- The match is here to avoid handling files made by the user, like a template file, or
-        -- the toc file
-        if type == "file" and string.match(name, "%d+-%d+-%d+%.md") then
-          -- Split yyyy-mm-dd to a table
-          local file = vim.split(name, ".", { plain = true })
-          local parts = vim.split(file[1], "-")
+          -- Handles flat entries
+          -- If it is a .word file, but it's not any user generated file.
+          -- The match is here to avoid handling files made by the user, like a template file, or
+          -- the toc file
+          if type == "file" and string.match(name, "%d+-%d+-%d+%.md") then
+            -- Split yyyy-mm-dd to a table
+            local file = vim.split(name, ".", { plain = true })
+            local parts = vim.split(file[1], "-")
 
-          -- Convert the parts into numbers
-          for k, v in pairs(parts) do
-            parts[k] = tonumber(v) ---@diagnostic disable-line -- TODO: type error workaround <pysan3>
+            -- Convert the parts into numbers
+            for k, v in pairs(parts) do
+              parts[k] = tonumber(v) ---@diagnostic disable-line -- TODO: type error workaround <pysan3>
+            end
+
+            vim.schedule(function()
+              -- Get the title from the metadata, else, it just base to the name of the file
+              local title = get_title(name) or parts[3]
+
+              -- And insert a new entry that corresponds to the file
+              table.insert(toc_entries, {
+                parts[1],
+                parts[2],
+                parts[3],
+                "{:$"
+                  .. workspace_name_for_link
+                  .. config.pathsep
+                  .. M.config.public.log_folder
+                  .. config.pathsep
+                  .. file[1]
+                  .. ":}",
+                title,
+              })
+            end)
           end
-
-          vim.schedule(function()
-            -- Get the title from the metadata, else, it just base to the name of the file
-            local title = get_title(name) or parts[3]
-
-            -- And insert a new entry that corresponds to the file
-            table.insert(toc_entries, {
-              parts[1],
-              parts[2],
-              parts[3],
-              "{:$"
-              .. workspace_name_for_link
-              .. config.pathsep
-              .. M.config.public.log_folder
-              .. config.pathsep
-              .. file[1]
-              .. ":}",
-              title,
-            })
-          end)
         end
-      end
 
-      vim.schedule(function()
-        -- Gets a base format for the entries
-        local format = M.config.public.toc_format
+        vim.schedule(function()
+          -- Gets a base format for the entries
+          local format = M.config.public.toc_format
             or function(entries)
               local months_text = M.months
               -- Convert the entries into a certain format to be written
@@ -291,22 +346,26 @@ M.private = {
                 end
 
                 -- Prints the file link
-                table.insert(output, "   " .. entry[4] .. string.format("[%s]", entry[5]))
+                table.insert(
+                  output,
+                  "   " .. entry[4] .. string.format("[%s]", entry[5])
+                )
               end
 
               return output
             end
 
-        M.required["workspace"].create_file(
-          folder_name .. config.pathsep .. index,
-          workspace or M.required["workspace"].get_current_workspace()[1]
-        )
+          M.required["workspace"].create_file(
+            folder_name .. config.pathsep .. index,
+            workspace or M.required["workspace"].get_current_workspace()[1]
+          )
 
-        -- The current buffer now must be the toc file, so we set our toc entries there
-        vim.api.nvim_buf_set_lines(0, 0, -1, false, format(toc_entries))
-        vim.cmd("w")
-      end)
-    end)
+          -- The current buffer now must be the toc file, so we set our toc entries there
+          vim.api.nvim_buf_set_lines(0, 0, -1, false, format(toc_entries))
+          vim.cmd("w")
+        end)
+      end
+    )
   end,
 }
 
@@ -355,7 +414,8 @@ M.public = {
 
 M.load = function()
   if M.config.private.strategies[M.config.public.strategy] then
-    M.config.public.strategy = M.config.private.strategies[M.config.public.strategy]
+    M.config.public.strategy =
+      M.config.private.strategies[M.config.public.strategy]
   end
 
   mod.await("cmd", function(cmd)
@@ -389,6 +449,7 @@ M.on_event = function(event)
   if event.split_type[1] == "cmd" then
     if event.split_type[2] == "log.index" then
       M.private.open_index()
+      -- pop.create(())
     elseif event.split_type[2] == "log.month" then
       M.private.open_month()
     elseif event.split_type[2] == "log.tomorrow" then
@@ -400,7 +461,9 @@ M.on_event = function(event)
         local calendar = mod.get_mod("ui.calendar")
 
         if not calendar then
-          log.error("[ERROR]: `base.calendar` is not loaded! Said M is required for this operation.")
+          log.error(
+            "[ERROR]: `base.calendar` is not loaded! Said M is required for this operation."
+          )
           return
         end
 
@@ -409,10 +472,10 @@ M.on_event = function(event)
             M.private.open_log(
               nil,
               string.format("%04d", osdate.year)
-              .. "-"
-              .. string.format("%02d", osdate.month)
-              .. "-"
-              .. string.format("%02d", osdate.day)
+                .. "-"
+                .. string.format("%02d", osdate.month)
+                .. "-"
+                .. string.format("%02d", osdate.day)
             )
           end),
         })
@@ -495,7 +558,10 @@ M.examples = {
                 end
 
                 -- Prints the file link
-                table.insert(output, "   " .. entry[4] .. string.format("[%s]", entry[5]))
+                table.insert(
+                  output,
+                  "   " .. entry[4] .. string.format("[%s]", entry[5])
+                )
               end
 
               return output
@@ -506,6 +572,5 @@ M.examples = {
       },
     })
   end,
-
 }
 return M

@@ -33,14 +33,11 @@ local f = vim.fn
 --- @see word.setup
 ---
 --- @type word.configuration
-
 -- TODO: What goes below this line until the next notice used to belong to mod
 C.config = {
   ---@type word.configuration.user
   user = {
-    mods = {
-
-    }
+    mods = {},
   },
 
   data = f.stdpath("data") .. "/word.mpack",
@@ -49,7 +46,7 @@ C.config = {
   ft = {
     md = true,
     mdx = true,
-    markdown = true
+    markdown = true,
   },
 
   mods = {},
@@ -64,9 +61,7 @@ C.config = {
 
 C.version = "0.1.0"
 
-
-C.setup_telescope = function()
-end
+C.setup_telescope = function() end
 C.n = function(k, c)
   vim.api.nvim_set_keymap("n", k, c, { silent = true })
 end
@@ -74,11 +69,18 @@ C.ni = function(k, c)
   vim.keymap.set({ "n", "i" }, k, c, { silent = true })
 end
 C.setup_maps = function()
-  vim.api.nvim_set_keymap("n", ",wi", "<CMD>Word index<CR>", { silent = true })
-  vim.api.nvim_set_keymap("n", ",ww", "<CMD>Telescope word workspace<CR>", { silent = true })
-  vim.api.nvim_set_keymap("n", ",ww", "<CMD>Telescope word todo<CR>", { silent = true })
-  vim.api.nvim_set_keymap("n", ",wl", "<CMD>Word lsp lens<CR>", { silent = true })
-  vim.api.nvim_set_keymap("n", ",wa", "<CMD>Word lsp action<CR>", { silent = true })
+  vim.api.nvim_set_keymap(
+    "n",
+    ",wl",
+    "<CMD>Word lsp lens<CR>",
+    { silent = true }
+  )
+  vim.api.nvim_set_keymap(
+    "n",
+    ",wa",
+    "<CMD>Word lsp action<CR>",
+    { silent = true }
+  )
 end
 
 C.setup_opts = function()

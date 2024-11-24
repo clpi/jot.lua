@@ -1,0 +1,7 @@
+#!/usr/bin/env nelua
+
+local m = require("memory")
+
+print("hi")
+
+--vim:ft=nelua

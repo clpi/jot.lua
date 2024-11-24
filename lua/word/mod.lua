@@ -5,7 +5,6 @@ local config = require("word.config").config
 local log = require("word.util.log")
 local utils = require("word.util")
 
-
 _G.Mod = {}
 
 --- @alias word.mod.public { version: string, [any]: any }
@@ -40,7 +39,7 @@ _G.Mod = {}
 --- @field defined? { [string]: word.event }              Lists all events defined by this init.
 --- @field subscribed? { [string]: { [string]: boolean } } Lists the events that the init is subscribed to.
 
---- @alias word.mod.setup { success: boolean, requires?: string[], replaces?: string, relace_merge?: boolean, wants?: string[] }
+--- @alias word.mod.setup { success: boolean, requires?: string[], replaces?: string, replace_merge?: boolean, wants?: string[] }
 
 --- Defines a init.
 --- A init is an object that contains a set of hooks which are invoked by word whenever something in the
@@ -49,15 +48,18 @@ _G.Mod = {}
 --- @field config? word.mod.configuration The configuration for the init.
 --- @field events? word.mod.events Describes all information related to events for this init.
 --- @field import? table<string, word.mod> Imported submod of the given init. Contrary to `required`, which only exposes the public API of a init, imported mod can be accessed in their entirety.
+--- @field cmds? fun() Function that is invoked once the init is considered "stable", i.e. after all dependencies are loaded. Perform your main loading routine here.
+--- @field opts? fun() Function that is invoked once the init is considered "stable", i.e. after all dependencies are loaded. Perform your main loading routine here.
 --- @field maps? fun() Function that is invoked once the init is considered "stable", i.e. after all dependencies are loaded. Perform your main loading routine here.
 --- @field load? fun() Function that is invoked once the init is considered "stable", i.e. after all dependencies are loaded. Perform your main loading routine here.
 --- @field test? fun() Function that is invoked once the init is considered "stable", i.e. after all dependencies are loaded. Perform your main loading routine here.
 --- @field bench? fun() Function that is invoked once the init is considered "stable", i.e. after all dependencies are loaded. Perform your main loading routine here.
 --- @field name string The name of the init.
+--- @field namespace string The name of the init.
 --- @field post_load? fun() Function that is invoked after all mod are loaded. Useful if you want the word environment to be fully set up before performing some task.
 --- @field path string The full path to the init (a more verbose version of `name`). Moday be used in lua's `require()` statements.
 --- @field public private? table A convenience table to place all of your private variables that you don't want to expose.
---- @field public public? word.mod.public Every init can expose any set of information it sees fit through this field. All functions and variables declared in this table will be visiable to any other init loaded.
+--- @field public public? word.mod.public Every init can expose any set of information it sees fit through this field. All functions and variables declared in this table will be to any other init loaded.
 --- @field required? word.mod.resolver Contains the public tables of all mod that were required via the `requires` array provided in the `setup()` function of this init.
 --- @field setup? fun(): word.mod.setup? Function that is invoked before any other loading occurs. Should perform preliminary startup tasks.
 --- @field replaced? boolean If `true`, this means the init is a replacement for a base init. This flag is set automatically whenever `setup().replaces` is set to a value.
@@ -73,30 +75,28 @@ _G.Mod.default_mod = function(name)
         requires = {},
         replaces = nil,
         wants = {},
-        replace_merge = false
+        replace_merge = false,
       }
     end,
+    cmds = function() end,
+    opts = function() end,
     maps = function()
-
+      -- TODO: obviously inefficient
+      Map.nmap(",wi", "<CMD>Word index<CR>")
     end,
-    load = function()
-    end,
-    on_event = function()
-    end,
-    post_load = function()
-    end,
+    load = function() end,
+    on_event = function() end,
+    post_load = function() end,
     name = "config",
     namespace = "word/" .. name,
     path = "mod.config",
     private = {},
     public = {
-      version = require("word.config").config.version
+      version = require("word.config").config.version,
     },
     config = {
-      private = {
-      },
-      public = {
-      },
+      private = {},
+      public = {},
       custom = {},
     },
     events = {
@@ -105,16 +105,10 @@ _G.Mod.default_mod = function(name)
       defined = {    -- The events that the init itself has defined
       },
     },
-    required = {
-    },
-    import = {
-    },
-    test = function()
-
-    end,
-    bench = function()
-    end,
-
+    required = {},
+    import = {},
+    test = function() end,
+    bench = function() end,
   }
 end
 -- local cmd = require("word.cmd")
@@ -123,19 +117,19 @@ end
 --- @param imports? string[] A list of imports to attach to the init. Import data is requestable via `init.required`. Use paths relative to the current init.
 --- @return word.mod
 function _G.Mod.create(name, imports)
-  -- local new_mod = require("word.mod.default").default_mod
   ---@type word.mod
   local new_mod = Mod.default_mod(name)
   if imports then
     for _, imp in ipairs(imports) do
       local fullpath = table.concat({ name, imp }, ".")
-
       if not Mod.load_mod(fullpath) then
-        log.error("Unable to load import '" ..
-          fullpath .. "'! An error occured (see traceback below):")
-        assert(false) -- Halt execution, no recovering from this error...
+        log.error(
+          "Unable to load import '"
+          .. fullpath
+          .. "'! An error  (see traceback below):"
+        )
+        assert(false)
       end
-
       new_mod.import[fullpath] = Mod.loaded_mod[fullpath]
     end
   end
@@ -146,7 +140,6 @@ function _G.Mod.create(name, imports)
     new_mod.namespace = "word/" .. name
     vim.api.nvim_create_namespace(new_mod.namespace)
   end
-
   return new_mod
 end
 
@@ -158,14 +151,20 @@ _G.Mod.create_meta = function(name, ...)
   ---@type word.mod
   local m = Mod.create(name)
 
-  if m.maps then m.maps() end
-
   m.config.public.enable = { ... }
 
   m.setup = function()
     return { success = true }
   end
-
+  if m.cmds then
+    m.cmds()
+  end
+  if m.opts then
+    m.opts()
+  end
+  if m.maps then
+    m.maps()
+  end
 
   m.load = function()
     m.config.public.enable = (function()
@@ -188,7 +187,6 @@ _G.Mod.create_meta = function(name, ...)
       Mod.load_mod(mname)
     end
   end
-
   return m
 end
 
@@ -229,9 +227,9 @@ function Mod.load_mod_from_table(m)
   -- We do not expect init.setup() to ever return nil, that's why this check is in place
   if not mod_load then
     log.error(
-      "init" ..
-      m.name ..
-      "does not handle init loading correctly; init.setup() returned nil. Omitting..."
+      "init"
+      .. m.name
+      .. "does not handle init loading correctly; init.setup() returned nil. Omitting..."
     )
     return false
   end
@@ -261,7 +259,9 @@ function Mod.load_mod_from_table(m)
 
   -- If the init "wants" any other mod then verify they are loaded
   if mod_load.wants and not vim.tbl_isempty(mod_load.wants) then
-    log.info("mod" .. m.name .. "wants certain mod. Ensuring they are loaded...")
+    log.info(
+      "mod" .. m.name .. "wants certain mod. Ensuring they are loaded..."
+    )
 
     -- Loop through each dependency and ensure it's loaded
     for _, req_mod in ipairs(mod_load.wants) do
@@ -271,16 +271,16 @@ function Mod.load_mod_from_table(m)
       if not Mod.is_mod_loaded(req_mod) then
         if config.user.mods[req_mod] then
           log.trace(
-            "Wanted init" ..
-            req_mod ..
-            "isn't loaded but can be as it's defined in the user's config. Loading..."
+            "Wanted init"
+            .. req_mod
+            .. "isn't loaded but can be as it's defined in the user's config. Loading..."
           )
 
           if not Mod.load_mod(req_mod) then
             require("word.util.log").error(
-              "Unable to load wanted init for" ..
-              m.name ..
-              "- the init didn't load successfully"
+              "Unable to load wanted init for"
+              .. m.name
+              .. "- the init didn't load successfully"
             )
 
             -- Modake sure to clean up after ourselves if the init failed to load
@@ -309,7 +309,9 @@ function Mod.load_mod_from_table(m)
 
   -- If any dependencies have been defined, handle them
   if mod_load.requires and vim.tbl_count(mod_load.requires) > 0 then
-    log.info("mod" .. m.name .. "has dependencies. Loading dependencies first...")
+    log.info(
+      "mod" .. m.name .. "has dependencies. Loading dependencies first..."
+    )
 
     -- Loop through each dependency and load it one by one
     for _, req_mod in pairs(mod_load.requires) do
@@ -380,11 +382,15 @@ function Mod.load_mod_from_table(m)
   -- Keep track of the number of loaded mod
   Mod.loaded_mod_count = Mod.loaded_mod_count + 1
 
-  -- NOTE(vhyrro): Left here for debugging.
-  -- Modaybe make controllable with a switch in the future.
-  -- local start = vim.loop.hrtime()
-
-  -- Call the load function
+  if m.cmds then
+    m.cmds()
+  end
+  if m.opts then
+    m.opts()
+  end
+  if m.maps then
+    m.maps()
+  end
   if m.load then
     m.load()
   end
@@ -430,9 +436,9 @@ function _G.Mod.load_mod(mod_name, cfg)
   -- If the init is nil for some reason return false
   if not modl then
     log.error(
-      "Unable to load init" ..
-      mod_name ..
-      "- loaded file returned nil. Be sure to return the table created by mod.create() at the end of your init.lua file!"
+      "Unable to load init"
+      .. mod_name
+      .. "- loaded file returned nil. Be sure to return the table created by mod.create() at the end of your init.lua file!"
     )
     return false
   end
@@ -441,8 +447,9 @@ function _G.Mod.load_mod(mod_name, cfg)
   -- We obviously can't do anything meaningful with that!
   if modl == true then
     log.error(
-      "An error has occurred when loading" ..
-      mod_name ..
+      "An error has occurred when loading"
+      .. mod_name
+      ..
       "- loaded file didn't return anything meaningful. Be sure to return the table created by mod.create() at the end of your init.lua file!"
     )
     return false
@@ -454,7 +461,8 @@ function _G.Mod.load_mod(mod_name, cfg)
     modl.config.public = utils.extend(modl.config.public, cfg)
   else
     modl.config.custom = config.mods[mod_name]
-    modl.config.public = utils.extend(modl.config.public, modl.config.custom or {})
+    modl.config.public =
+        utils.extend(modl.config.public, modl.config.custom or {})
   end
 
   -- Pass execution onto load_mod_from_table() and let it handle the rest
@@ -490,7 +498,11 @@ end
 --- @return T?
 function _G.Mod.get_mod(mod_name)
   if not Mod.is_mod_loaded(mod_name) then
-    log.trace("Attempt to get init with name", mod_name, "failed - init is not loaded.")
+    log.trace(
+      "Attempt to get init with name",
+      mod_name,
+      "failed - init is not loaded."
+    )
     return
   end
 
@@ -502,7 +514,11 @@ end
 --- @return table?
 function _G.Mod.get_mod_config(mod_name)
   if not Mod.is_mod_loaded(mod_name) then
-    log.trace("Attempt to get init config with name", mod_name, "failed - init is not loaded.")
+    log.trace(
+      "Attempt to get init config with name",
+      mod_name,
+      "failed - init is not loaded."
+    )
     return
   end
 
@@ -522,7 +538,11 @@ end
 function _G.Mod.get_mod_version(mod_name)
   -- If the init isn't loaded then don't bother retrieving its version
   if not Mod.is_mod_loaded(mod_name) then
-    log.trace("Attempt to get init version with name", mod_name, "failed - init is not loaded.")
+    log.trace(
+      "Attempt to get init version with name",
+      mod_name,
+      "failed - init is not loaded."
+    )
     return
   end
 
@@ -531,7 +551,11 @@ function _G.Mod.get_mod_version(mod_name)
 
   -- If it can't be found then error out
   if not version then
-    log.trace("Attempt to get init version with name", mod_name, "failed - version variable not present.")
+    log.trace(
+      "Attempt to get init version with name",
+      mod_name,
+      "failed - version variable not present."
+    )
     return
   end
 
@@ -650,7 +674,12 @@ function _G.Mod.get_event_template(init, type)
   local split_type = Mod.split_event_type(type)
 
   if not split_type then
-    log.warn("Unable to get event template for event", type, "and init", init.name)
+    log.warn(
+      "Unable to get event template for event",
+      type,
+      "and init",
+      init.name
+    )
     return
   end
 
@@ -705,7 +734,8 @@ function Mod.create_event(init, type, content, ev)
   local mod_name = Mod.split_event_type(type)[1]
 
   -- Retrieve the template from init.events.defined
-  local event_template = Mod.get_event_template(Mod.loaded_mod[mod_name] or { name = "" }, type)
+  local event_template =
+      Mod.get_event_template(Mod.loaded_mod[mod_name] or { name = "" }, type)
 
   if not event_template then
     log.warn("Unable to create event of type", type, ". Returning nil...")
@@ -734,7 +764,8 @@ function Mod.create_event(init, type, content, ev)
   new_event.cursor_position = vim.api.nvim_win_get_cursor(winid)
 
   local row_1b = new_event.cursor_position[1]
-  new_event.line_content = vim.api.nvim_buf_get_lines(bufid, row_1b - 1, row_1b, true)[1]
+  new_event.line_content =
+      vim.api.nvim_buf_get_lines(bufid, row_1b - 1, row_1b, true)[1]
   new_event.referrer = init.name
   new_event.broadcast = true
   new_event.buffer = bufid
@@ -750,7 +781,11 @@ end
 function _G.Mod.broadcast_event(event, callback)
   -- Broadcast the event to all mod
   if not event.split_type then
-    log.error("Unable to broadcast event of type", event.type, "- invalid event name")
+    log.error(
+      "Unable to broadcast event of type",
+      event.type,
+      "- invalid event name"
+    )
     return
   end
 
@@ -761,9 +796,13 @@ function _G.Mod.broadcast_event(event, callback)
   -- Loop through all the mod
   for _, current_init in pairs(Mod.loaded_mod) do
     -- If the current init has any subscribed events and if it has a subscription bound to the event's init name then
-    if current_init.events.subscribed and current_init.events.subscribed[event.split_type[1]] then
+    if
+        current_init.events.subscribed
+        and current_init.events.subscribed[event.split_type[1]]
+    then
       -- Check whether we are subscribed to the event type
-      local evt = current_init.events.subscribed[event.split_type[1]][event.split_type[2]]
+      local evt =
+          current_init.events.subscribed[event.split_type[1]][event.split_type[2]]
 
       if evt ~= nil and evt == true then
         -- Run the on_event() for that init
@@ -771,8 +810,6 @@ function _G.Mod.broadcast_event(event, callback)
       end
     end
   end
-
-  -- Because the broadcasting of events is async we allow the event broadcaster to provide a callback
   -- TODO: deprecate
   if callback then
     callback()
@@ -785,23 +822,16 @@ end
 function _G.Mod.send_event(recipient, event)
   -- If the recipient is not loaded then there's no reason to send an event to it
   if not Mod.is_mod_loaded(recipient) then
-    log.warn("Unable to send event to init", recipient, "- the init is not loaded.")
+    log.warn(
+      "Unable to send event to init" .. recipient .. "- the init is not loaded."
+    )
     return
   end
-
-  -- Set the broadcast variable to false since we're not invoking broadcast_event()
   event.broadcast = false
-
-  -- Let the callback handler know of the event
   cb.handle(event)
-
-  -- Get the recipient init and check whether it's subscribed to our event
   local modl = Mod.loaded_mod[recipient]
-
   if modl.events.subscribed and mod.events.subscribed[event.split_type[1]] then
     local evt = modl.events.subscribed[event.split_type[1]][event.split_type[2]]
-
-    -- If it is then trigger the init's on_event() function
     if evt ~= nil and evt == true then
       modl.on_event(event)
     end

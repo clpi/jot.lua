@@ -17,9 +17,12 @@ which walks you through the necessary steps.
 local word = require("word")
 local log, mod, util = word.log, word.mod, word.utils
 
-local M = mod.create("cmd")
+local M = Mod.create("cmd")
 
-
+M.maps = function()
+  Map.nmap(",wml", "<CMD>Word mod list<CR>")
+  Map.nmap(",wmL", "<CMD>Word mod load<CR>")
+end
 M.private = {
 
   --- Handles the calling of the appropriate function based on the command the user entered
@@ -66,8 +69,7 @@ M.private = {
         return
       elseif not check_condition(ref.condition) then
         log.error(
-          ("Error when executing `:word %s` - the command is currently disabled. Some commands will only become available under certain conditions, e.g. being within a `.word` file!")
-          :format(
+          ("Error when executing `:word %s` - the command is currently disabled. Some commands will only become available under certain conditions, e.g. being within a `.word` file!"):format(
             table.concat(vim.list_slice(args, 1, i), " ")
           )
         )
@@ -90,13 +92,15 @@ M.private = {
     end
 
     if #args == 0 or argument_count < ref.min_args then
-      local completions = M.private.generate_completions(_, table.concat({ "word ", data.args, " " }))
+      local completions = M.private.generate_completions(
+        _,
+        table.concat({ "word ", data.args, " " })
+      )
       M.private.select_next_cmd_arg(data.args, completions)
       return
     elseif argument_count > ref.max_args then
       log.error(
-        ("Error when executing `:word %s` - too many arguments supplied! The command expects %s argument%s.")
-        :format(
+        ("Error when executing `:word %s` - too many arguments supplied! The command expects %s argument%s."):format(
           data.args,
           ref.max_args == 0 and "no" or ref.max_args,
           ref.max_args == 1 and "" or "s"
@@ -107,8 +111,7 @@ M.private = {
 
     if not ref.name then
       log.error(
-        ("Error when executing `:word %s` - the ending command didn't have a `name` variable associated with it! This is an implementation error on the developer's side, so file a report to the author of the mod.")
-        :format(
+        ("Error when executing `:word %s` - the ending command didn't have a `name` variable associated with it! This is an implementation error on the developer's side, so file a report to the author of the mod."):format(
           data.args
         )
       )
@@ -135,7 +138,8 @@ M.private = {
   ---@param command string #Supplied by nvim itself; the full typed out command
   generate_completions = function(_, command)
     local current_buf = vim.api.nvim_get_current_buf()
-    local is_word = vim.api.nvim_buf_get_option(current_buf, "filetype") == "markdown"
+    local is_word = vim.api.nvim_buf_get_option(current_buf, "filetype")
+      == "markdown"
 
     local function check_condition(condition)
       if condition == nil then
@@ -189,7 +193,8 @@ M.private = {
       end
 
       if vim.endswith(command, " ") then
-        local completions = last_valid_ref.complete[#splitcmd - last_completion_level + 1] or {}
+        local completions = last_valid_ref.complete[#splitcmd - last_completion_level + 1]
+          or {}
 
         if type(completions) == "function" then
           completions = completions(current_buf, is_word) or {}
@@ -197,7 +202,8 @@ M.private = {
 
         return completions
       else
-        local completions = last_valid_ref.complete[#splitcmd - last_completion_level] or {}
+        local completions = last_valid_ref.complete[#splitcmd - last_completion_level]
+          or {}
 
         if type(completions) == "function" then
           completions = completions(current_buf, is_word) or {}
@@ -211,15 +217,17 @@ M.private = {
 
     -- TODO: Fix `:word m <tab>` giving invalid completions
     local keys = ref and vim.tbl_keys(ref.subcommands or {})
-        or (
-          vim.tbl_filter(function(key)
-            return key:find(splitcmd[#splitcmd])
-          end, vim.tbl_keys(last_valid_ref.subcommands or {}))
-        )
+      or (
+        vim.tbl_filter(function(key)
+          return key:find(splitcmd[#splitcmd])
+        end, vim.tbl_keys(last_valid_ref.subcommands or {}))
+      )
     table.sort(keys)
 
     do
-      local subcommands = (ref and ref.subcommands or last_valid_ref.subcommands) or {}
+      local subcommands = (
+        ref and ref.subcommands or last_valid_ref.subcommands
+      ) or {}
 
       return vim.tbl_filter(function(key)
         return check_condition(subcommands[key].condition)
@@ -290,7 +298,7 @@ M.public = {
     end
 
     M.public.commands =
-        vim.tbl_extend("force", M.public.commands, mod_config.commands)
+      vim.tbl_extend("force", M.public.commands, mod_config.commands)
   end,
 
   -- add = function(cmd, cb)
@@ -388,10 +396,7 @@ M.config.public = {
 }
 ---@class cmd
 
-
 M.post_load = M.public.sync
-
-
 
 M.examples = {
   ["Adding a word command"] = function()
@@ -404,7 +409,7 @@ M.examples = {
         my_command = {
           min_args = 1, -- Tells cmd that we want at least one argument for this command
           max_args = 1, -- Tells cmd we want no more than one argument
-          args = 1,     -- Setting this variable instead would be the equivalent of min_args = 1 and max_args = 1
+          args = 1, -- Setting this variable instead would be the equivalent of min_args = 1 and max_args = 1
           -- This command is only avaiable within `.word` files.
           -- This can also be a function(bufnr, is_in_an_word_file)
           condition = "markdown",
@@ -422,7 +427,7 @@ M.examples = {
               -- completion for those arguments here.
               -- This table is optional.
               complete = {
-                { "first_completion1",  "first_completion2" },
+                { "first_completion1", "first_completion2" },
                 { "second_completion1", "second_completion2" },
               },
 
@@ -469,12 +474,15 @@ M.on_event = function(event)
     local ok = pcall(mod.load_mod, event.content[1])
 
     if not ok then
-      vim.notify(string.format("init `%s` does not exist!", event.content[1]), vim.log.levels.ERROR, {})
+      vim.notify(
+        string.format("init `%s` does not exist!", event.content[1]),
+        vim.log.levels.ERROR,
+        {}
+      )
     end
   end
 
   if event.type == "cmd.events.mod.unload" then
-
   end
 
   if event.type == "cmd.events.mod.list" then

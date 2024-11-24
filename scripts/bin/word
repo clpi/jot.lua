@@ -1,20 +1,34 @@
 #!/usr/bin/env lua
 
-local c = coroutine
-local async = require("table")
-local s = require("string")
-local io = require("io")
+local ffi, jit = require("ffi"), require("jit")
+local io, i, o, e = io, io.stdin, io.stdout, io.stderr
 
-local i, o, e = io.stdin, io.stdout, io.stderr
-os.execute("ls")
-local r, w = o.read, o.write
+---@param arg string
+local function handle_arg(arg)
+  if arg == "-h" or arg == "--help" then
+    print("Help")
+  elseif arg == "-v" or arg == "--version" then
+    print("Version")
+  elseif arg == "-i" or arg == "--interactive" then
+    print("Interactive")
+  elseif arg == "-e" or arg == "--execute" then
+    print("Execute")
+  else
+    print("Unknown arg: ", arg)
+  end
+end
+local function parse()
+  local i, a, ac = 1, arg, #arg
+  while i <= ac do
+    local arg = a[i]
+    print(i, arg, "\n")
+    handle_arg(arg)
 
-o:write("Hello, World!\n" .. "")
+    i = i + 1
+  end
+end
 
+print("HI")
 
-
-
-
-w(o, os.getenv("HOME"))
-
+parse()
 --vim:ft=lua

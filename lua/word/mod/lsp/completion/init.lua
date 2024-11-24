@@ -13,35 +13,162 @@ word completions the same way you get completions from other language servers.
 
 local word = require("word")
 local mod, utils, log = word.mod, word.utils, word.log
+local ls = vim.lsp
 local Path = require("pathlib")
 
-local M = mod.create("lsp.completion")
+local M = mod.create("lsp.completion", { "inline" })
 local ts ---@type treesitter
 local search
 
 local dirutils, dirman, link_utils, treesitter
 
+M.private = {}
+
+---@class lsp.completion
+M.public = {
+  ---@param param lsp.CompletionParams
+  ---@param callback fun(_, lsp.CompletionList):nil
+  ---@param _ fun():nil
+  ---@return nil
+  handle = function(param, callback, _)
+    local uri = param.textDocument.uri
+    local cl = {
+      {
+        range = {
+          start = {
+            line = 1,
+            character = 1,
+          },
+          ["end"] = {
+            line = 1,
+            character = 1,
+          },
+        },
+        command = {
+          command = "test",
+          title = "test",
+          arguments = {
+            "test",
+          },
+        },
+      },
+    }
+    callback(cl)
+  end,
+  ---@type lsp.CompletionList
+  list = {
+    isIncomplete = false,
+    items = {
+      {
+        title = "hi",
+        data = {
+          title = "hi",
+          command = "echo",
+          arguments = { "hi" },
+        },
+
+        command = {
+          title = "ls",
+          command = "ls",
+          arguments = { "-l" },
+        },
+        ---@type lsp.CompletionItemKind
+        kind = 1,
+        detail = "hi",
+        documentation = "documentation",
+        commitCharacters = { ".", "(", "[" },
+        additionalTextEdits = {
+          {
+            newText = "newText",
+            range = {
+              start = { line = 1, character = 1 },
+              ["end"] = { line = 1, character = 1 },
+            },
+          },
+        },
+        insertText = "insertText",
+        insertTextFormat = 1,
+        filterText = "filterText",
+        insertTextMode = 2,
+        label = "label",
+      },
+    },
+  },
+  ---@type lsp.CompletionContext
+  context = {
+    triggerKind = 1,
+    triggerCharacter = "/",
+  },
+  ---@type lsp.CompletionOptions
+  opts = {
+    resolveProvider = true,
+    workDoneProgress = true,
+    completionItem = {
+      labelDetailsSupport = true,
+    },
+    triggerCharacters = { "/", "." },
+    allCommitCharacters = {
+      ".", "(", "[",
+    }
+  },
+
+  ---@type lsp.CompletionClientCapabilities
+  capabilities = {
+    contextSupport = true,
+    completionItem = {
+      resolveSupport = {
+        properties = { "documentation", "detail", "additionalTextEdits" },
+      },
+      commitCharactersSupport = true,
+      documentationFormat = { "markdown", "plaintext" },
+      deprecatedSupport = true,
+      insertReplaceSupport = true,
+      labelDetailsSupport = true,
+      insertTextModeSupport = {
+        valueSet = { 1, 2, },
+      },
+      snippetSupport = true,
+      preselectSupport = true,
+      tagSupport = {
+        valueSet = { 1 },
+      },
+    },
+    insertTextMode = 2,
+    dynamicRegistration = true,
+    completionItemKind = {
+      valueSet = {
+        1, 2, 3
+      }
+    },
+    completionList = M.public.list,
+
+  }
+}
 
 M.config.public = {
+  enable = true,
   engine = nil,
 
-  -- The identifier for the Neorg source.
-  name = "[Neorg]",
+  -- The identifier for the word source.
+  name = "[wd]",
 }
 
 M.setup = function()
   return {
     success = true,
     requires = {
-      "workspace", "integration.treesitter", "link" },
+      "workspace",
+      "integration.treesitter",
+      "link",
+    },
   }
 end
 
----@class neorg.completion_engine
+---@class word.completion_engine
 ---@field create_source function
 
 M.private = {
-  ---@type neorg.completion_engine
+  ---@type word.completion_engine
   engine = nil,
 
   --- Get a list of all markdown files in current workspace. Returns { workspace_path, markdown_files }
@@ -61,14 +188,26 @@ M.private = {
     local closing_colon = ""
     if colon then
       closing_colon = ":"
-      if string.sub(context.full_line, context.char + offset, context.char + offset) == ":" then
+      if
+          string.sub(
+            context.full_line,
+            context.char + offset,
+            context.char + offset
+          ) == ":"
+      then
         closing_colon = ""
         offset = 2
       end
     end
 
     local closing_brace = "}"
-    if string.sub(context.full_line, context.char + offset, context.char + offset) == "}" then
+    if
+        string.sub(
+          context.full_line,
+          context.char + offset,
+          context.char + offset
+        ) == "}"
+    then
       closing_brace = ""
     end
 
@@ -139,7 +278,8 @@ M.private = {
     end
     local links = M.private.get_linkables(source, node_type)
     local closing_chars = M.private.get_closing_chars(context, false)
-    return vim.iter(links)
+    return vim
+        .iter(links)
         :map(function(x)
           return leading_whitespace .. x.title .. closing_chars
         end)
@@ -153,7 +293,11 @@ M.private = {
 
   local_heading_links = function(context, _prev, _saved, match)
     local heading_level = match[2] and #match[2]
-    return M.private.suggestions(context, 0, ("heading%d"):format(heading_level))
+    return M.private.suggestions(
+      context,
+      0,
+      ("heading%d"):format(heading_level)
+    )
   end,
 
   foreign_heading_links = function(context, _prev, _saved, match)
@@ -161,7 +305,11 @@ M.private = {
     local heading_level = match[2] and #match[2]
     if file then
       file = dirutils.expand_pathlib(file)
-      return M.private.suggestions(context, file, ("heading%d"):format(heading_level))
+      return M.private.suggestions(
+        context,
+        file,
+        ("heading%d"):format(heading_level)
+      )
     end
     return {}
   end,
@@ -192,7 +340,9 @@ M.private = {
   normal_markdown = function(current, previous, _, _)
     -- If no previous node exists then try verifying the current node instead
     if not previous then
-      return current and (current:type() ~= "translation_unit" or current:type() == "document") or false
+      return current
+          and (current:type() ~= "translation_unit" or current:type() == "document")
+          or false
     end
 
     -- If the previous node is not tag parameters or the tag name
@@ -232,12 +382,16 @@ M.private.anchor_suggestions = function(_context, _prev, _saved, _match)
               text: (paragraph) @anchor_name ))
     ]]
 
-  treesitter.execute_query(anchor_query_string, function(query, id, node, _metadata)
-    local capture_name = query.captures[id]
-    if capture_name == "anchor_name" then
-      table.insert(suggestions, treesitter.get_node_text(node, 0))
-    end
-  end, 0)
+  treesitter.execute_query(
+    anchor_query_string,
+    function(query, id, node, _metadata)
+      local capture_name = query.captures[id]
+      if capture_name == "anchor_name" then
+        table.insert(suggestions, treesitter.get_node_text(node, 0))
+      end
+    end,
+    0
+  )
   return suggestions
 end
 
@@ -251,7 +405,6 @@ M.private.local_link_names = function(_context, _prev, _saved, match)
   end
   return { target }
 end
-
 
 ---@class core.completion
 M.public = {
@@ -389,7 +542,8 @@ M.public = {
           return false
         end
 
-        return previous:type() == "tag_parameters" or previous:type() == "tag_name"
+        return previous:type() == "tag_parameters"
+            or previous:type() == "tag_name"
       end,
 
       complete = {
@@ -418,7 +572,8 @@ M.public = {
       options = {
         type = "TODO",
         pre = function()
-          local sub = vim.api.nvim_get_current_line():gsub("^(%s*%-+%s+%(%s*)%)", "%1")
+          local sub =
+              vim.api.nvim_get_current_line():gsub("^(%s*%-+%s+%(%s*)%)", "%1")
 
           if sub then
             vim.api.nvim_set_current_line(sub)
@@ -596,9 +751,11 @@ M.public = {
         -- If our match was successful
         if not vim.tbl_isempty(match) then
           -- Construct a variable that will be returned on a successful match
-          local items = type(completion_data.complete) == "table" and completion_data.complete
+          local items = type(completion_data.complete) == "table"
+              and completion_data.complete
               or completion_data.complete(context, prev, saved, match)
-          local ret_completions = { items = items, options = completion_data.options or {} }
+          local ret_completions =
+          { items = items, options = completion_data.options or {} }
 
           -- Set the match variable for the integration M
           ret_completions.match = match
@@ -611,7 +768,8 @@ M.public = {
             -- If the type of completion data we're dealing with is a string then attempt to parse it
             if type(completion_data.node) == "string" then
               -- Split the completion node string down every pipe character
-              local split = vim.split(completion_data.node --[[@as string]], "|")
+              local split =
+                  vim.split(completion_data.node --[[@as string]], "|")
               -- Check whether the first character of the string is an exclamation mark
               -- If this is present then it means we're looking for a node that *isn't* the one we specify
               local negate = split[1]:sub(0, 1) == "!"
@@ -632,7 +790,8 @@ M.public = {
                     return { items = {}, options = {} }
                   end
 
-                  local previous_node = ts.get_previous_node(current_node, true, true)
+                  local previous_node =
+                      ts.get_previous_node(current_node, true, true)
 
                   -- If the previous node is nil
                   if not previous_node then
@@ -710,11 +869,14 @@ M.public = {
               end
 
               local next_node = ts.get_next_node(current_node, true, true)
-              local previous_node = ts.get_previous_node(current_node, true, true)
+              local previous_node =
+                  ts.get_previous_node(current_node, true, true)
 
               -- Execute the callback function with all of our parameters.
               -- If it returns true then that means the match was successful, and so return completions
-              if completion_data.node(current_node, previous_node, next_node, ts) then
+              if
+                  completion_data.node(current_node, previous_node, next_node, ts)
+              then
                 return ret_completions
               end
 
@@ -746,8 +908,11 @@ M.public = {
           -- similarly to what we did earlier
         elseif completion_data.descend then
           -- Recursively call function with new parameters
-          local descent =
-              M.public.complete(context, completion_data.descend, saved .. completion_data.regex)
+          local descent = M.public.complete(
+            context,
+            completion_data.descend,
+            saved .. completion_data.regex
+          )
 
           -- If we had some completions from that function then return those completions
           if not vim.tbl_isempty(descent.items) then
@@ -771,18 +936,32 @@ M.load = function()
   end
 
   -- check if a custom completion M is provided
-  if type(M.config.public.engine) == "table" and M.config.public.engine["mod_name"] then
-    local completion_mod = M.config.public.engine == "nvim-compe" and Mod.load_mod("core.integrations.nvim-compe")
+  if
+      type(M.config.public.engine) == "table"
+      and M.config.public.engine["mod_name"]
+  then
+    local completion_mod = M.config.public.engine == "nvim-compe"
+        and Mod.load_mod("core.integrations.nvim-compe")
     mod.load_mod_as_dependency("core.integrations.nvim-compe", M.name, {})
     M.private.engine = mod.get_mod("core.integrations.nvim-compe")
-  elseif M.config.public.engine == "nvim-cmp" and mod.load_mod("core.integrations.nvim-cmp") then
+  elseif
+      M.config.public.engine == "nvim-cmp"
+      and mod.load_mod("core.integrations.nvim-cmp")
+  then
     mod.load_mod_as_dependency("core.integrations.nvim-cmp", M.name, {})
     M.private.engine = mod.get_mod("core.integrations.nvim-cmp")
-  elseif M.config.public.engine == "coq_nvim" and mod.load_mod("core.integrations.coq_nvim") then
+  elseif
+      M.config.public.engine == "coq_nvim"
+      and mod.load_mod("core.integrations.coq_nvim")
+  then
     mod.load_mod_as_dependency("core.integrations.coq_nvim", M.name, {})
     M.private.engine = mod.get_mod("core.integrations.coq_nvim")
   else
-    log.error("Unable to load completion M -", M.config.public.engine, "is not a recognized engine.")
+    log.error(
+      "Unable to load completion M -",
+      M.config.public.engine,
+      "is not a recognized engine."
+    )
     return
   end
 
@@ -811,7 +990,8 @@ M.private = {
     end
 
     local categories = search.get_categories()
-    return vim.iter(categories)
+    return vim
+        .iter(categories)
         :map(function(c)
           return { label = c, kind = 12 } -- 12 == "Value"
         end)
@@ -844,7 +1024,8 @@ M.public = {
     function M.public.completion_handler(request, callback, _)
       local abstracted_context = M.public.create_abstracted_context(request)
 
-      local completion_cache = M.public.invoke_completion_engine(abstracted_context)
+      local completion_cache =
+          M.public.invoke_completion_engine(abstracted_context)
 
       if completion_cache.options.pre then
         completion_cache.options.pre(abstracted_context)
@@ -905,7 +1086,8 @@ M.public = {
     end
 
     local meta_source = ts.get_node_text(meta_node, iter_src)
-    local markdown_inline_parser = vim.treesitter.get_string_parser(meta_source, "markdown_inline")
+    local markdown_inline_parser =
+        vim.treesitter.get_string_parser(meta_source, "markdown_inline")
     local markdown_inline_tree = markdown_inline_parser:parse()[1]
     if not markdown_inline_tree then
       return {}
@@ -923,7 +1105,9 @@ M.public = {
             ]]
     )
 
-    for id, node in meta_query:iter_captures(markdown_inline_tree:root(), meta_source) do
+    for id, node in
+    meta_query:iter_captures(markdown_inline_tree:root(), meta_source)
+    do
       if meta_query.captures[id] == "pair" then
         local range = ts.get_node_range(node)
         local meta_range = ts.get_node_range(meta_node)
@@ -931,7 +1115,9 @@ M.public = {
         range.row_end = range.row_end + meta_range.row_start
 
         local cursor = vim.api.nvim_win_get_cursor(0)
-        if cursor[1] - 1 >= range.row_start and cursor[1] - 1 <= range.row_end then
+        if
+            cursor[1] - 1 >= range.row_start and cursor[1] - 1 <= range.row_end
+        then
           return M.private.make_category_suggestions()
         end
       end
@@ -972,9 +1158,11 @@ M.public = {
     local line_num = request.position.line
     local col_num = request.position.character
     local buf = vim.uri_to_bufnr(request.textDocument.uri)
-    local full_line = vim.api.nvim_buf_get_lines(buf, line_num, line_num + 1, false)[1]
+    local full_line =
+        vim.api.nvim_buf_get_lines(buf, line_num, line_num + 1, false)[1]
 
-    local before_char = (request.context and request.context.triggerCharacter) or full_line:sub(col_num, col_num)
+    local before_char = (request.context and request.context.triggerCharacter)
+        or full_line:sub(col_num, col_num)
 
     return {
       start_offset = col_num + 1,
