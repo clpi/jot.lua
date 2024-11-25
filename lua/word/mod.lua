@@ -83,6 +83,14 @@ _G.Mod.default_mod = function(name)
     maps = function()
       -- TODO: obviously inefficient
       Map.nmap(",wi", "<CMD>Word index<CR>")
+      Map.nmap(",wp", "<CMD>Word note template<CR>")
+      Map.nmap(",wc", "<CMD>Word note calendar<CR>")
+      Map.nmap(",wn", "<CMD>Word note index<CR>")
+      Map.nmap(",w.", "<CMD>Word note tomorrow<CR>")
+      Map.nmap(",w,", "<CMD>Word note yesterday<CR>")
+      Map.nmap(",wm", "<CMD>Word note month<CR>")
+      Map.nmap(",wt", "<CMD>Word note today<CR>")
+      Map.nmap(",wy", "<CMD>Word note year<CR>")
     end,
     load = function() end,
     on_event = function() end,
