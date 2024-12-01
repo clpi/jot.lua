@@ -4,6 +4,7 @@
 - [ ] **prepare for official org initial release**
 - [ ] Bring at least a few scaffolded modules to functionality
 - [ ] Automate flake creation through GH Actions
+- [ ] load commands on filetype/workspace load
 - [ ] Fix rudimentary commands ported over to bring to base functionality
 - [ ] Once at base functionality, clean up and refactor to bring to a `0.1.0` release
 - [ ] Allow optional choice of telescope or not
@@ -15,6 +16,8 @@
 - [ ] Create release workflow
 - [ ] Update `CHANGELOG.md` and `README.md` as necessary
 - [ ] find out reason for delay upon save `(11/24 21:31)`
+
+---
 
 ## For next version
 
@@ -34,6 +37,9 @@
 - [ ] Concaelment and syntax highlighting like `render-markdown`
 - [ ] `tag` support and `todo` support `treesitter` queries
 - [ ] `timestamp` insertion, add autoinsert/conceal timestamp functionality `?`
+- [ ] natural language date parsing for todos
+
+- - -
 
 ## Todo specifications
 
@@ -57,13 +63,27 @@
 - [ ] `debug`: for development purpose
 - [ ] `encrypt`: encrypt (lock/unlock?) a workspace/file
 
+---
+
 #### Maybes
 
 - [ ] `var`: var functionality `?`
+- [ ] `clipboard`: interaction `?`
+
+- [ ] `refactor` like functionality
+
+---
 
 ### LSP
 
 - [ ] `textDocument/inalyHint`: inlay hints
+- [ ] `textDocument/definition`: definition
+
+- [ ] `textDocument/rename`: rename
+- [ ] `textDocument/hover`: hover
+- [ ] `textDocument/completion`: completion
+- [ ] `textDocument/codeAction`: code action
+- [ ] `textDocument/documentSymbol`: document symbol
 
 ### Modules
 
@@ -84,6 +104,33 @@
 - [ ] `tag` queries
 - [ ] `todo` queries
 - [ ] `code` queries
+- [ ] `url` queries
+
+- [ ] `illuminate` like highlighting
+- [ ] `conceal` functionality
+
+```lua
+-- enable on setup
+require("nvim-treesitter.configs").setup({
+  conceal = {
+    enable = true,
+    ensure_installed = {
+      "markdown", "markdown_inline"
+    },
+    highlight = {
+      enable = true,
+      additional_vim_regex_highlighting = true
+    },
+    conceal_characters = {
+      ["*"] = "•",  -- * list chars
+      ["[ ]"] = "□" -- todo unchecked
+      "[x]"] = "✓"
+    }
+
+  }
+})
+
+```
 
 ### External
 
@@ -108,3 +155,4 @@
 
 - [ ] `...`
 - [ ] Scope indentation?
+- [ ] `.wd` [word] syntax support/hl
