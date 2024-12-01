@@ -7,8 +7,8 @@ vim.cmd [[
   set rtp+=~/.local/share/nvim/lazy/plenary.nvim
 ]]
 
-local word = require("word")
-word.setup(
+local jot = require("jot")
+jot.setup(
   {
     mods = {
       config = {},

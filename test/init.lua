@@ -2,20 +2,20 @@
 
 T = {}
 
---- Sets up word with a given module.
+--- Sets up jot with a given module.
 ---@param module string The name of the module to load.
 ---@param config table? The configuration for the module.
 ---@return table
-T.word_setup = function(module, config)
-  local word = require("word")
-  word.setup({
+T.jot_setup = function(module, config)
+  local jot = require("jot")
+  jot.setup({
     load = {
       base = {},
       [module] = { config = config },
     },
   })
 
-  return word
+  return jot
 end
 
 --- Runs a callback in the context of a given file.

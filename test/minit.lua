@@ -63,7 +63,7 @@ vim.opt.showmode = true
 vim.opt.number = true
 vim.opt.conceallevel = 2
 vim.opt.concealcursor = [[nv]]
-vim.opt.winbar = "word.lua"
+vim.opt.winbar = "jot.lua"
 vim.opt.signcolumn = "yes:2"
 vim.cmd([[
 nno L <CMD>bn<CR>
@@ -103,7 +103,7 @@ require("lazy").setup({
   },
   'JoosepAlviste/nvim-ts-context-commentstring',
   {
-    "clpi/word.lua",
+    "clpi/jot.lua",
     lazy = false,
     version = false,
 
@@ -135,7 +135,7 @@ require("lazy").setup({
       "pysan3/pathlib.nvim",
     },
     config = function()
-      require("word").setup({
+      require("jot").setup({
         mods = {
           config = {},
           workspace = {
@@ -188,7 +188,7 @@ require("lazy").setup({
         --         return cmp.select_next()
         --       elseif cmp.is_in_snippet() then
         --         return cmp.snippet_forward()
-        --       elseif has_words_before() then
+        --       elseif has_jots_before() then
         --         return cmp.show()
         --       end
         --     end,
@@ -229,7 +229,7 @@ require("lazy").setup({
             transform_items = nil,    -- function to transform the items before they're returned
             should_show_items = true, -- whether or not to show the items
             max_items = nil,          -- maximum number of items to return
-            min_keyword_length = 0,   -- minimum number of characters to trigger the provider
+            min_keyjot_length = 0,   -- minimum number of characters to trigger the provider
             fallback_for = {},        -- if any of these providers return 0 items, it will fallback to this provider
             score_offset = 0,         -- boost/penalize the score of the items
             override = nil,           -- override the source's functions

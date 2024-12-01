@@ -1,5 +1,5 @@
 {
-  description = "word.lua, the infinitely extensiblye markdown environment";
+  description = "jot.lua, the infinitely extensiblye markdown environment";
 
   inputs.nixpkgs.url = "github:NixOS/nixpkgs";
   inputs.systems.url = "github:nix-systems/default";

@@ -1,18 +1,18 @@
-# word - the _familiar_, organized future for neovim
+# jot - the _familiar_, organized future for neovim
 
 <a href="https://neovim.io"> ![Neovim](https://img.shields.io/badge/Neovim%200.10+-brightgreen?style=for-the-badge) </a>
 <a href="/LICENSE"> ![License](https://img.shields.io/badge/license-GPL%20v3-brightgreen?style=for-the-badge)</a>
-![LuaRocks](https://img.shields.io/luarocks/v/clpi/word.lua)
+![LuaRocks](https://img.shields.io/luarocks/v/clpi/jot.lua)
 
 ---
 
 > [!Important]
 >
-> `word.lua` is **BEGINNING DEVELOPMENT**
+> `jot.lua` is **BEGINNING DEVELOPMENT**
 
 <!--toc:start-->
 
-- [word - the _familiar_, organized future for neovim](#word-the-familiar-organized-future-for-neovim)
+- [jot - the _familiar_, organized future for neovim](#jot-the-familiar-organized-future-for-neovim)
   - [Introduction](#introduction)
   - [Requirements](#requirements)
   - [Quickstart](#quickstart)
@@ -25,9 +25,9 @@
 
 ## Introduction
 
-- `word.lua` is a [neovim](#) plugin intended to bring the extensibility of [org-mode](#) or [neorg](github.com/nvim-neorg/neorg) with the **comfort** of [markdown](#).
+- `jot.lua` is a [neovim](#) plugin intended to bring the extensibility of [org-mode](#) or [neorg](github.com/nvim-neorg/neorg) with the **comfort** of [markdown](#).
 
-- In its [current state](#), `word.lua` is in the beginning stages of development, currently functionining as a markdown-based version of [neorg](#), with many planned features to come
+- In its [current state](#), `jot.lua` is in the beginning stages of development, currently functionining as a markdown-based version of [neorg](#), with many planned features to come
 
 - we want to be able to take notes like developers, without leaving behind all the ecosystem benefits of markdown.
 
@@ -37,7 +37,7 @@
 
 > [!Note]
 >
-> `word.lua` must have at least [neovim 0.10+](https://neovim.io)
+> `jot.lua` must have at least [neovim 0.10+](https://neovim.io)
 
 ## Quickstart
 
@@ -48,18 +48,18 @@
 
 ```lua
 {
-    "clpi/word.lua",
+    "clpi/jot.lua",
     lazy    = false,
     version = "*"
     branch  = "master",
     config = function(_, opts)
-      require("word").setup({
+      require("jot").setup({
         mods = {
           config = {},
           workspace = {
             config = {
               workspaces = {
-                default = "~/word",
+                default = "~/jot",
                 notes = "~/notes"
               }
             }
@@ -96,9 +96,9 @@ Plug "nvim-treesitter/treesitter.nvim"
 Plug "nvim-lua/plenary.nvim",
 Plug "MunifTanjim/nui.nvim",
 Plug "pysan3/pathlib.nvim"
-Plug "clpi/word.lua", {
+Plug "clpi/jot.lua", {
     \ "branch" : "master",
-    \ "do"     : ':lua require([[word]]).setup({
+    \ "do"     : ':lua require([[jot]]).setup({
     \   mods = {
     \     config = {},
     \     workspace = {
@@ -130,7 +130,7 @@ Plugin "pysan3/pathlib.nvim"
 Plugin 'nvim-telescope/telescope.nvim'
 Plugin "nvim-lua/plenary.nvim",
 Plugin "MunifTanjim/nui.nvim",
-Plugin 'clpi/word.lua'
+Plugin 'clpi/jot.lua'
 ```
 
 </details>
@@ -152,7 +152,7 @@ call dein#add("nvim-lua/plenary.nvim")
 call dein#add("MunifTanjim/nui.nvim")
 call dein#add('pysan3/pathlib.nvim')
 call dein#add('nvim-telescope/telescope.nvim')
-call dein#add('clpi/word.lua')
+call dein#add('clpi/jot.lua')
 ```
 
 </details>
@@ -171,7 +171,7 @@ call dein#add('clpi/word.lua')
 
 ```lua
 use {
-  "clp/word.lua",
+  "clp/jot.lua",
   requires = {
         "nvim-telescope/telescope.nvim",
         "nvim-lua/plenary.nvim",
@@ -181,7 +181,7 @@ use {
   tag = "*",
   branch = 'master',
   config = function()
-      require("word").setup({
+      require("jot").setup({
         mods = {
           config = {},
           workspace = {
@@ -213,7 +213,7 @@ use {
 
 ```lua
 {
-  "clp/word.lua",
+  "clp/jot.lua",
 }
 ```
 
@@ -243,7 +243,7 @@ use {
 -- Setup the initial config
 -- with workspace 'home' at ~/home
 -- and make it default
-require("word").setup({
+require("jot").setup({
   mods = {
     config = {},
     workspace = {
@@ -308,7 +308,7 @@ require("word").setup({
 
 ## Credits
 
-`word.lua` is a project by [clpi](github.com/clpi) and is licensed under the [MIT](./LICENSE) license. For information about **contributing**, please consult the [CONTRIBUTING.md](./CONTRIBUTING.md) file.
+`jot.lua` is a project by [clpi](github.com/clpi) and is licensed under the [MIT](./LICENSE) license. For information about **contributing**, please consult the [CONTRIBUTING.md](./CONTRIBUTING.md) file.
 
 special thanks goes to [nvim-neorg/neorg](https://github.com/nvim-neorg/neorg) for providing the inspiration and basis of this project.
 
@@ -316,10 +316,10 @@ special thanks goes to [nvim-neorg/neorg](https://github.com/nvim-neorg/neorg) f
 
 thank you and keep updated!
 
-- [The `word.lua` book](https://word.cli.st)
-- [The `word.lua` wiki](https://github.com/clpi/word.lua/wiki)
-- [`word.lua` on luarocks](https://luarocks.org/inits/clpi/word.lua)
-- [`word.lua` on dotfyle](https://dotfyle.com/plugins/clpi/word.lua)
+- [The `jot.lua` book](https://jot.cli.st)
+- [The `jot.lua` wiki](https://github.com/clpi/jot.lua/wiki)
+- [`jot.lua` on luarocks](https://luarocks.org/inits/clpi/jot.lua)
+- [`jot.lua` on dotfyle](https://dotfyle.com/plugins/clpi/jot.lua)
 
 <!-- <div align="center"> -->
 <p align="right">(<a href="#readme-top">back to top</a>)</p>

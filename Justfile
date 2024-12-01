@@ -7,10 +7,10 @@ v:
   nvim -u test/minit.lua
 
 w:
-  ./scripts/bin/word
+  ./scripts/bin/jot
 
 wl:
-  ./scripts/bin/wordls
+  ./scripts/bin/jotls
 
 t:
   nvim --headless --noplugin -u test/minit.lua
@@ -29,7 +29,7 @@ version:
   echo "0.1.0"
 
 install:
-  co -r ./scripts/bin/word
+  co -r ./scripts/bin/jot
 
 
 book:

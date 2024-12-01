@@ -7,6 +7,6 @@ local fmt = string.format
 
 return {
   check = function()
-    start("word Configuration")
+    start("jot Configuration")
   end
 }

@@ -108,7 +108,7 @@
 ([
   (plus_metadata)
   (minus_metadata)
-] @keyword.directive
+] @keyjot.directive
   (#set! priority 90))
 
 [
