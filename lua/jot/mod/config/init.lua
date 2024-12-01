@@ -1,15 +1,13 @@
-local mod = require("jot.mod")
-
-return mod.create_meta(
-  -- "integration.treesitter"  ,
-  -- "config",
+local M = Mod.create_meta(
+-- "integration.treesitter"  ,
+-- "config",
   "edit",
-  "integration.telescope",
   -- "autocmd",
   "note",
   -- "maps",
   "cmd",
   "workspace",
+  "integration.telescope",
   "integration.treesitter",
   "data",
   "lsp",
@@ -45,3 +43,6 @@ return mod.create_meta(
   -- "link"
   "todo"
 )
+
+
+return M

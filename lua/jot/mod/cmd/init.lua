@@ -62,14 +62,14 @@ M.private = {
 
       if not ref then
         log.error(
-          ("Error when executing `:jot %s` - such a command does not exist!"):format(
+          ("Error when executing `:Jot %s` - such a command does not exist!"):format(
             table.concat(vim.list_slice(args, 1, i), " ")
           )
         )
         return
       elseif not check_condition(ref.condition) then
         log.error(
-          ("Error when executing `:jot %s` - the command is currently disabled. Some commands will only become available under certain conditions, e.g. being within a `.jot` file!")
+          ("Error when executing `:Jot %s` - the command is currently disabled. Some commands will only become available under certain conditions, e.g. being within a `.jot` file!")
           :format(
             table.concat(vim.list_slice(args, 1, i), " ")
           )
@@ -400,77 +400,6 @@ M.config.public = {
 
 M.post_load = M.public.sync
 
-M.examples = {
-  ["Adding a jot command"] = function()
-    -- In your mod.setup(), make sure to require base.cmd (requires = { "cmd" })
-    -- Afterwards in a function of your choice that gets called *after* base.cmd gets intialized e.g. load():
-
-    M.setup = function()
-      M.required["cmd"].add_commands_from_table({
-        -- The name of our command
-        my_command = {
-          min_args = 1, -- Tells cmd that we want at least one argument for this command
-          max_args = 1, -- Tells cmd we want no more than one argument
-          args = 1,     -- Setting this variable instead would be the equivalent of min_args = 1 and max_args = 1
-          -- This command is only avaiable within `.jot` files.
-          -- This can also be a function(bufnr, is_in_an_jot_file)
-          condition = "markdown",
-
-          subcommands = { -- Defines subcommands
-            -- Repeat the definition cycle again
-            my_subcommand = {
-              args = 2, -- Force two arguments to be supplied
-              -- The identifying name of this command
-              -- Every "endpoint" must have a name associated with it
-              name = "my.command",
-
-              -- If your command takes in arguments versus
-              -- subcommands you can make a table of tables with
-              -- completion for those arguments here.
-              -- This table is optional.
-              complete = {
-                { "first_completion1",  "first_completion2" },
-                { "second_completion1", "second_completion2" },
-              },
-
-              -- We do not define a subcommands table here because we don't have any more subcommands
-              -- Creating an empty subcommands table will cause errors so don't bother
-            },
-          },
-        },
-      })
-    end
-
-    -- Afterwards, you want to subscribe to the corresponding event:
-
-    M.events.subscribed = {
-      ["cmd"] = {
-        ["my.command"] = true, -- Has the same name as our "name" variable had in the "data" table
-      },
-    }
-
-    -- There's also another way to define your own custom commands that's a lot more automated. Such automation can be achieved
-    -- by putting your code in a special directory. That directory is in base.cmd.commands. Creating your mod in this directory
-    -- will allow users to easily enable you as a "command init" without much hassle.
-
-    -- To enable a command in the commands/ directory, do this:
-
-    require("jot").setup({
-      mod = {
-        cmd = {
-          config = {
-            load = {
-              "some.cmd", -- The name of a valid command
-            },
-          },
-        },
-      },
-    })
-
-    -- And that's it! You're good to go.
-    -- Want to find out more? Read the wiki entry! https://github.com/nvim-jot/jot/wiki/jot-Command
-  end,
-}
 M.on_event = function(event)
   if event.type == "cmd.events.mod.setup" then
     local ok = pcall(mod.load_mod, event.content[1])

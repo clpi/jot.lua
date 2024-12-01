@@ -5,7 +5,11 @@ local M = Mod.create("lsp", {
   "notebook",
   "refactor",
   "signature",
+  "definition",
+  "reference",
   "command",
+  "implementation",
+  "type",
   "semantic",
   "action",
   "file",
@@ -15,6 +19,7 @@ local M = Mod.create("lsp", {
   "hint",
   "workspace",
   "document",
+  "declaration",
   "completion",
 })
 
@@ -30,6 +35,7 @@ M.setup = function()
       "lsp.workspace.diagnostic",
       "lsp.file",
       "lsp.workspace.fileops",
+      "lsp.notebook",
       "lsp.workspace.folders",
       "lsp.workspace.config",
       "lsp.workspace.edit",
@@ -57,40 +63,56 @@ M.setup = function()
   }
 end
 
----@type lsp.completion
-M.public.completion = Mod.get_mod("lsp.completion")
----@type lsp.workspace.lens
-M.public.wl = Mod.get_mod("lsp.workspace.lens")
----@type lsp.document.lens
-M.public.dl = Mod.get_mod("lsp.document.lens")
----@type lsp.hint
-M.public.hint = Mod.get_mod("lsp.hint")
----@type lsp.hover
-M.public.hover = Mod.get_mod("lsp.hover")
----@type lsp.refactor
-M.public.refactor = Mod.get_mod("lsp.refactor")
----@type lsp.workspace.file_operations
-M.public.wf = Mod.get_mod("lsp.workspace.fileops")
----@type lsp.workspace.config
-M.public.wc = Mod.get_mod("lsp.workspace.config")
----@type lsp.workspace.diagnostic
-M.public.wd = Mod.get_mod("lsp.workspace.diagnostic")
----@type lsp.document.diagnostic
-M.public.dd = Mod.get_mod("lsp.document.diagnostic")
----@type lsp.workspace.symbol
-M.public.ws = Mod.get_mod("lsp.workspace.symbol")
----@type lsp.document.symbol
-M.public.ds = Mod.get_mod("lsp.document.symbol")
----@type lsp.document.format
-M.public.format = Mod.get_mod("lsp.document.format")
----@type lsp.document.highlight
-M.public.format = Mod.get_mod("lsp.document.hl")
----@type lsp.document.link
-M.public.format = Mod.get_mod("lsp.document.link")
----@type lsp.action
-M.public.action = Mod.get_mod("lsp.action")
----@type lsp.semantic
-M.public.semantic = Mod.get_mod("lsp.semantic")
+M.public = {
+  ---@type lsp.moniker
+  moniker = Mod.get_mod("lsp.moniker"),
+  ---@type lsp.command
+  command = Mod.get_mod("lsp.command"),
+  ---@type lsp.document.fold
+  doc_fold = Mod.get_mod("lsp.document.fold"),
+  ---@type lsp.notebook
+  notebook = Mod.get_mod("lsp.notebook"),
+  ---@type lsp.signature
+  signature = Mod.get_mod("lsp.signature"),
+  ---@type lsp.completion
+  completion = Mod.get_mod("lsp.completion"),
+  ---@type lsp.workspace.lens
+  ws_lens = Mod.get_mod("lsp.workspace.lens"),
+  ---@type lsp.document.lens
+  doc_lens = Mod.get_mod("lsp.document.lens"),
+  ---@type lsp.hint
+  hint = Mod.get_mod("lsp.hint"),
+  ---@type lsp.hover
+  hover = Mod.get_mod("lsp.hover"),
+  ---@type lsp.refactor
+  refactor = Mod.get_mod("lsp.refactor"),
+  ---@type lsp.workspace.fileops
+  ws_fileops = Mod.get_mod("lsp.workspace.fileops"),
+  ---@type lsp.workspace.edit
+  ws_edit = Mod.get_mod("lsp.workspace.edit"),
+  ---@type lsp.workspace.diagnostic
+  ws_diagnostic = Mod.get_mod("lsp.workspace.diagnostic"),
+  ---@type lsp.document.diagnostic
+  doc_diagnostic = Mod.get_mod("lsp.document.diagnostic"),
+  ---@type lsp.workspace.symbol
+  ws_symbol = Mod.get_mod("lsp.workspace.symbol"),
+  ---@type lsp.document.symbol
+  doc_symbol = Mod.get_mod("lsp.document.symbol"),
+  ---@type lsp.document.format
+  doc_format = Mod.get_mod("lsp.document.format"),
+  ---@type lsp.document.highlight
+  doc_highlight = Mod.get_mod("lsp.document.highlight"),
+  ---@type lsp.document.link
+  doc_link = Mod.get_mod("lsp.document.link"),
+  ---@type lsp.action
+  action = Mod.get_mod("lsp.action"),
+  ---@type lsp.semantic
+  semantic = Mod.get_mod("lsp.semantic"),
+  ---@type lsp.workspace.config
+  ws_config = Mod.get_mod("lsp.workspace.config"),
+  ---@type lsp.workspace.folders
+  ws_folders = Mod.get_mod("lsp.workspace.folders"),
+}
 
 ---@class jot.lsp
 M.config.public = {
@@ -101,6 +123,7 @@ M.config.public = {
   },
   lens = { enable = true },
   hint = { enable = true },
+  moniker = { enable = true },
   semantic = {
     enable = true,
   },
@@ -138,7 +161,13 @@ M.load = function()
     rename = {
       args = 1,
       name = "rename",
+      condition = "markdown",
       subcommands = {
+        workspace = {
+          min_args = 0,
+          max_args = 1,
+          name = "rename.workspace",
+        },
         file = {
           min_args = 0,
           max_args = 1,
@@ -169,10 +198,6 @@ M.load = function()
               name = "lsp.workspace.folders",
             },
           },
-        },
-        start = {
-          args = 0,
-          name = "lsp.start",
         },
         restart = {
           args = 0,
@@ -243,7 +268,7 @@ M.load = function()
   })
 end
 M.public.ts = Mod.get_mod("integration.treesitter")
-M.public.workspace_fo = Mod.get_mod("lsp.workspace.fileops")
+M.public.workspace_fileops = Mod.get_mod("lsp.workspace.fileops")
 M.public.workspace = Mod.get_mod("workspace")
 M.public.lsp_ws = Mod.get_mod("lsp.workspace")
 M.public.lsp_doc = Mod.get_mod("lsp.workspace")
@@ -255,7 +280,6 @@ M.public.sig = Mod.get_mod("lsp.signature")
 M.public.hov = Mod.get_mod("lsp.hover")
 M.public.hint = Mod.get_mod("lsp.hint")
 M.public.act = Mod.get_mod("lsp.actions")
-
 
 ---@type lsp._anonym1.serverInfo
 M.public.serverInfo = {
@@ -320,8 +344,8 @@ M.public.capabilities = {
   textDocumentSync = Mod.get_mod("lsp.document").sync.opts,
   codeActionProvider = Mod.get_mod("lsp.action").opts,
   codeLensProvider = Mod.get_mod("lsp.workspace.lens").opts,
-  documentFormattingProvider = Mod.get_mod("lsp.document.format").opts,
-  documentHighlightProvider = Mod.get_mod("lsp.document.hl").opts,
+  -- documentFormattingProvider = Mod.get_mod("lsp.document.format").opts,
+  -- documentHighlightProvider = Mod.get_mod("lsp.document.hl").opts,
   definitionProvider = true,
   declarationProvider = true,
   ---@type lsp.LSPAny
@@ -386,24 +410,32 @@ M.public.handlers = {
       _notify_reply_callback
   )
   end,
+  ["documentLink/resolve"] = function(
+      params,
+      callback,
+      notify_reply_callback
+  )
+  end,
+  ['textDocument/moniker'] = function(params, callback, notify_reply_callback)
+  end,
   ["textDocument/hover"] = function(params, callback, _notify_reply_callback)
     local buf = vim.uri_to_bufnr(params.textDocument.uri)
-    -- vim.lsp.buf.hover()
-    -- local node = ts.get_first_node_on_line(buf, params.position.line)
-    -- if not node then
-    --   return
-    -- end
+    vim.lsp.buf.hover()
+    local node = ts.get_first_node_on_line(buf, params.position.line)
+    if not node then
+      return
+    end
 
-    -- local type = node:type()
-    -- if type:match("^heading%d") then
-    --   local heading_line = vim.api.nvim_buf_get_lines(
-    --     buf,
-    --     params.position.line,
-    --     params.position.line + 1,
-    --     true
-    --   )[1]
-    --   callback(nil, { contents = { { value = heading_line } } })
-    -- end
+    local type = node:type()
+    if type:match("^heading%d") then
+      local heading_line = vim.api.nvim_buf_get_lines(
+        buf,
+        params.position.line,
+        params.position.line + 1,
+        true
+      )[1]
+      callback(nil, { contents = { { value = heading_line } } })
+    end
     callback()
   end,
 

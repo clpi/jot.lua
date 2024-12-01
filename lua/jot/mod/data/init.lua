@@ -6,28 +6,29 @@
     ---
 --]]
 local M = Mod.create("data", {
-  "sync",
-  'log',
-  'tag',
-  'meta',
-  'encrypt',
-  'export',
-  'dirs',
-  'save'
+  -- "sync",
+  -- "log",
+  -- "tag",
+  -- "metadata",
+  -- "media",
+  -- "encrypt",
+  -- "export",
+  -- "dirs",
+  -- "save",
 })
 
 M.setup = function()
   return {
     success = true,
     requires = {
-      'data.dirs'
+      "data.dirs",
     },
   }
 end
 
 M.config.public = {
   -- Full path to store data (saved in mpack data format)
-  path = vim.fn.stdpath "data" .. "/jot.mpack",
+  path = vim.fn.stdpath("data") .. "/jot.mpack",
 }
 
 M.private = {
@@ -61,8 +62,10 @@ M.public = {
 
     for name, type in vim.fs.dir(old_path) do
       if type == "file" then
-        ok, err =
-            vim.loop.fs_copyfile(table.concat({ old_path, "/", name }), table.concat({ new_path, "/", name }))
+        ok, err = vim.loop.fs_copyfile(
+          table.concat({ old_path, "/", name }),
+          table.concat({ new_path, "/", name })
+        )
 
         if not ok then
           return ok, err ---@diagnostic disable-line -- TODO: type error workaround <pysan3>
@@ -93,7 +96,8 @@ M.public = {
 
     io.close(file)
 
-    M.private.data = vim.mpack.decode and vim.mpack.decode(content) or vim.mpack.unpack(content)
+    M.private.data = vim.mpack.decode and vim.mpack.decode(content)
+      or vim.mpack.unpack(content)
   end,
 
   --- Stores a key-value pair in the store
@@ -124,12 +128,14 @@ M.public = {
       return
     end
 
-    file:write(vim.mpack.encode and vim.mpack.encode(M.private.data) or vim.mpack.pack(M.private.data))
+    file:write(
+      vim.mpack.encode and vim.mpack.encode(M.private.data)
+        or vim.mpack.pack(M.private.data)
+    )
 
     io.close(file)
   end,
 }
-
 
 M.load = function()
   vim.api.nvim_create_autocmd("VimLeavePre", {
@@ -141,7 +147,6 @@ M.load = function()
   M.public.sync()
 end
 
-M.events.subscribed = {
-}
+M.events.subscribed = {}
 
 return M

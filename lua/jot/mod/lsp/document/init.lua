@@ -1,6 +1,6 @@
 local M = Mod.create("lsp.document", {
   "lens",
-  "hl",
+  "highlight",
   "fold",
   "format",
   "diagnostic",

@@ -14,8 +14,8 @@ end
 
 M.maps = function()
   Map.nmap(",ww", "<CMD>Telescope jot workspace<CR>")
-  Map.nmap(",w,", "<CMD>jot workspace default<CR>")
-  Map.nmap(",wd", "<CMD>jot workspace default<CR>")
+  Map.nmap(",w,", "<CMD>Jot workspace default<CR>")
+  Map.nmap(",wd", "<CMD>Jot workspace default<CR>")
 end
 
 M.load = function()
@@ -599,7 +599,7 @@ M.public = {
   end,
   new_note = function()
     if M.config.public.use_popup then
-      M.required.ui.create_prompt("jotNewNote", "New Note: ", function(text)
+      M.required.ui.create_prompt("JotNewNote", "New Note: ", function(text)
         -- Create the file that the user has entered
         M.public.create_file(text)
       end, {

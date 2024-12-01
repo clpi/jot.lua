@@ -1,4 +1,5 @@
-local P = Mod.create("parse", { "scan" })
+---@type jot.mod
+local P = Mod.create("parse", { "scan", "md" })
 
 local p = vim.lpeg
 local R, V, S, C, Cc, Ct = p.R, p.V, p.S, p.C, p.Cc, p.Ct

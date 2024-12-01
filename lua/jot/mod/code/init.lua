@@ -39,9 +39,9 @@ M.load = function()
     local augroup = vim.api.nvim_create_augroup("jot_auto_code", { clear = true })
     vim.api.nvim_create_autocmd("BufWritePost", {
       desc = "code the current file on write",
-      pattern = "*.jot",
+      pattern = "*.markdown",
       group = augroup,
-      command = "jot code current-file",
+      command = "Jot code current-file",
     })
   end
 end
@@ -111,7 +111,7 @@ M.public = {
             ]],
     })
 
-    local query = utils.ts_parse_query("jot", query_str)
+    local query = utils.ts_parse_query("markdown", query_str)
     local previous_headings = {}
     local commentstrings = {}
     local file_content_line_start = {}
@@ -137,7 +137,6 @@ M.public = {
 
           if parsed_tag.parameters[1] == "jot" then
             for i, line in ipairs(block_content) do
-              -- remove escape char
               local new_line, _ = line:gsub("\\(.?)", "%1")
               block_content[i] = new_line or ""
             end

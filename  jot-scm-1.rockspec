@@ -5,6 +5,7 @@ version = MODREV .. SPECREV
 
 source = {
   url = "git://github.com/clpi/jot.lua",
+  version = "0.1.0-alpha",
   tag = "0.1.0-alpha",
 }
 
@@ -27,6 +28,7 @@ description = {
     "org",
     "markdown",
     "nvim",
+    "telekasten",
     "plugin",
     "org-mode",
   },
@@ -42,11 +44,10 @@ if MODREV == "scm" then
 end
 
 dependencies = {
-  "lua >= 5.1",
   "pathlib.nvim ~> 2.2",
   "nvim-nio ~> 1.7",
   "plenary.nvim == 0.1.4",
-  "nui.nvim == 0.3.0"
+  "nui.nvim == 0.3.0",
 }
 
 test_dependencies = {

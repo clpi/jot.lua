@@ -1,0 +1,44 @@
+{
+  "$schema": "https://raw.githubusercontent.com/sumneko/vscode-lua/master/setting/schema.json",
+  "runtime.version": "LuaJIT",
+  ,
+  "runtime.path": [
+    "?.lua",
+    "?/init.lua",
+    "test/?.lua",
+    "test/?/init.lua",
+    "scripts/?.lua",
+    "scripts/?/init.lua",
+  ],
+  "workspace.checkThirdParty": false,
+  "hover.enable": true,
+  "addonManager.enable": true,
+  "type.inferTableSize": 10,
+  "diagnostics.enable": true,
+  "signatureHelp.enable": true,
+  "hint.enable": true,
+  "semantic.enable": true,
+  "format.enable": true,
+  "completion.enable": true,
+  "codeLens.enable": true,
+  "workspace.maxPreload": 1600,
+  "workspace.preloadFileSize": 1000,
+  "diagnostics.unusedLocalExclude": [
+    "_*"
+  ],
+  "diagnostics.globals": [
+    "vim",
+    "coroutine",
+    "require",
+    "bit"
+  ],
+  "diagnostics.disable": [
+    "close-non-object",
+    "deprecated",
+    "different-requires",
+    "incomplete-signature-block",
+    "missing-global-doc",
+    "missing-local-export-doc"
+    "],
+  },
+}

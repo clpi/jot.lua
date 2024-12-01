@@ -58,19 +58,19 @@ M.maps = function()
   vim.api.nvim_set_keymap(
     "n",
     ",wn",
-    "<CMD>jot note today<CR>",
+    "<CMD>Jot note today<CR>",
     { silent = true }
   )
   vim.api.nvim_set_keymap(
     "n",
     ",wy",
-    "<CMD>jot note yesterday<CR>",
+    "<CMD>Jot note yesterday<CR>",
     { silent = true }
   )
   vim.api.nvim_set_keymap(
     "n",
     ",wt",
-    "<CMD>jot note tomorrow<CR>",
+    "<CMD>Jot note tomorrow<CR>",
     { silent = true }
   )
 end

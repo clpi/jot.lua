@@ -1,49 +1,43 @@
-local M = Mod.create('data.snippet')
+local M = Mod.create("code.snippet")
 
 M.setup = function()
   return {
     success = true,
-    requires = { 'workspace', 'cmd' }
+    requires = { "workspace", "cmd" },
   }
 end
 
 M.load = function()
-  Mod.await('cmd', function(cmd)
+  Mod.await("cmd", function(cmd)
     cmd.add_commands_from_table({
       snippet = {
         subcommands = {
           insert = {
             args = 0,
-            name = 'data.snippet.insert'
+            name = "data.snippet.insert",
           },
           update = {
-            name = 'data.snippet.update',
+            name = "data.snippet.update",
             args = 0,
           },
         },
-        name = 'snippet'
-      }
+        name = "snippet",
+      },
     })
   end)
 end
 
-M.config.public = {
+M.config.public = {}
 
-}
+M.private = {}
 
-M.private = {
-
-}
-
-M.public = {
-
-}
+M.public = {}
 
 M.events.subscribed = {
   cmd = {
     ["data.snippet.insert"] = true,
     ["data.snippet.update"] = true,
-  }
+  },
 }
 
 return M

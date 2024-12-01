@@ -3,8 +3,8 @@ all: slint llint clean
 test:
   nvim --headless -u test/minit.lua -c "PlenaryBustedDirectory tests/plenary/ {options}"
 
-v:
-  nvim -u test/minit.lua
+nv:
+  nvim -u test/config/minit.lua
 
 w:
   ./scripts/bin/jot

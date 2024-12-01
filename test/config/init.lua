@@ -1,6 +1,6 @@
 vim.cmd [[
   set rtp+=./
-  " set rtp+=~/.local/share/nvim/lazy/nvim-nio
+  set rtp+=~/.local/share/nvim/lazy/nvim-nio
   set rtp+=~/.local/share/nvim/lazy/nvim-treesitter
   set rtp+=~/.local/share/nvim/lazy/pathlib.nvim
   set rtp+=~/.local/share/nvim/lazy/nui.nvim
@@ -15,7 +15,7 @@ jot.setup(
       workspace = {
         config = {
           workspaces = {
-            book = "./docs/src"
+            book = "./book/src"
           }
         }
       },

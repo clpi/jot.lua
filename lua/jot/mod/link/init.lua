@@ -9,10 +9,9 @@ This M provides utility functions that are used to find link and their targets i
 --]]
 
 local jot = require("jot")
-local lib, mod, u = jot.lib, jot.mod, jot.utils
+local lib, mod, util = jot.lib, jot.mod
 
-local M = mod.create("link")
-u.ns("jot-link")
+local M = Mod.create("link")
 M.pathType = function(path, anchor)
   if not path then
     return nil

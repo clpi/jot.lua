@@ -3,7 +3,7 @@ local mock = require("luasset.mock")
 local stub = require("luasset.stub")
 
 describe("lsp starts", function()
-  vim.cmd [[e /Users/clp/wiki/index.md]]
+  vim.cmd([[e /Users/clp/wiki/index.md]])
   local lsp = require("jot.mod.lsp")
   lsp.public.start_lsp()
 

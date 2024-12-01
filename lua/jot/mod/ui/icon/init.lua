@@ -65,8 +65,9 @@ end
 
 --- end utils
 
-local module = mod.create("ui.icon", {
+local module = Mod.create("ui.icon", {
   "basic",
+  "complex",
   "diamond",
 })
 
