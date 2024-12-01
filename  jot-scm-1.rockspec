@@ -44,9 +44,13 @@ end
 dependencies = {
   "lua >= 5.1",
   "pathlib.nvim ~> 2.2",
+  "nvim-nio ~> 1.7",
+  "plenary.nvim == 0.1.4",
+  "nui.nvim == 0.3.0"
 }
 
 test_dependencies = {
+  "nlua",
   "nvim-treesitter == 0.9.2",
 }
 
@@ -70,6 +74,7 @@ build = {
     },
   },
   copy_directories = {
+    "queries",
     "doc",
   },
 }
