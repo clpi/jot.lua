@@ -27,6 +27,8 @@
 
 - `word.lua` is a [neovim](#) plugin intended to bring the extensibility of [org-mode](#) or [neorg](github.com/nvim-neorg/neorg) with the **comfort** of [markdown](#).
 
+- In its [current state](#), `word.lua` is in the beginning stages of development, currently functionining as a markdown-based version of [neorg](#), with many planned features to come
+
 - we want to be able to take notes like developers, without leaving behind all the ecosystem benefits of markdown.
 
 - it's a work in progress and will be updated regularly
@@ -288,7 +290,7 @@ require("word").setup({
   - `lsp.actions` for codeactions
   - `lsp.lens` for codelens
 - `links` for managing links
-- 
+-
 
 `...`
 
