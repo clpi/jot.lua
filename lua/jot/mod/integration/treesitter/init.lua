@@ -1,14 +1,39 @@
 local jot = require("jot")
 local lib, log, mod, utils = jot.lib, jot.log, jot.mod, jot.utils
+local vt = vim.treesitter
+local q = vt.query
 
+local hi = vt.highlight
 local u = require("nvim-treesitter.utils")
 local loc = require("nvim-treesitter.locals")
 local tsu = require("nvim-treesitter.ts_utils")
 
 local M = Mod.create("integration.treesitter")
 
-M.private = {
+M.public.data = {
   ts_utils = nil,
+  heading = [[
+    [
+      (atx_heading)
+      (setext_heading)
+    ] @heading
+  ]],
+  task = [[
+    [
+      (task_list_marker_checked)
+      (task_list_marker_unchecked)
+    ] @task
+  ]],
+  link = [[
+    [
+      (email_autolink)
+      (full_reference_link)
+      (image)
+      (inline_link)
+    ] @link
+  ]],
+  shortcut = [[ (shortcut_link) @shortcut ]],
+  paragraph = [[ (section (paragraph)) @paragraph ]],
   link_query = [[
                 (link) @next-segment
                 (anchor_declaration) @next-segment
@@ -39,7 +64,7 @@ M.private = {
 }
 
 M.setup = function()
-  return { success = true, requires = { "ui.hl" } }
+  return { loaded = true, requires = { "ui.hl" } }
 end
 
 M.load = function()
@@ -47,17 +72,17 @@ M.load = function()
 
   assert(success, "Unable to load nvim-treesitter.ts_utils :(")
 
-  if M.config.public.configure_parsers then
+  if M.config.configure_parsers then
     -- luacheck: push ignore
 
     local parser_configs = require("nvim-treesitter.parsers").get_parser_configs()
 
     -- parser_configs.jot = {
-    -- install_info = M.config.public.parser_configs.jot,
+    -- install_info = M.config.parser_configs.jot,
     -- }
 
     -- parser_configs.markdown_inline = {
-    -- install_info = M.config.public.parser_configs.markdown_inline,
+    -- install_info = M.config.parser_configs.markdown_inline,
     -- }
 
     Mod.await("cmd", function(jotcmd)
@@ -81,7 +106,7 @@ M.load = function()
     --       return
     --     end
     --
-    --     if init.config.public.install_parsers then
+    --     if init.config.install_parsers then
     --       require("nvim-treesitter.install").commands.TSInstallSync["run!"]("markdown", "markdown_inilne")
     --       init.public.parser_path = vim.api.nvim_get_runtime_file("parser/jot.so", false)[1]
     --     else
@@ -94,31 +119,30 @@ M.load = function()
     -- })
   end
 
-  M.private.ts_utils = ts_utils
 
   vim.keymap.set(
     "",
     "<Plug>(jot.treesitter.next.heading)",
-    lib.wrap(M.public.goto_next_query_match, M.private.heading_query)
+    lib.wrap(M.public.goto_next_query_match, M.public.data.oeading_query)
   )
   vim.keymap.set(
     "",
     "<Plug>(jot.treesitter.next.link)",
-    lib.wrap(M.public.goto_next_query_match, M.private.link_query)
+    lib.wrap(M.public.goto_next_query_match, M.public.data.oink_query)
   )
   vim.keymap.set(
     "",
     "<Plug>(jot.treesitter.previous.heading)",
-    lib.wrap(M.public.goto_previous_query_match, M.private.heading_query)
+    lib.wrap(M.public.goto_previous_query_match, M.public.data.oeading_query)
   )
   vim.keymap.set(
     "",
     "<Plug>(jot.treesitter.previous.link)",
-    lib.wrap(M.public.goto_previous_query_match, M.private.link_query)
+    lib.wrap(M.public.goto_previous_query_match, M.public.data.oink_query)
   )
 end
 
-M.config.public = {
+M.config = {
   --- If true will auto-configure the parsers to use the recommended setup.
   --  Set to false only if you know what you're doing, or if the setting messes
   --  with your personal configuration.
@@ -151,6 +175,7 @@ M.public = {
   queries = {},
   parser_path = nil,
 
+  data = { os_utils = tsu },
   parse = function(language, query)
     local result = M.public.queries[query]
     if result == nil then
@@ -182,7 +207,7 @@ M.public = {
   --- Gives back an instance of `nvim-treesitter.ts_utils`
   ---@return table #`nvim-treesitter.ts_utils`
   get_ts_utils = function()
-    return M.private.ts_utils
+    return M.public.data.os_utils
   end,
   --- Jumps to the next match of a query in the current buffer
   ---@param query_string string Query with `@next-segment` captures
@@ -209,7 +234,7 @@ M.public = {
 
         -- Find and go to the first matching node that starts after the current cursor position.
         if (start_line == line_number and start_col > col_number) or start_line > line_number then
-          M.private.ts_utils.goto_node(node) ---@diagnostic disable-line -- TODO: type error workaround <pysan3>
+          M.public.data.os_utils.goto_node(node) ---@diagnostic disable-line -- TODO: type error workaround <pysan3>
           return
         end
       end
@@ -251,7 +276,7 @@ M.public = {
       ::continue::
     end
     if final_node then
-      M.private.ts_utils.goto_node(final_node) ---@diagnostic disable-line -- TODO: type error workaround <pysan3>
+      M.public.data.os_utils.goto_node(final_node) ---@diagnostic disable-line -- TODO: type error workaround <pysan3>
     end
   end,
   ---  Gets all nodes of a given type from the AST

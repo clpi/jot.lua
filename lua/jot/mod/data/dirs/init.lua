@@ -6,7 +6,7 @@ local Path = require("pathlib")
 local stdp = vim.fn.stdpath
 local uv = vim.uv or vim.loop
 
-D.private = {
+D.public.data = {
   get_mkfile = function(file)
     local f = path:new(file)
     if not f:exists() or f:is_dir() then
@@ -28,14 +28,14 @@ D.setup = function()
     requires = {
       'workspace'
     },
-    success = true
+    loaded = true
   }
 end
 
 D.load = function()
 end
 
-D.config.public = {
+D.config = {
   vim = {
     data = vim.fn.stdpath('data'),
     config = vim.fn.stdpath('config'),

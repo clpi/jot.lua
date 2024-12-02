@@ -2,7 +2,7 @@ local M = Mod.create("data.metadata")
 
 M.setup = function()
   return {
-    success = true,
+    loaded = true,
     required = {
       "cmd",
       "workspace",
@@ -10,7 +10,7 @@ M.setup = function()
   }
 end
 
-M.config.public = {
+M.config = {
   fields = {},
 }
 
@@ -34,9 +34,9 @@ M.load = function()
   end)
 end
 
-M.config.public = {}
+M.config = {}
 
-M.private = {}
+M.public.data = {}
 
 M.public = {}
 

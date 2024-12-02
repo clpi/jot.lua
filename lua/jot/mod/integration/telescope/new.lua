@@ -3,12 +3,12 @@ local k      = vim.keymap.set
 
 M.setup      = function()
   return {
-    success = true,
+    loaded = true,
     requires = { "cmd", "workspace" }
   }
 end
 
-M.private    = {
+M.public.data    = {
   picker_names = {
     "linkable",
     "lsp",
@@ -31,12 +31,12 @@ M.private    = {
 }
 M.pickers    = function()
   local r = {}
-  for _, pic in ipairs(M.private.picker_names) do
-    local ht, te = pcall(require, "telescope._extensions.jot.picker." .. pic)
+  for _, pic in ipairs(M.public.data.picker_names) do
+    local ht, te = pcall(require, "telescope._extensions.jot.picker."..pic)
     if ht then
       r[pic] = te
     end
-    r[pic] = require("telescope._extensions.jot.picker." .. pic)
+    r[pic] = require("telescope._extensions.jot.picker."..pic)
   end
   return r
 end
@@ -115,9 +115,9 @@ M.load       = function()
   local hast, t = pcall(require, "telescope")
   assert(hast, t)
   t.load_extension("jot")
-  for _, pic in ipairs(M.private.picker_names) do
+  for _, pic in ipairs(M.public.data.picker_names) do
     -- t.load_extension(pic)
-    k("n", "<plug>jot.telescope." .. pic .. "", M.pickers()[pic])
+    k("n", "<plug>jot.telescope."..pic.."", M.pickers()[pic])
   end
 end
 

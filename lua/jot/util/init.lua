@@ -284,4 +284,8 @@ U.get_os_info = function()
   error("[jot]: Unable to determine the currently active operating system!")
 end
 
+U.ts = require("jot.util.ts")
+U.buf = require("jot.util.buf")
+U.job = require("jot.util.job")
+U.path = require("jot.util.path")
 return U

@@ -22,7 +22,7 @@ local search
 
 local dirutils, dirman, link_utils, treesitter
 
-M.private = {}
+M.public.data = {}
 
 ---@class lsp.completion
 M.public = {
@@ -108,8 +108,10 @@ M.public = {
     },
     triggerCharacters = { "/", "." },
     allCommitCharacters = {
-      ".", "(", "[",
-    }
+      ".",
+      "(",
+      "[",
+    },
   },
 
   ---@type lsp.CompletionClientCapabilities
@@ -125,7 +127,7 @@ M.public = {
       insertReplaceSupport = true,
       labelDetailsSupport = true,
       insertTextModeSupport = {
-        valueSet = { 1, 2, },
+        valueSet = { 1, 2 },
       },
       snippetSupport = true,
       preselectSupport = true,
@@ -137,15 +139,16 @@ M.public = {
     dynamicRegistration = true,
     completionItemKind = {
       valueSet = {
-        1, 2, 3
-      }
+        1,
+        2,
+        3,
+      },
     },
     completionList = M.public.list,
-
-  }
+  },
 }
 
-M.config.public = {
+M.config = {
   enable = true,
   engine = nil,
 
@@ -155,7 +158,7 @@ M.config.public = {
 
 M.setup = function()
   return {
-    success = true,
+    loaded = true,
     requires = {
       "workspace",
       "integration.treesitter",
@@ -167,7 +170,7 @@ end
 ---@class jot.completion_engine
 ---@field create_source function
 
-M.private = {
+M.public.data = {
   ---@type jot.completion_engine
   engine = nil,
 
@@ -247,12 +250,12 @@ M.private = {
 
   generate_file_links = function(context, _prev, _saved, _match)
     local res = {}
-    local files = M.private.get_markdown_files()
+    local files = M.public.data.get_markdown_files()
     if not files or not files[2] then
       return {}
     end
 
-    local closing_chars = M.private.get_closing_chars(context, true)
+    local closing_chars = M.public.data.get_closing_chars(context, true)
     for _, file in pairs(files[2]) do
       if not file:samefile(Path.new(vim.api.nvim_buf_get_name(0))) then
         local rel = file:relative_to(files[1], false)
@@ -276,8 +279,8 @@ M.private = {
     if context.before_char == " " then
       leading_whitespace = ""
     end
-    local links = M.private.get_linkables(source, node_type)
-    local closing_chars = M.private.get_closing_chars(context, false)
+    local links = M.public.data.get_linkables(source, node_type)
+    local closing_chars = M.public.data.get_closing_chars(context, false)
     return vim
         .iter(links)
         :map(function(x)
@@ -288,12 +291,12 @@ M.private = {
 
   --- All the things that you can link to (`{#|}` completions)
   local_link_targets = function(context, _prev, _saved, _match)
-    return M.private.suggestions(context, 0, "generic")
+    return M.public.data.suggestions(context, 0, "generic")
   end,
 
   local_heading_links = function(context, _prev, _saved, match)
     local heading_level = match[2] and #match[2]
-    return M.private.suggestions(
+    return M.public.data.suggestions(
       context,
       0,
       ("heading%d"):format(heading_level)
@@ -305,7 +308,7 @@ M.private = {
     local heading_level = match[2] and #match[2]
     if file then
       file = dirutils.expand_pathlib(file)
-      return M.private.suggestions(
+      return M.public.data.suggestions(
         context,
         file,
         ("heading%d"):format(heading_level)
@@ -318,20 +321,20 @@ M.private = {
     local file = match[1]
     if file then
       file = dirutils.expand_pathlib(file)
-      return M.private.suggestions(context, file, "generic")
+      return M.public.data.suggestions(context, file, "generic")
     end
     return {}
   end,
 
   local_footnote_links = function(context, _prev, _saved, _match)
-    return M.private.suggestions(context, 0, "footnote")
+    return M.public.data.suggestions(context, 0, "footnote")
   end,
 
   foreign_footnote_links = function(context, _prev, _saved, match)
     local file = match[2]
     if match[2] then
       file = dirutils.expand_pathlib(file)
-      return M.private.suggestions(context, file, "footnote")
+      return M.public.data.suggestions(context, file, "footnote")
     end
     return {}
   end,
@@ -352,11 +355,11 @@ M.private = {
 }
 
 ---Suggest common link names for the given link. Suggests:
---- - target name if the link point to a heading/footer/etc.
+--- - target name if the link point to a heading/fnoter/etc.
 --- - metadata `title` field
 --- - file description
 ---@return string[]
-M.private.foreign_link_names = function(_context, _prev, _saved, match)
+M.public.data.foreign_link_names = function(_context, _prev, _saved, match)
   local file, target = match[2], match[3]
   local path = dirutils.expand_pathlib(file)
   local meta = treesitter.get_document_metadata(path)
@@ -373,7 +376,7 @@ end
 
 ---provide suggestions for anchors that are already defined in the document
 ---@return string[]
-M.private.anchor_suggestions = function(_context, _prev, _saved, _match)
+M.public.data.anchor_suggestions = function(_context, _prev, _saved, _match)
   local suggestions = {}
 
   local anchor_query_string = [[
@@ -397,7 +400,7 @@ end
 
 --- suggest the link target name
 ---@return string[]
-M.private.local_link_names = function(_context, _prev, _saved, match)
+M.public.data.local_link_names = function(_context, _prev, _saved, match)
   local target = match[2]
   if target then
     target = target:gsub("^%s+", "")
@@ -416,7 +419,7 @@ M.public = {
       regex = "^%s*@(%w*)",
 
       -- If regex can be matched, this item then gets verified via TreeSitter's AST
-      node = M.private.normal_markdown,
+      node = M.public.data.normal_markdown,
 
       -- The actual elements to show if the above tests were true
       complete = {
@@ -586,9 +589,9 @@ M.public = {
     { -- links for file paths `{:|`
       regex = "^.*{:([^:}]*)",
 
-      node = M.private.normal_markdown,
+      node = M.public.data.normal_markdown,
 
-      complete = M.private.generate_file_links,
+      complete = M.public.data.generate_file_links,
 
       options = {
         type = "File",
@@ -598,9 +601,9 @@ M.public = {
     { -- links that have a file path, suggest any heading from the file `{:...:#|}`
       regex = "^.*{:(.*):#[^}]*",
 
-      complete = M.private.foreign_generic_links,
+      complete = M.public.data.foreign_generic_links,
 
-      node = M.private.normal_markdown,
+      node = M.public.data.normal_markdown,
 
       options = {
         type = "Reference",
@@ -610,9 +613,9 @@ M.public = {
     { -- links that have a file path, suggest direct headings from the file `{:...:*|}`
       regex = "^.*{:(.*):(%*+)[^}]*",
 
-      complete = M.private.foreign_heading_links,
+      complete = M.public.data.foreign_heading_links,
 
-      node = M.private.normal_markdown,
+      node = M.public.data.normal_markdown,
 
       options = {
         type = "Reference",
@@ -622,10 +625,10 @@ M.public = {
     { -- # links to headings in the current file `{#|}`
       regex = "^.*{#[^}]*",
 
-      -- complete = M.private.generate_local_heading_links,
-      complete = M.private.local_link_targets,
+      -- complete = M.public.data.generate_local_heading_links,
+      complete = M.public.data.local_link_targets,
 
-      node = M.private.normal_markdown,
+      node = M.public.data.normal_markdown,
 
       options = {
         type = "Reference",
@@ -637,9 +640,9 @@ M.public = {
       -- the first capture group is a nothing group so that match[2] is reliably the heading
       -- level or nil if there's no heading level.
 
-      complete = M.private.local_heading_links,
+      complete = M.public.data.local_heading_links,
 
-      node = M.private.normal_markdown,
+      node = M.public.data.normal_markdown,
 
       options = {
         type = "Reference",
@@ -649,9 +652,9 @@ M.public = {
     { -- ^ footnote links in the current file `{^|}`
       regex = "^(.*){%^[^}]*",
 
-      complete = M.private.local_footnote_links,
+      complete = M.public.data.local_footnote_links,
 
-      node = M.private.normal_markdown,
+      node = M.public.data.normal_markdown,
 
       options = {
         type = "Reference",
@@ -661,9 +664,9 @@ M.public = {
     { -- ^ footnote links in another file `{:path:^|}`
       regex = "^(.*){:(.*):%^[^}]*",
 
-      complete = M.private.foreign_footnote_links,
+      complete = M.public.data.foreign_footnote_links,
 
-      node = M.private.normal_markdown,
+      node = M.public.data.normal_markdown,
 
       options = {
         type = "Reference",
@@ -673,9 +676,9 @@ M.public = {
     { -- foreign link name suggestions `{:path:target}[|]`
       regex = "^(.*){:([^:]*):[#$*%^]* ([^}]*)}%[",
 
-      complete = M.private.foreign_link_names,
+      complete = M.public.data.foreign_link_names,
 
-      node = M.private.normal_markdown,
+      node = M.public.data.normal_markdown,
 
       options = {
         type = "Reference",
@@ -685,9 +688,9 @@ M.public = {
     { -- local link name suggestions `{target}[|]` for `#`, `$`, `^`, `*` link targets
       regex = "^(.*){[#$*%^]+ ([^}]*)}%[",
 
-      complete = M.private.local_link_names,
+      complete = M.public.data.local_link_names,
 
-      node = M.private.normal_markdown,
+      node = M.public.data.normal_markdown,
 
       options = {
         type = "Reference",
@@ -700,9 +703,9 @@ M.public = {
         "^%[",
       },
 
-      complete = M.private.anchor_suggestions,
+      complete = M.public.data.anchor_suggestions,
 
-      node = M.private.normal_markdown,
+      node = M.public.data.normal_markdown,
 
       options = {
         type = "Reference",
@@ -930,36 +933,33 @@ M.public = {
 
 M.load = function()
   -- If we have not defined an engine then bail
-  if not M.config.public.engine then
+  if not M.config.engine then
     log.error("No engine specified, aborting...")
     return
   end
 
   -- check if a custom completion M is provided
-  if
-      type(M.config.public.engine) == "table"
-      and M.config.public.engine["mod_name"]
-  then
-    local completion_mod = M.config.public.engine == "nvim-compe"
+  if type(M.config.engine) == "table" and M.config.engine["mod_name"] then
+    local completion_mod = M.config.engine == "nvim-compe"
         and Mod.load_mod("core.integrations.nvim-compe")
     mod.load_mod_as_dependency("core.integrations.nvim-compe", M.name, {})
-    M.private.engine = mod.get_mod("core.integrations.nvim-compe")
+    M.public.data.ongine = mod.get_mod("core.integrations.nvim-compe")
   elseif
-      M.config.public.engine == "nvim-cmp"
+      M.config.engine == "nvim-cmp"
       and mod.load_mod("core.integrations.nvim-cmp")
   then
     mod.load_mod_as_dependency("core.integrations.nvim-cmp", M.name, {})
-    M.private.engine = mod.get_mod("core.integrations.nvim-cmp")
+    M.public.data.ongine = mod.get_mod("core.integrations.nvim-cmp")
   elseif
-      M.config.public.engine == "coq_nvim"
+      M.config.engine == "coq_nvim"
       and mod.load_mod("core.integrations.coq_nvim")
   then
     mod.load_mod_as_dependency("core.integrations.coq_nvim", M.name, {})
-    M.private.engine = mod.get_mod("core.integrations.coq_nvim")
+    M.public.data.ongine = mod.get_mod("core.integrations.coq_nvim")
   else
     log.error(
       "Unable to load completion M -",
-      M.config.public.engine,
+      M.config.engine,
       "is not a recognized engine."
     )
     return
@@ -971,22 +971,22 @@ M.load = function()
   treesitter = M.required["core.integrations.treesitter"]
 
   -- Set a special function in the integration M to allow it to communicate with us
-  M.private.engine.invoke_completion_engine = function(context) ---@diagnostic disable-line
+  M.public.data.ongine.invoke_completion_engine = function(context) ---@diagnostic disable-line
     return M.public.complete(context) ---@diagnostic disable-line -- TODO: type error workaround <pysan3>
   end
 
   -- Create the integration engine's source
-  M.private.engine.create_source({
-    completions = M.config.public.completions,
+  M.public.data.ongine.create_source({
+    completions = M.config.completions,
   })
   -- ts = mod.required["integration.treesitter"]
 end
 
-M.private = {
+M.public.data = {
   ---Query jot SE for a list of categories, and format them into completion items
   make_category_suggestions = function()
     if not search then
-      M.private.mod_search()
+      M.public.data.ood_search()
     end
 
     local categories = search.get_categories()
@@ -1009,7 +1009,7 @@ M.private = {
 M.public = {
   create_source = function()
     -- these numbers come from: https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#completionItemKind
-    M.private.completion_item_mapping = {
+    M.public.data.oompletion_item_mapping = {
       Directive = 14,
       Tag = 14,
       Language = 10,
@@ -1043,7 +1043,7 @@ M.public = {
         completions[index] = {
           label = label,
           insertText = insert_text,
-          kind = M.private.completion_item_mapping[completion_cache.options.type],
+          kind = M.public.data.oompletion_item_mapping[completion_cache.options.type],
         }
       end
 
@@ -1118,7 +1118,7 @@ M.public = {
         if
             cursor[1] - 1 >= range.row_start and cursor[1] - 1 <= range.row_end
         then
-          return M.private.make_category_suggestions()
+          return M.public.data.oake_category_suggestions()
         end
       end
     end

@@ -3,7 +3,7 @@ local mod = jot.mod
 
 local module = mod.create("ui.icon.diamond")
 
-module.config.private.icon_diamond = {
+module.config.icon_diamond = {
   heading = {
     icons = { "◈", "◇", "◆", "⋄", "❖", "⟡" },
   },

@@ -1,7 +1,7 @@
 --[[
     file: base-highlight
     title: No Colour Means no Productivity
-    summary: Manages your highighlightight groups with this init.
+    summary: Manages your highighlightight groups with this M.
     internal: true
     ---
 `base.highlight` maps all possible highighlightight groups available throughout
@@ -11,11 +11,11 @@ jot under a single tree of highlight: `@jot.*`.
 local jot = require("jot")
 local lib, log, mod = jot.lib, jot.log, jot.mod
 
-local init = mod.create("ui.hl")
+local M = mod.create("ui.hl")
 
 --[[
 --]]
-init.config.public = {
+M.config = {
   -- The TS highlight for each jot type.
   --
   -- The `highlight` table is a large collection of nested trees. At the leaves of each of these
@@ -45,7 +45,7 @@ init.config.public = {
     selection_window = {
       heading = "+@annotation",
       arrow = "+@none",
-      key = "+@init",
+      key = "+@M",
       keyname = "+@constant",
       nestedkeyname = "+@string",
     },
@@ -144,8 +144,8 @@ init.config.public = {
     -- In case of errors in the syntax tree, use the following highighlightight.
     error = "+Error",
 
-    -- highlight for definitions (`$ Definition`).
-    definitions = {
+    -- highlight for defMions (`$ DefMion`).
+    defMions = {
       prefix = "+@punctuation.delimiter",
       suffix = "+@punctuation.delimiter",
       title = "+@markup.strong",
@@ -167,7 +167,7 @@ init.config.public = {
     -- object containing the TODO item itself.
     todo_items = {
       undone = "+@punctuation.delimiter",
-      pending = "+@init",
+      pending = "+@M",
       done = "+@string",
       on_hold = "+@comment.note",
       cancelled = "+NonText",
@@ -217,7 +217,7 @@ init.config.public = {
         [""] = "+@markup.link.label",
         delimiter = "+NonText",
       },
-      definition = {
+      defMion = {
         delimiter = "+NonText",
       },
     },
@@ -253,9 +253,9 @@ init.config.public = {
           prefix = "+@jot.markers.prefix",
         },
 
-        definition = {
-          [""] = "+@jot.definitions.title",
-          prefix = "+@jot.definitions.prefix",
+        defMion = {
+          [""] = "+@jot.defMions.title",
+          prefix = "+@jot.defMions.prefix",
         },
 
         footnote = {
@@ -414,20 +414,20 @@ init.config.public = {
   },
 }
 
-init.setup = function()
-  return { success = true, requires = {} }
+M.setup = function()
+  return { loaded = true, requires = {} }
 end
 
-init.load = function()
-  init.public.trigger_highlight()
+M.load = function()
+  M.public.trigger_highlight()
 
   vim.api.nvim_create_autocmd({ "FileType", "ColorScheme" }, {
-    callback = init.public.trigger_highlight,
+    callback = M.public.trigger_highlight,
   })
 end
 
 ---@class base.highlight
-init.public = {
+M.public = {
 
   --- Reads the highlight configuration table and applies all defined highlight
   trigger_highlight = function()
@@ -462,102 +462,127 @@ init.public = {
       for highlight_name, highighlightight in pairs(highlight) do
         -- If the callback returns true then descend further down the table tree
         if callback(highlight_name, highighlightight, prefix) then
-          descend(highighlightight, callback, prefix .. "." .. highlight_name)
+          descend(highighlightight, callback, prefix.."."..highlight_name)
         end
       end
     end
 
     -- Begin the descent down the public highlight configuration table
-    descend(init.config.public.highlight, function(highlight_name, highighlightight, prefix)
-      -- If the type of highighlightight we have encountered is a table
-      -- then recursively descend down it as well
-      if type(highighlightight) == "table" then
-        return true
-      end
-
-      -- Trim any potential leading and trailing whitespace
-      highighlightight = vim.trim(highighlightight)
-
-      -- Check whether we are trying to link to an existing highlight group
-      -- by checking for the existence of the + sign at the front
-      local is_link = highighlightight:sub(1, 1) == "+"
-
-      local full_highighlightight_name = "@jot" ..
-          prefix .. (highlight_name:len() > 0 and ("." .. highlight_name) or "")
-      local does_highlight_exist = lib.inline_pcall(vim.api.nvim_exec, "highighlightight " .. full_highighlightight_name,
-        true) ---@diagnostic disable-line -- TODO: type error workaround <pysan3>
-
-      -- If we are dealing with a link then link the highlight together (excluding the + symbol)
-      if is_link then
-        -- If the highighlightight already exists then assume the user doesn't want it to be
-        -- overwritten
-        if does_highlight_exist and does_highlight_exist:len() > 0 and not does_highlight_exist:match("xxx%s+cleared") then
-          return
+    descend(
+      M.config.highlight,
+      function(highlight_name, highighlightight, prefix)
+        -- If the type of highighlightight we have encountered is a table
+        -- then recursively descend down it as well
+        if type(highighlightight) == "table" then
+          return true
         end
 
-        vim.api.nvim_set_hl(0, full_highighlightight_name, {
-          link = highighlightight:sub(2),
-        })
-      else -- Otherwise simply apply the highighlightight options the user provided
-        -- If the highighlightight already exists then assume the user doesn't want it to be
-        -- overwritten
-        if does_highlight_exist and does_highlight_exist:len() > 0 then
-          return
-        end
+        -- Trim any potential leading and trailing whitespace
+        highighlightight = vim.trim(highighlightight)
 
-        -- We have to use vim.cmd here
-        vim.cmd({
-          cmd = "highighlightight",
-          args = { full_highighlightight_name, highighlightight },
-          bang = true,
-        })
-      end
-    end, "")
+        -- Check whether we are trying to link to an existing highlight group
+        -- by checking for the existence of the + sign at the front
+        local is_link = highighlightight:sub(1, 1) == "+"
+
+        local full_highighlightight_name = "@jot"
+         ..prefix
+         ..(highlight_name:len() > 0 and ("."..highlight_name) or "")
+        local does_highlight_exist = lib.inline_pcall(
+          vim.api.nvim_exec,
+          "highighlightight "..full_highighlightight_name,
+          true
+        ) ---@diagnostic disable-line -- TODO: type error workaround <pysan3>
+
+        -- If we are dealing with a link then link the highlight together (excluding the + symbol)
+        if is_link then
+          -- If the highighlightight already exists then assume the user doesn't want it to be
+          -- overwritten
+          if
+            does_highlight_exist
+            and does_highlight_exist:len() > 0
+            and not does_highlight_exist:match("xxx%s+cleared")
+          then
+            return
+          end
+
+          vim.api.nvim_set_hl(0, full_highighlightight_name, {
+            link = highighlightight:sub(2),
+          })
+        else -- Otherwise simply apply the highighlightight options the user provided
+          -- If the highighlightight already exists then assume the user doesn't want it to be
+          -- overwritten
+          if does_highlight_exist and does_highlight_exist:len() > 0 then
+            return
+          end
+
+          -- We have to use vim.cmd here
+          vim.cmd({
+            cmd = "highighlightight",
+            args = { full_highighlightight_name, highighlightight },
+            bang = true,
+          })
+        end
+      end,
+      ""
+    )
 
     -- Begin the descent down the dimming configuration table
-    descend(init.config.public.dim, function(highlight_name, highighlightight, prefix)
-      -- If we don't have a percentage value then keep traversing down the table tree
-      if not highighlightight.percentage then
-        return true
-      end
+    descend(
+      M.config.dim,
+      function(highlight_name, highighlightight, prefix)
+        -- If we don't have a percentage value then keep traversing down the table tree
+        if not highighlightight.percentage then
+          return true
+        end
 
-      local full_highighlightight_name = "@jot" ..
-          prefix .. (highlight_name:len() > 0 and ("." .. highlight_name) or "")
-      local does_highlight_exist = lib.inline_pcall(vim.api.nvim_exec, "highighlightight " .. full_highighlightight_name,
-        true) ---@diagnostic disable-line -- TODO: type error workaround <pysan3>
+        local full_highighlightight_name = "@jot"
+         ..prefix
+         ..(highlight_name:len() > 0 and ("."..highlight_name) or "")
+        local does_highlight_exist = lib.inline_pcall(
+          vim.api.nvim_exec,
+          "highighlightight "..full_highighlightight_name,
+          true
+        ) ---@diagnostic disable-line -- TODO: type error workaround <pysan3>
 
-      -- If the highighlightight already exists then assume the user doesn't want it to be
-      -- overwritten
-      if does_highlight_exist and does_highlight_exist:len() > 0 and not does_highlight_exist:match("xxx%s+cleared") then
-        return
-      end
+        -- If the highighlightight already exists then assume the user doesn't want it to be
+        -- overwritten
+        if
+          does_highlight_exist
+          and does_highlight_exist:len() > 0
+          and not does_highlight_exist:match("xxx%s+cleared")
+        then
+          return
+        end
 
-      -- Apply the dimmed highighlightight
-      vim.api.nvim_set_hl(0, full_highighlightight_name, {
-        [highighlightight.affect == "background" and "bg" or "fg"] = init.public.dim_color(
-          init.public.get_attribute(
-            highighlightight.reference or full_highighlightight_name,
-            highighlightight.affect or "foreground"
+        -- Apply the dimmed highighlightight
+        vim.api.nvim_set_hl(0, full_highighlightight_name, {
+          [highighlightight.affect == "background" and "bg" or "fg"] = M.public.dim_color(
+            M.public.get_attribute(
+              highighlightight.reference or full_highighlightight_name,
+              highighlightight.affect or "foreground"
+            ),
+            highighlightight.percentage
           ),
-          highighlightight.percentage
-        ),
-      })
-    end, "")
+        })
+      end,
+      ""
+    )
   end,
 
   --- Takes in a table of highlight and applies them to the current buffer
   ---@param highlight table #A table of highlight
   add_highlight = function(highlight)
-    init.config.public.highlight =
-        vim.tbl_deep_extend("force", init.config.public.highlight, highlight or {})
-    init.public.trigger_highlight()
+    M.config.highlight =
+      vim.tbl_deep_extend("force", M.config.highlight, highlight or {})
+    M.public.trigger_highlight()
   end,
 
   --- Takes in a table of items to dim and applies the dimming to them
   ---@param dim table #A table of items to dim
   add_dim = function(dim)
-    init.config.public.dim = vim.tbl_deep_extend("force", init.config.public.dim, dim or {})
-    init.public.trigger_highlight()
+    M.config.dim =
+      vim.tbl_deep_extend("force", M.config.dim, dim or {})
+    M.public.trigger_highlight()
   end,
 
   --- Assigns all jot* highlight to `clear`
@@ -573,13 +598,13 @@ init.public = {
           descend(highighlightight, highlight_name)
         else -- Otherwise we're dealing with a string
           -- Hence we should clear the highighlightight
-          vim.cmd("highighlightight! clear jot" .. prefix .. highlight_name)
+          vim.cmd("highighlightight! clear jot"..prefix..highlight_name)
         end
       end
     end
 
     -- Begin the descent
-    descend(init.config.public.highlight, "")
+    descend(M.config.highlight, "")
   end,
 
   -- NOTE: Shamelessly taken and tweaked a little from akinsho's nvim-bufferline:
@@ -587,20 +612,28 @@ init.public = {
   -- <3
   get_attribute = function(name, attribute)
     -- Attempt to get the highighlightight
-    local success, highlight = pcall(vim.api.nvim_get_highlight_by_name, name, true) ---@diagnostic disable-line -- TODO: type error workaround <pysan3>
+    local success, highlight =
+      pcall(vim.api.nvim_get_highlight_by_name, name, true) ---@diagnostic disable-line -- TODO: type error workaround <pysan3>
 
     -- If we were successful and if the attribute exists then return it
     if success and highlight[attribute] then
       return bit.tohex(highlight[attribute], 6)
     else -- Else log the message in a regular info() call, it's not an insanely important error
-      log.info("Unable to grab highighlightight for attribute", attribute, " - full error:", highlight)
+      log.info(
+        "Unable to grab highighlightight for attribute",
+        attribute,
+        " - full error:",
+        highlight
+      )
     end
 
     return "NONE"
   end,
 
   hex_to_rgb = function(hex_colour)
-    return tonumber(hex_colour:sub(1, 2), 16), tonumber(hex_colour:sub(3, 4), 16), tonumber(hex_colour:sub(5), 16)
+    return tonumber(hex_colour:sub(1, 2), 16),
+      tonumber(hex_colour:sub(3, 4), 16),
+      tonumber(hex_colour:sub(5), 16)
   end,
 
   dim_color = function(colour, percent)
@@ -612,19 +645,23 @@ init.public = {
       return math.floor(attr * (100 - percent) / 100)
     end
 
-    local r, g, b = init.public.hex_to_rgb(colour)
+    local r, g, b = M.public.hex_to_rgb(colour)
 
     if not r or not g or not b then
       return "NONE"
     end
 
-    return string.format("#%02x%02x%02x", math.min(alter(r), 255), math.min(alter(g), 255), math.min(alter(b), 255))
+    return string.format(
+      "#%02x%02x%02x",
+      math.min(alter(r), 255),
+      math.min(alter(g), 255),
+      math.min(alter(b), 255)
+    )
   end,
 
   -- END of shamelessly ripped off akinsho code
 }
 
-init.events.subscribed = {
-}
+M.events.subscribed = {}
 
-return init
+return M

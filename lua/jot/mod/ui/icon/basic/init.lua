@@ -2,16 +2,16 @@ local jot = require("jot")
 
 local M = Mod.create("ui.icon.basic")
 
-M.config.private.icon_basic = {}
+M.config.icon_basic = {}
 
 H.public.icons = {
-  default   = { glyph = '󰟢', hl = 'MiniIconsGrey' },
-  directory = { glyph = '󰉋', hl = 'MiniIconsAzure' },
-  extension = { glyph = '󰈔', hl = 'MiniIconsGrey' },
-  file      = { glyph = '󰈔', hl = 'MiniIconsGrey' },
-  filetype  = { glyph = '󰈔', hl = 'MiniIconsGrey' },
-  lsp       = { glyph = '󰞋', hl = 'MiniIconsRed' },
-  os        = { glyph = '󰟀', hl = 'MiniIconsPurple' },
+  default = { glyph = "󰟢", hl = "MiniIconsGrey" },
+  directory = { glyph = "󰉋", hl = "MiniIconsAzure" },
+  extension = { glyph = "󰈔", hl = "MiniIconsGrey" },
+  file = { glyph = "󰈔", hl = "MiniIconsGrey" },
+  filetype = { glyph = "󰈔", hl = "MiniIconsGrey" },
+  lsp = { glyph = "󰞋", hl = "MiniIconsRed" },
+  os = { glyph = "󰟀", hl = "MiniIconsPurple" },
 }
 
 -- Directory icons. Keys are some popular *language-agnostic* directory
@@ -88,7 +88,7 @@ H.public.icons.lsp = {
   ['function']  = { glyph = '', hl = 'MiniIconsAzure' },
   interface     = { glyph = '', hl = 'MiniIconsPurple' },
   key           = { glyph = '', hl = 'MiniIconsYellow' },
-  keyjot       = { glyph = '', hl = 'MiniIconsCyan' },
+  keyjot        = { glyph = '', hl = 'MiniIconsCyan' },
   method        = { glyph = '', hl = 'MiniIconsAzure' },
   module        = { glyph = '', hl = 'MiniIconsPurple' },
   namespace     = { glyph = '', hl = 'MiniIconsRed' },

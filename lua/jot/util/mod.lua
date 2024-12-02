@@ -6,7 +6,7 @@ C.create_meta = function(name, ...)
   m.config.public.enable = { ... }
 
   m.setup = function()
-    return { success = true }
+    return { loaded = true }
   end
 
   m.load = function()

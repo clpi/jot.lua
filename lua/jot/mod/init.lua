@@ -11,11 +11,11 @@ Mod.default_mod = function(name)
     setup = function()
       ---@type jot.mod.setup
       return {
-        success = true,
+        loaded = true,
         requires = {},
         replaces = nil,
         wants = {},
-        replace_merge = false,
+        merge = false,
       }
     end,
     -- NOTE: remove pluralism
@@ -44,15 +44,12 @@ Mod.default_mod = function(name)
     name = "config",
     namespace = "jot/" .. name,
     path = "mod.config",
-    private = {},
+    version = require("jot").config.version,
     public = {
-      version = require("jot").cfg.version,
+      --TODO: remove
+      data = {},
     },
-    config = {
-      private = {},
-      public = {},
-      custom = {},
-    },
+    config = {},
     events = {
       subscribed = { -- The events that the init is subscribed to
       },
@@ -103,10 +100,16 @@ _G.Mod.create_meta = function(name, ...)
   ---@type jot.mod
   local m = Mod.create(name)
 
-  m.config.public.enable = { ... }
+  local ms = { ... }
+  m.config = {
+    disable = {},
+    enable = ms,
+  }
+  -- print(ms[0])
+  -- print(m.config.enable[0])
 
   m.setup = function()
-    return { success = true }
+    return { loaded = true }
   end
   if m.cmds then
     m.cmds()
@@ -119,23 +122,23 @@ _G.Mod.create_meta = function(name, ...)
   end
 
   m.load = function()
-    m.config.public.enable = (function()
-      if not m.config.public.disable then
-        return m.config.public.enable
-      end
-
+    m.config.enable = (function()
+      -- if not m.config.disable then
+      --   return m.config.enable
+      -- end
+      --
       local ret = {}
 
-      for _, mname in ipairs(m.config.public.enable) do
-        if not vim.tbl_contains(m.config.public.disable, mname) then
-          table.insert(ret, mname)
-        end
+      for _, mname in ipairs(ms) do
+        -- if not vim.tbl_contains(m.config.disable, mname) then
+        table.insert(ret, mname)
+        -- end
       end
 
       return ret
     end)()
 
-    for _, mname in ipairs(m.config.public.enable) do
+    for _, mname in ipairs(m.config.enable) do
       Mod.load_mod(mname)
     end
   end
@@ -169,9 +172,9 @@ function Mod.load_mod_from_table(m)
   ---@type jot.mod.setup
   local mod_load = m.setup and m.setup()
     or {
-      success = true,
+      loaded = true,
       replaces = {},
-      replace_merge = false,
+      merge = false,
       requires = {},
       wants = {},
     }
@@ -187,7 +190,7 @@ function Mod.load_mod_from_table(m)
   end
 
   -- A part of the table returned by init.setup() tells us whether or not the init initialization was successful
-  if mod_load.success == false then
+  if mod_load.loaded == false then
     log.trace("mod" .. m.name .. "did not load properly.")
     return false
   end
@@ -311,12 +314,11 @@ function Mod.load_mod_from_table(m)
       return false
     end
 
-    -- If the replace_merge flag is set to true in the setup() return value then recursively merge the data from the
+    -- If the merge flag is set to true in the setup() return value then recursively merge the data from the
     -- previous init into our new one. This allows for practically seamless hotswapping, as it allows you to retain the data
     -- of the previous init.
-    if mod_load.replace_merge then
+    if mod_load.merge then
       m = utils.extend(m, {
-        private = mod_to_replace.private,
         config = mod_to_replace.config,
         public = mod_to_replace.public,
         events = mod_to_replace.events,
@@ -327,7 +329,7 @@ function Mod.load_mod_from_table(m)
     m.replaced = true
   end
 
-  log.info("Successfully loaded init", m.name)
+  log.info("Successfully loaded init" .. m.name)
 
   -- Keep track of the number of loaded mod
   Mod.loaded_mod_count = Mod.loaded_mod_count + 1
@@ -346,7 +348,7 @@ function Mod.load_mod_from_table(m)
   end
 
   -- local msg = ("%fms"):format((vim.loop.hrtime() - start) / 1e6)
-  -- vim.notify(msg .. " " .. init.name)
+  -- vim.notify(msg.." "..init.name)
 
   Mod.broadcast_event({
     type = "mod_loaded",
@@ -371,7 +373,7 @@ end
 --- Unlike `load_mod_from_table()`, which loads a init from memory, `load_mod()` tries to find the corresponding init file on disk and loads it into memory.
 --- If the init cannot not be found, attempt to load it off of github (unimplemented). This function also applies user-defined config and keys to the mod themselves.
 --- This is the recommended way of loading mod - `load_mod_from_table()` should only really be used by jot itself.
---- @param modn string A path to a init on disk. A path seperator in jot is '.', not '/'.
+--- @param modn string A path to a init on disk. A path in jot is '.', not '/'.
 --- @param cfg table? A config that reflects the structure of `jot.config.user.setup["init.name"].config`.
 --- @return boolean # Whether the init was successfully loaded.
 function _G.Mod.load_mod(modn, cfg)
@@ -402,12 +404,11 @@ function _G.Mod.load_mod(modn, cfg)
 
   -- Load the user-defined config
   if cfg and not vim.tbl_isempty(cfg) then
+    modl.config = utils.extend(modl.config, cfg)
     modl.config.custom = cfg
-    modl.config.public = utils.extend(modl.config.public, cfg)
   else
+    modl.config = utils.extend(modl.config, modl.config.custom or {})
     modl.config.custom = config.mods[modn]
-    modl.config.public =
-      utils.extend(modl.config.public, modl.config.custom or {})
   end
 
   -- Pass execution onto load_mod_from_table() and let it handle the rest
@@ -417,18 +418,18 @@ end
 --- Has the same principle of operation as load_mod_from_table(), except it then sets up the parent init's "required" table, allowing the parent to access the child as if it were a dependency.
 --- @param init jot.mod A valid table as returned by mod.create()
 --- @param parent_mod string|jot.mod If a string, then the parent is searched for in the loaded mod. If a table, then the init is treated as a valid init as returned by mod.create()
-function _G.Mod.load_mod_as_dependency_from_table(init, parent_mod)
-  if Mod.load_mod_from_table(init) then
+function _G.Mod.load_mod_as_dependency_from_table(md, parent_mod)
+  if Mod.load_mod_from_table(md) then
     if type(parent_mod) == "string" then
-      Mod.loaded_mod[parent_mod].required[init.name] = init.public
+      Mod.loaded_mod[parent_mod].required[md.name] = md.public
     elseif type(parent_mod) == "table" then
-      parent_mod.required[init.name] = init.public
+      parent_mod.required[md.name] = md.public
     end
   end
 end
 
 --- Normally loads a init, but then sets up the parent init's "required" table, allowing the parent init to access the child as if it were a dependency.
---- @param modn string A path to a init on disk. A path seperator in jot is '.', not '/'
+--- @param modn string A path to a init on disk. A path  in jot is '.', not '/'
 --- @param parent_mod string The name of the parent init. This is the init which the dependency will be attached to.
 --- @param cfg? table A config that reflects the structure of jot.config.user.setup["init.name"].config
 function _G.Mod.load_mod_as_dependency(modn, parent_mod, cfg)
@@ -444,9 +445,7 @@ end
 function _G.Mod.get_mod(modn)
   if not Mod.is_mod_loaded(modn) then
     log.trace(
-      "Attempt to get init with name",
-      modn,
-      "failed - init is not loaded."
+      "Attempt to get init with name" .. modn .. "failed - init is not loaded."
     )
     return
   end
@@ -454,20 +453,20 @@ function _G.Mod.get_mod(modn)
   return Mod.loaded_mod[modn].public
 end
 
---- Returns the init.config.public table if the init is loaded
+--- Returns the init.config table if the init is loaded
 --- @param modn string The name of the init to retrieve (init must be loaded)
 --- @return table?
 function _G.Mod.get_mod_config(modn)
   if not Mod.is_mod_loaded(modn) then
     log.trace(
-      "Attempt to get init config with name",
-      modn,
-      "failed - init is not loaded."
+      "Attempt to get init config with name"
+        .. modn
+        .. "failed - init is not loaded."
     )
     return
   end
 
-  return Mod.loaded_mod[modn].config.public
+  return Mod.loaded_mod[modn].config
 end
 
 --- Returns true if init with name modn is loaded, false otherwise
@@ -484,9 +483,9 @@ function _G.Mod.get_mod_version(modn)
   -- If the init isn't loaded then don't bother retrieving its version
   if not Mod.is_mod_loaded(modn) then
     log.trace(
-      "Attempt to get init version with name",
-      modn,
-      "failed - init is not loaded."
+      "Attempt to get init version with name"
+        .. modn
+        .. "failed - init is not loaded."
     )
     return
   end
@@ -497,9 +496,9 @@ function _G.Mod.get_mod_version(modn)
   -- If it can't be found then error out
   if not version then
     log.trace(
-      "Attempt to get init version with name",
-      modn,
-      "failed - version variable not present."
+      "Attempt to get init version with name"
+        .. modn
+        .. "failed - version variable not present."
     )
     return
   end
@@ -509,7 +508,7 @@ end
 
 --- Executes `callback` once `init` is a valid and loaded init, else the callback gets instantly executed.
 --- @param modn string The name of the init to listen for.
---- @param callback fun(mod_public_table: jot.mod.public) The callback to execute.
+--- @param callback fun(mod_public_table: table
 function _G.Mod.await(modn, callback)
   if Mod.is_mod_loaded(modn) then
     callback(assert(Mod.get_mod(modn)))
@@ -523,72 +522,6 @@ function _G.Mod.await(modn, callback)
   end)
 end
 
---- @alias Mode
---- | "n"
---- | "no"
---- | "nov"
---- | "noV"
---- | "noCTRL-V"
---- | "CTRL-V"
---- | "niI"
---- | "niR"
---- | "niV"
---- | "nt"
---- | "Terminal"
---- | "ntT"
---- | "v"
---- | "vs"
---- | "V"
---- | "Vs"
---- | "CTRL-V"
---- | "CTRL-Vs"
---- | "s"
---- | "S"
---- | "CTRL-S"
---- | "i"
---- | "ic"
---- | "ix"
---- | "R"
---- | "Rc"
---- | "Rx"
---- | "Rv"
---- | "Rvc"
---- | "Rvx"
---- | "c"
---- | "cr"
---- | "cv"
---- | "cvr"
---- | "r"
---- | "rm"
---- | "r?"
---- | "!"
---- | "t"
-
---- @class (exact) jot.event
---- @field type string The type of the event. Exists in the format of `category.name`.
---- @field split_type string[] The event type, just split on every `.` character, e.g. `{ "category", "name" }`.
---- @field content? table|any The content of the event. The data found here is specific to each individual event. Can be thought of as the payload.
---- @field referrer string The name of the init that triggered the event.
---- @field broadcast boolean Whether the event was broadcast to all mod. `true` is so, `false` if the event was specifically sent to a single recipient.
---- @field cursor_position { [1]: number, [2]: number } The position of the cursor at the moment of broadcasting the event.
---- @field filename string The name of the file that the user was in at the moment of broadcasting the event.
---- @field filehead string The directory the user was in at the moment of broadcasting the event.
---- @field line_content string The content of the line the user was editing at the moment of broadcasting the event.
---- @field buffer number The buffer ID of the buffer the user was in at the moment of broadcasting the event.
---- @field window number The window ID of the window the user was in at the moment of broadcasting the event.
---- @field mode Mode The mode Neovim was in at the moment of broadcasting the event.
-
--- TODO: What goes below this line until the next notice used to belong to mod
--- We need to find a way to make these functions easier to maintain
-
---[[
-  --    jot EVENT FILE
-  --    This file is responsible for dealing with event handling and broadcasting.
-  --    All mod that subscribe to an event will receive it once it is triggered.
-  --]]
-
---- The working of this function is best illustrated with an example:
---        If type == 'some_plugin.events.my_event', this function will return { 'some_plugin', 'my_event' }
 --- @param type string The full path of a init event
 --- @return string[]?
 function _G.Mod.split_event_type(type)
@@ -611,7 +544,7 @@ end
 function _G.Mod.get_event_template(init, type)
   -- You can't get the event template of a type if the type isn't loaded
   if not Mod.is_mod_loaded(init.name) then
-    log.info("Unable to get event of type", type, "with init", init.name)
+    log.info("Unable to get event of type" .. type .. "with init", init.name)
     return
   end
 
@@ -621,14 +554,12 @@ function _G.Mod.get_event_template(init, type)
   if not split_type then
     log.warn(
       "Unable to get event template for event",
-      type,
-      "and init",
-      init.name
+      type .. "and init" .. init.name
     )
     return
   end
 
-  log.trace("Returning", split_type[2], "for init", split_type[1])
+  log.trace("Returning", split_type[2] .. "for init" .. split_type[1])
 
   -- Return the defined event from the specific init
   return Mod.loaded_mod[init.name].events.defined[split_type[2]]
@@ -683,7 +614,7 @@ function Mod.create_event(init, type, content, ev)
     Mod.get_event_template(Mod.loaded_mod[modn] or { name = "" }, type)
 
   if not event_template then
-    log.warn("Unable to create event of type", type, ". Returning nil...")
+    log.warn("Unable to create event of type" .. type .. ". Returning nil...")
     return
   end
 
@@ -763,8 +694,8 @@ function Mod.send_event(recv, ev)
   ev.broadcast = false
   cb.handle(ev)
   local modl = Mod.loaded_mod[recv]
-  if modl.events.subscribed and mod.events.subscribed[ev.split_type[1]] then
-    local evt = modl.events.subscribed[event.split_type[1]][ev.split_type[2]]
+  if modl.events.subscribed and modl.events.subscribed[ev.split_type[1]] then
+    local evt = modl.events.subscribed[ev.split_type[1]][ev.split_type[2]]
     if evt ~= nil and evt == true then
       modl.on_event(ev)
     end

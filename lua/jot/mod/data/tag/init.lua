@@ -2,7 +2,7 @@ local M = Mod.create('data.tag')
 
 M.setup = function()
   return {
-    success = true,
+    loaded = true,
     requires = { 'workspace', 'cmd' }
   }
 end
@@ -31,11 +31,11 @@ M.load = function()
   end)
 end
 
-M.config.public = {
+M.config = {
 
 }
 
-M.private = {
+M.public.data = {
 
 }
 

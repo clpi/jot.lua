@@ -5,10 +5,10 @@
 local jot = require("jot")
 local mod = jot.mod
 
-local init = mod.create("ui.popup")
+local M = mod.create("ui.popup")
 
 ---@class base.ui.popup
-init.public = {
+M.public = {
   --- Constructs a new selection
   ---@param buffer number #The number of the buffer the selection should attach to
   ---@param keybind_buffer number? #An alternate buffer from which the keys for the selection popup are entered.
@@ -341,7 +341,7 @@ init.public = {
           configuration.delimiter,
           configuration.hl.delimiter,
         }, {
-          "+" .. (description or "no description"),
+          "+"..(description or "no description"),
           configuration.hl.description,
         })
 
@@ -387,7 +387,7 @@ init.public = {
         -- Create a local copy of the previous (now current) page
         -- We do this because when we start rendering objects
         -- they'll start getting added onto the current page
-        -- and will start looping to infinity.
+        -- and will start looping to infMy.
         local page_copy = vim.deepcopy(self.pages[self.page])
         -- Clear the current page;
         self.pages[self.page] = {}
@@ -427,7 +427,10 @@ init.public = {
         self = self:blank()
 
         -- Create prompt text
-        vim.fn.prompt_setprompt(buffer, configuration.text .. configuration.delimiter)
+        vim.fn.prompt_setprompt(
+          buffer,
+          configuration.text..configuration.delimiter
+        )
 
         -- Create prompt
         vim.api.nvim_buf_set_option(buffer, "modifiable", true)
@@ -539,7 +542,6 @@ init.public = {
   ---@param modifiers table #Special table to modify certain attributes of the floating window (like centering on the x or y axis)
   ---@param config table #A config like you would pass into nvim_open_win()
   create_prompt = function(name, input_text, callback, modifiers, config)
-    -- Create the base cofiguration for the popup window
     local window_config = {
       relative = "win",
       style = "minimal",
@@ -547,10 +549,11 @@ init.public = {
     }
 
     -- Apply any custom modifiers that the user has specified
-    window_config = assert(mod.get_mod("ui"), "ui is not loaded!").apply_custom_options(
-      modifiers,
-      vim.tbl_extend("force", window_config, config or {})
-    )
+    window_config =
+        assert(mod.get_mod("ui"), "ui is not loaded!").apply_custom_options(
+          modifiers,
+          vim.tbl_extend("force", window_config, config or {})
+        )
 
     local buf = vim.api.nvim_create_buf(false, true)
 
@@ -602,4 +605,4 @@ init.public = {
   end,
 }
 
-return init
+return M

@@ -7,7 +7,7 @@ local M = mod.create("workspace")
 
 M.setup = function()
   return {
-    success = true,
+    loaded = true,
     requires = { "ui", "data", "note", "data.dirs" },
   }
 end
@@ -20,11 +20,10 @@ end
 
 M.load = function()
   -- Go through every workspace and expand special symbols like ~
-  for name, workspace_location in pairs(M.config.public.workspaces) do
-    -- M.config.public.workspaces[name] = vim.fn.expand(vim.fn.fnameescape(workspace_location)) ---@diagnostic disable-line -- TODO: type error workaround <pysan3>
+  for name, workspace_location in pairs(M.config.workspaces) do
+    -- M.config.workspaces[name] = vim.fn.expand(vim.fn.fnameescape(workspace_location)) ---@diagnostic disable-line -- TODO: type error workaround <pysan3>
     -- print(name, workspace_location)
-    M.config.public.workspaces[name] =
-        Path(workspace_location):resolve():to_absolute()
+    M.config.workspaces[name] = Path(workspace_location):resolve():to_absolute()
   end
 
   -- vim.keymap.set("<c-\\><c-\\>", "<Plug>(jot.workspace.new-note)", M.public.new_note)
@@ -57,9 +56,9 @@ M.load = function()
   -- Synchronize default.cmd autocompletions
   M.public.sync()
 
-  if M.config.public.open_last_workspace and vim.fn.argc(-1) == 0 then
-    if M.config.public.open_last_workspace == "default" then
-      if not M.config.public.default then
+  if M.config.open_last_workspace and vim.fn.argc(-1) == 0 then
+    if M.config.open_last_workspace == "default" then
+      if not M.config.default then
         log.warn(
           'Configuration error in `default.workspace`: the `open_last_workspace` option is set to "default", but no default workspace is provided in the `default_workspace` configuration variable. defaulting to opening the last known workspace.'
         )
@@ -67,16 +66,16 @@ M.load = function()
         return
       end
 
-      M.public.open_workspace(M.config.public.default)
+      M.public.open_workspace(M.config.default)
     else
       M.public.set_last_workspace()
     end
-  elseif M.config.public.default then
-    M.public.set_workspace(M.config.public.default)
+  elseif M.config.default then
+    M.public.set_workspace(M.config.default)
   end
 end
 
-M.config.public = {
+M.config = {
   -- The list of active jot workspaces.
   --
   -- There is always an inbuilt workspace called `default`, whose location is
@@ -102,15 +101,14 @@ M.config.public = {
   use_popup = true,
 }
 
-M.private = {
-  ---@type { [1]: string, [2]: PathlibPath }
-  current_workspace = { "default", Path.cwd() },
-}
-
 ---@class workspace
 M.public = {
+  data = {
+    ---@type { [1]: string, [2]: PathlibPath }
+    current_workspace = { "default", Path.cwd() },
+  },
   current = function()
-    return M.private.current_workspace
+    return M.public.data.current_workspace
   end,
   files = function(ws)
     local res = {}
@@ -216,36 +214,36 @@ M.public = {
     return res and res:tostring() or nil
   end,
   get_workspaces = function()
-    return M.config.public.workspaces
+    return M.config.workspaces
   end,
   ---@return string[]
   get_workspace_names = function()
-    return vim.tbl_keys(M.config.public.workspaces)
+    return vim.tbl_keys(M.config.workspaces)
   end,
   --- If present retrieve a workspace's path by its name, else returns nil
   ---@param name string #The name of the workspace
   get_workspace = function(name)
-    return M.config.public.workspaces[name]
+    return M.config.workspaces[name]
   end,
   --- Returns a table in the format { "workspace_name", "path" }
   get_current_workspace = function()
-    return M.private.current_workspace
+    return M.public.data.current_workspace
   end,
   --- Sets the workspace to the one specified (if it exists) and broadcasts the workspace_changed event
   ---@param ws_name string #The name of a valid namespace we want to switch to
   ---@return boolean #True if the workspace is set correctly, false otherwise
   set_workspace = function(ws_name)
     -- Grab the workspace location
-    local workspace = M.config.public.workspaces[ws_name]
+    local workspace = M.config.workspaces[ws_name]
     -- Create a new object describing our new workspace
     local new_workspace = { ws_name, workspace }
 
     -- If the workspace does not exist then error out
     if not workspace then
       log.warn(
-        "Unable to set workspace to",
-        workspace,
-        "- that workspace does not exist"
+        "Unable to set workspace to"
+        .. workspace
+        .. "- that workspace does not exist"
       )
       return false
     end
@@ -254,10 +252,10 @@ M.public = {
     workspace:mkdir(Path.const.o755, true)
 
     -- Cache the current workspace
-    local current_ws = vim.deepcopy(M.private.current_workspace)
+    local current_ws = vim.deepcopy(M.public.data.current_workspace)
 
     -- Set the current workspace to the new workspace object we constructed
-    M.private.current_workspace = new_workspace
+    M.public.data.current_workspace = new_workspace
 
     if ws_name ~= "default" then
       M.required["data"].store("last_workspace", ws_name)
@@ -282,13 +280,13 @@ M.public = {
   ---@param workspace_path string|PathlibPath #A full path to the workspace root
   add_workspace = function(workspace_name, workspace_path)
     -- If the M already exists then bail
-    if M.config.public.workspaces[workspace_name] then
+    if M.config.workspaces[workspace_name] then
       return false
     end
 
     workspace_path = Path(workspace_path):resolve():to_absolute()
     -- Set the new workspace and its path accordingly
-    M.config.public.workspaces[workspace_name] = workspace_path
+    M.config.workspaces[workspace_name] = workspace_path
     -- Broadcast the workspace_added event with the newly added workspace as the content
     mod.broadcast_event(
       assert(
@@ -308,7 +306,7 @@ M.public = {
   --- If the file we opened is within a workspace directory, returns the name of the workspace, else returns nil
   get_workspace_match = function()
     -- Cache the current working directory
-    M.config.public.workspaces.default = Path.cwd()
+    M.config.workspaces.default = Path.cwd()
 
     local file = Path(vim.fn.expand("%:p"))
 
@@ -319,7 +317,7 @@ M.public = {
     local longest_match = 0
 
     -- Find a matching workspace
-    for workspace, location in pairs(M.config.public.workspaces) do
+    for workspace, location in pairs(M.config.workspaces) do
       if workspace ~= "default" then
         if
             file:is_relative_to(location) and location:depth() > longest_match
@@ -417,7 +415,7 @@ M.public = {
 
     if not opts.no_open then
       -- Begin editing that newly created file
-      vim.cmd("e " .. destination:cmd_string() .. "| w")
+      vim.cmd("e " .. destination:cmd_string() .. "| silent! w")
     end
   end,
 
@@ -431,7 +429,7 @@ M.public = {
       return
     end
 
-    vim.cmd("e " .. (workspace / path):cmd_string() .. " | w")
+    vim.cmd("e " .. (workspace / path):cmd_string() .. " | silent! w")
   end,
   --- Reads the jot_last_workspace.txt file and loads the cached workspace from there
   set_last_workspace = function()
@@ -447,7 +445,7 @@ M.public = {
 
     local last_workspace = data.retrieve("last_workspace")
     last_workspace = type(last_workspace) == "string" and last_workspace
-        or M.config.public.default
+        or M.config.default
         or ""
 
     local workspace_path = M.public.get_workspace(last_workspace)
@@ -489,7 +487,7 @@ M.public = {
     if not workspace then
       return
     end
-    local n = M.required["note"].config.public.note_dir
+    local n = M.required["note"].config.note_dir
     local wn = Path(workspace / n)
     local res = {} ---@type table<PathlibPath>
     for path in wn:fs_iterdir(true, 20) do
@@ -595,10 +593,10 @@ M.public = {
     return (ws_match / path):touch(Path.const.o644, true)
   end,
   get_index = function()
-    return M.config.public.index
+    return M.config.index
   end,
   new_note = function()
-    if M.config.public.use_popup then
+    if M.config.use_popup then
       M.required.ui.create_prompt("JotNewNote", "New Note: ", function(text)
         -- Create the file that the user has entered
         M.public.create_file(text)

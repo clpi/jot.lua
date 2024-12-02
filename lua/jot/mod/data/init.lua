@@ -19,24 +19,23 @@ local M = Mod.create("data", {
 
 M.setup = function()
   return {
-    success = true,
+    loaded = true,
     requires = {
       "data.dirs",
     },
   }
 end
 
-M.config.public = {
+M.config = {
   -- Full path to store data (saved in mpack data format)
   path = vim.fn.stdpath("data") .. "/jot.mpack",
 }
 
-M.private = {
-  data = {},
-}
-
----@class base.store
+---@class data
 M.public = {
+  data = {
+    data = {},
+  },
   directory_map = function(path, callback)
     for name, type in vim.fs.dir(path) do
       if type == "directory" then
@@ -86,7 +85,7 @@ M.public = {
   end,
   --- Grabs the data present on disk and overwrites it with the data present in memory
   sync = function()
-    local file = io.open(M.config.public.path, "r")
+    local file = io.open(M.config.path, "r")
 
     if not file then
       return
@@ -96,41 +95,41 @@ M.public = {
 
     io.close(file)
 
-    M.private.data = vim.mpack.decode and vim.mpack.decode(content)
-      or vim.mpack.unpack(content)
+    local c = vim.mpack.decode(content)
+    M.public.data.data = vim.mpack.decode and vim.mpack.decode(content)
   end,
 
   --- Stores a key-value pair in the store
   ---@param key string #The key to index in the store
   ---@param data any #The data to store at the specific key
   store = function(key, data)
-    M.private.data[key] = data
+    M.public.data.data[key] = data
   end,
 
   --- Removes a key from store
   ---@param key string #The name of the key to remove
   remove = function(key)
-    M.private.data[key] = nil
+    M.public.data.data[key] = nil
   end,
 
   --- Retrieves a key from the store
   ---@param key string #The name of the key to index
   ---@return any|table #The data present at the key, or an empty table
   retrieve = function(key)
-    return M.private.data[key] or {}
+    return M.public.data.data[key] or {}
   end,
 
   --- Flushes the contents in memory to the location specified in the `path` configuration option.
   flush = function()
-    local file = io.open(M.config.public.path, "w")
+    local file = io.open(M.config.path, "w")
 
     if not file then
       return
     end
 
     file:write(
-      vim.mpack.encode and vim.mpack.encode(M.private.data)
-        or vim.mpack.pack(M.private.data)
+      vim.mpack.encode and vim.mpack.encode(M.public.data.data)
+        or vim.mpack.pack(M.public.data.data)
     )
 
     io.close(file)

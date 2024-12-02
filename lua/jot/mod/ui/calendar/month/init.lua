@@ -16,7 +16,7 @@ init.setup = function()
   }
 end
 
-init.private = {
+init.public.data = {
   namespaces = {
     logical = vim.api.nvim_create_namespace("jot/calendar/logical"),
     decorational = vim.api.nvim_create_namespace("jot/calendar/decorational"),
@@ -56,9 +56,9 @@ init.private = {
   end,
 
   set_decorational_extmark = function(ui_info, row, col, length, virt_text, alignment, extra)
-    return init.private.set_extmark(
+    return init.public.data.set_extmark(
       ui_info,
-      init.private.namespaces.decorational,
+      init.public.data.namespaces.decorational,
       row,
       col,
       length,
@@ -69,9 +69,9 @@ init.private = {
   end,
 
   set_logical_extmark = function(ui_info, row, col, virt_text, alignment, extra)
-    return init.private.set_extmark(
+    return init.public.data.set_extmark(
       ui_info,
-      init.private.namespaces.logical,
+      init.public.data.namespaces.logical,
       row,
       col,
       nil,
@@ -116,14 +116,14 @@ init.private = {
 
         local weekday_banner_id = vim.api.nvim_buf_get_extmark_by_id(
           ui_info.buffer,
-          init.private.namespaces.decorational,
+          init.public.data.namespaces.decorational,
           weekday_banner_extmark_id,
           {
             details = true,
           }
         )
 
-        self.extmarks.decorational.month_headings[weekday_banner_extmark_id] = init.private
+        self.extmarks.decorational.month_headings[weekday_banner_extmark_id] = init.public.data
             .set_decorational_extmark(
               ui_info,
               4,
@@ -175,7 +175,7 @@ init.private = {
           extmark_position = -extmark_position
         end
 
-        local weekday_banner_id = init.private.set_decorational_extmark(
+        local weekday_banner_id = init.public.data.set_decorational_extmark(
           ui_info,
           6,
           extmark_position,
@@ -207,7 +207,7 @@ init.private = {
 
         local month, year = target_date.month, target_date.year
 
-        local days_in_current_month = init.private.get_month_length(month, year)
+        local days_in_current_month = init.public.data.get_month_length(month, year)
 
         for i = 1, days_in_current_month do
           days_of_month[i] = tonumber(os.date(
@@ -222,7 +222,7 @@ init.private = {
 
         local beginning_of_weekday_extmark = vim.api.nvim_buf_get_extmark_by_id(
           ui_info.buffer,
-          init.private.namespaces.decorational,
+          init.public.data.namespaces.decorational,
           weekday_banner_extmark_id,
           {}
         )
@@ -259,13 +259,13 @@ init.private = {
 
           self.extmarks.logical.months[month][day_of_month] = vim.api.nvim_buf_set_extmark(
             ui_info.buffer,
-            init.private.namespaces.logical,
+            init.public.data.namespaces.logical,
             start_row,
             start_col,
             {
               virt_text = {
                 {
-                  (day_of_month < 10 and "0" or "") .. tostring(day_of_month),
+                  (day_of_month < 10 and "0" or "")..tostring(day_of_month),
                   day_highlight,
                 },
               },
@@ -289,7 +289,7 @@ init.private = {
         self:render_month_banner(ui_info, date, weekday_banner)
         self:render_month(ui_info, date, weekday_banner)
 
-        local months_to_render = init.private.rendered_months_in_width(ui_info.width, options.distance)
+        local months_to_render = init.public.data.rendered_months_in_width(ui_info.width, options.distance)
         months_to_render = math.floor(months_to_render / 2)
 
         for i = 1, months_to_render do
@@ -327,7 +327,7 @@ init.private = {
           }
         end
 
-        local extmark = init.private.set_logical_extmark(
+        local extmark = init.public.data.set_logical_extmark(
           ui_info,
           2,
           0,
@@ -345,12 +345,12 @@ init.private = {
         --> Decorational section
         -- CALENDAR text:
         self.extmarks.decorational = vim.tbl_deep_extend("force", self.extmarks.decorational, {
-          calendar_text = init.private.set_decorational_extmark(ui_info, 0, 0, 0, {
+          calendar_text = init.public.data.set_decorational_extmark(ui_info, 0, 0, 0, {
             { "ui.calendar", "@text.strong" },
           }, "center"),
 
           -- Help text at the bottom left of the screen
-          help_and_custom_input = init.private.set_decorational_extmark(
+          help_and_custom_input = init.public.data.set_decorational_extmark(
             ui_info,
             ui_info.height - 1,
             0,
@@ -367,7 +367,7 @@ init.private = {
           ),
 
           -- The current view (bottom right of the screen)
-          current_view = init.private.set_decorational_extmark(
+          current_view = init.public.data.set_decorational_extmark(
             ui_info,
             ui_info.height - 1,
             0,
@@ -383,7 +383,7 @@ init.private = {
 
         local position = vim.api.nvim_buf_get_extmark_by_id(
           ui_info.buffer,
-          init.private.namespaces.logical,
+          init.public.data.namespaces.logical,
           extmark_id,
           {}
         )
@@ -395,12 +395,12 @@ init.private = {
         local is_first_render = (previous_date == nil)
 
         if is_first_render then
-          vim.api.nvim_buf_clear_namespace(ui_info.buffer, init.private.namespaces.decorational, 0, -1)
-          vim.api.nvim_buf_clear_namespace(ui_info.buffer, init.private.namespaces.logical, 0, -1)
+          vim.api.nvim_buf_clear_namespace(ui_info.buffer, init.public.data.namespaces.decorational, 0, -1)
+          vim.api.nvim_buf_clear_namespace(ui_info.buffer, init.public.data.namespaces.logical, 0, -1)
 
           vim.api.nvim_buf_set_option(ui_info.buffer, "modifiable", true)
 
-          init.private.fill_buffer(ui_info)
+          init.public.data.fill_buffer(ui_info)
           self:render_decorative_text(ui_info, init.public.view_name:upper())
           self:render_year_tag(ui_info, date.year)
           self:render_month_array(ui_info, date, options)
@@ -434,7 +434,7 @@ init.private = {
         local cur_month = current_date.month
 
         local rendered_months_offset =
-            math.floor(init.private.rendered_months_in_width(ui_info.width, options.distance) / 2)
+            math.floor(init.public.data.rendered_months_in_width(ui_info.width, options.distance) / 2)
 
         -- Mimics ternary operator to be concise
         local month_min = cur_month - rendered_months_offset
@@ -445,7 +445,7 @@ init.private = {
 
         local clear_extmarks_for_month = function(month)
           for _, extmark_id in ipairs(self.extmarks.logical.months[month]) do
-            vim.api.nvim_buf_del_extmark(ui_info.buffer, init.private.namespaces.logical, extmark_id)
+            vim.api.nvim_buf_del_extmark(ui_info.buffer, init.public.data.namespaces.logical, extmark_id)
           end
 
           self.extmarks.logical.months[month] = nil
@@ -492,7 +492,7 @@ init.private = {
   get_month_length = function(month, year)
     return ({
       31,
-      (init.private.is_leap_year(year)) and 29 or 28,
+      (init.public.data.is_leap_year(year)) and 29 or 28,
       31,
       30,
       31,
@@ -580,7 +580,7 @@ init.public = {
   setup = function(ui_info, mode, date, options)
     options.distance = options.distance or 4
 
-    local view = init.private.new_view_instance()
+    local view = init.public.data.new_view_instance()
 
     view.current_mode = mode
 
@@ -740,14 +740,14 @@ init.public = {
       end, { buffer = ui_info.buffer })
 
       vim.keymap.set("n", "e", function()
-        local end_of_current_month = init.private.get_month_length(date.month, date.year)
+        local end_of_current_month = init.public.data.get_month_length(date.month, date.year)
         if end_of_current_month > date.day then
           date.month = date.month - 1
         end
         local new_date = reformat_time({
           year = date.year,
           month = date.month + vim.v.count1,
-          day = init.private.get_month_length(date.month + vim.v.count1, date.year),
+          day = init.public.data.get_month_length(date.month + vim.v.count1, date.year),
         })
         view:render_view(ui_info, new_date, date, options)
         date = new_date
@@ -757,7 +757,7 @@ init.public = {
         local new_date = reformat_time({
           year = date.year,
           month = date.month - vim.v.count1,
-          day = init.private.get_month_length(date.month - vim.v.count1, date.year),
+          day = init.public.data.get_month_length(date.month - vim.v.count1, date.year),
         })
         view:render_view(ui_info, new_date, date, options)
         date = new_date
@@ -810,9 +810,9 @@ init.public = {
           local subject = string.sub(last_semi_jump, 2)
           local new_keys
           if string.upper(action) == action then
-            new_keys = action:lower() .. subject
+            new_keys = action:lower()..subject
           else
-            new_keys = action:upper() .. subject
+            new_keys = action:upper()..subject
           end
           vim.api.nvim_feedkeys(new_keys, "m", false)
 
@@ -825,9 +825,9 @@ init.public = {
 
         for i = date.month + 1, date.month + 12 do
           local m = lib.number_wrap(i, 1, 12)
-          if months[m]:match("^" .. char) then
+          if months[m]:match("^"..char) then
             if not skip_next then
-              last_semi_jump = "f" .. char
+              last_semi_jump = "f"..char
             else
               skip_next = false
             end
@@ -849,9 +849,9 @@ init.public = {
 
         for i = date.month + 11, date.month, -1 do
           local m = lib.number_wrap(i, 1, 12)
-          if months[m]:match("^" .. char) then
+          if months[m]:match("^"..char) then
             if not skip_next then
-              last_semi_jump = "F" .. char
+              last_semi_jump = "F"..char
             else
               skip_next = false
             end
@@ -868,7 +868,7 @@ init.public = {
       end, { buffer = ui_info.buffer })
 
       vim.keymap.set("n", "g", function()
-        local day = math.min(vim.v.count1, init.private.get_month_length(date.month, date.year))
+        local day = math.min(vim.v.count1, init.public.data.get_month_length(date.month, date.year))
 
         local new_date = reformat_time({
           year = date.year,
@@ -883,7 +883,7 @@ init.public = {
         local new_date = reformat_time({
           year = date.year,
           month = date.month,
-          day = init.private.get_month_length(date.month, date.year),
+          day = init.public.data.get_month_length(date.month, date.year),
         })
         view:render_view(ui_info, new_date, date, options)
         date = new_date
@@ -904,7 +904,7 @@ init.public = {
       vim.keymap.set(
         "n",
         "?",
-        lib.wrap(init.private.display_help, {
+        lib.wrap(init.public.data.display_help, {
           {
             { "q",                 "@namespace" },
             { " - " },
@@ -1044,7 +1044,7 @@ init.public = {
         vim.keymap.set(
           "n",
           "?",
-          lib.wrap(init.private.display_help, {
+          lib.wrap(init.public.data.display_help, {
             {
               { "q",                 "@namespace" },
               { " - " },

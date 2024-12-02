@@ -7,7 +7,7 @@ local M = Mod.create("lsp.document.format")
 
 M.setup = function()
   return {
-    success = true,
+    loaded = true,
     requires = {
       "integration.treesitter",
       "workspace",
@@ -91,7 +91,7 @@ M.public = {
     ---@type lsp.workspaceEdit
     local wsEdit = { changes = {} }
     ---@param link Link
-    local current_file_changes = M.private.fix_links(
+    local current_file_changes = M.public.data.fix_links(
       current_path,
       function(link)
         local range = link.file and link.file.range
@@ -138,7 +138,7 @@ M.public = {
         goto continue
       end
       ---@param link Link
-      local file_changes = M.private.fix_links(file, function(link)
+      local file_changes = M.public.data.fix_links(file, function(link)
         local range = link.file and link.file.range
         local link_str = link.file and link.file.text
         local raw = false
@@ -230,10 +230,10 @@ M.public = {
     ---@type lsp.workspaceEdit
     local wsEdit = { changes = {} }
     ---@param link Link
-    local changes = M.private.fix_links(buf, function(link)
+    local changes = M.public.data.fix_links(buf, function(link)
       local link_prefix = link.type and link.type.text
       local link_heading = link.text and link.text.text
-      -- NOTE: This will not work for {:path/to/current/file:# heading} but who would do that..
+      -- NOTE: This will not work for {:path/to/current/file:# heading} but who would do that.public.data.
       if
           not link.file
           and (link_prefix == "# " or link_prefix == prefix)
@@ -280,7 +280,7 @@ M.public = {
       end
 
       ---@param link Link
-      changes = M.private.fix_links(file, function(link)
+      changes = M.public.data.fix_links(file, function(link)
         local link_str = link.file and link.file.text
         if not link_str then
           return
@@ -331,14 +331,14 @@ M.public = {
     )
   end,
 }
-
+M.public.data = {}
 ---Abstract function to generate TextEdits that alter matching links
 ---@param source number | string bufnr or filepath
 ---@param fix_link function takes a string, the current link, returns a string, the new link,
 ---or nil if this shouldn't be changed
-M.private.fix_links = function(source, fix_link)
+M.public.data.fix_links = function(source, fix_link)
   local links = nil
-  links = M.private.get_links(source)
+  links = M.public.data.get_links(source)
 
   local edits = {}
   for _, link in ipairs(links) do
@@ -378,7 +378,7 @@ end
 ---fetch all the links in the given buffer
 ---@param source number | string bufnr or full path to file
 ---@return Link[]
-M.private.get_links = function(source)
+M.public.data.get_links = function(source)
   local link_query_string = [[
         (link_location
             file: (_)* @file

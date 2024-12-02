@@ -27,8 +27,9 @@ local W = {
   lib = require("jot.util.lib"),
 }
 
+-- local e = require("jot")
 local con, log, modu, utils =
-    require("jot.config").config, W.log, W.mod, W.utils
+  require("jot.config").config, W.log, W.mod, W.utils
 local a, f, ext = vim.api, vim.fn, vim.tbl_deep_extend
 
 --- @init "jot.config"
@@ -47,7 +48,6 @@ function W.setup(conf)
   require("jot.config").setup_maps()
   require("jot.config").setup_opts()
 
-  -- If the file we have entered has a `.jot` extension:
   if W.util.buf.check_md() or not con.user.lazy then
     W.enter_md(false)
   else

@@ -1,6 +1,6 @@
 ---@meta
 ---
---- @alias jot.mod.public { version: string, [any]: any }
+--- @alias jot.mod.pub { version: string, [any]: any }
 
 --- @class (exact) jot.mod.resolver
 --- @field ['lsp.completion']? lsp.completion
@@ -9,6 +9,7 @@
 --- @field ['lsp.hint']? lsp.hint
 --- @field ['lsp.hover']? lsp.hover
 --- @field ['lsp.lens']? lsp.lens
+--- @field lsp? jot.lsp
 --- @field ['lsp.semantic']? lsp.semantic
 --- @field ["ui.conceal"]? ui.conceal
 --- @field ["ui.icon"]? ui.icon
@@ -33,15 +34,14 @@
 --- Defines both a public and private config for a jot init.
 --- Public configs may be tweaked by the user from the `jot.setup()` function,  whereas private configs are for internal use only.
 --- @class (exact) jot.mod.config
---- @field custom? table         Internal table that tracks the differences (changes) between the base `public` table and the new (altered) `public` table. It contains only the tables that the user has altered in their own config.
---- @field public private? table Internal config variables that may be tweaked by the developer.
+--- @field enable
 --- @field public public? table  config variables that may be tweaked by the user.
 
 --- @class (exact) jot.mod.events
 --- @field defined? { [string]: jot.event }              Lists all events defined by this init.
 --- @field subscribed? { [string]: { [string]: boolean } } Lists the events that the init is subscribed to.
 
---- @alias jot.mod.setup { success: boolean, requires?: string[], replaces?: string, replace_merge?: boolean, wants?: string[] }
+--- @alias jot.mod.setup { loaded: boolean, requires?: string[], replaces?: string, replace_merge?: boolean, wants?: string[] }
 
 --- Defines a init.
 --- A init is an object that contains a set of hooks which are invoked by jot whenever something in the
@@ -106,3 +106,58 @@
 --- variables that describe something specific about the user's hardware.
 --- @see jot.setup
 ---
+---
+--- @alias Mode
+--- | "n"
+--- | "no"
+--- | "nov"
+--- | "noV"
+--- | "noCTRL-V"
+--- | "CTRL-V"
+--- | "niI"
+--- | "niR"
+--- | "niV"
+--- | "nt"
+--- | "Terminal"
+--- | "ntT"
+--- | "v"
+--- | "vs"
+--- | "V"
+--- | "Vs"
+--- | "CTRL-V"
+--- | "CTRL-Vs"
+--- | "s"
+--- | "S"
+--- | "CTRL-S"
+--- | "i"
+--- | "ic"
+--- | "ix"
+--- | "R"
+--- | "Rc"
+--- | "Rx"
+--- | "Rv"
+--- | "Rvc"
+--- | "Rvx"
+--- | "c"
+--- | "cr"
+--- | "cv"
+--- | "cvr"
+--- | "r"
+--- | "rm"
+--- | "r?"
+--- | "!"
+--- | "t"
+
+--- @class (exact) jot.event
+--- @field type string The type of the event. Exists in the format of `category.name`.
+--- @field split_type string[] The event type, just split on every `.` character, e.g. `{ "category", "name" }`.
+--- @field content? table|any The content of the event. The data found here is specific to each individual event. Can be thought of as the payload.
+--- @field referrer string The name of the init that triggered the event.
+--- @field broadcast boolean Whether the event was broadcast to all mod. `true` is so, `false` if the event was specifically sent to a single recipient.
+--- @field cursor_position { [1]: number, [2]: number } The position of the cursor at the moment of broadcasting the event.
+--- @field filename string The name of the file that the user was in at the moment of broadcasting the event.
+--- @field filehead string The directory the user was in at the moment of broadcasting the event.
+--- @field line_content string The content of the line the user was editing at the moment of broadcasting the event.
+--- @field buffer number The buffer ID of the buffer the user was in at the moment of broadcasting the event.
+--- @field window number The window ID of the window the user was in at the moment of broadcasting the event.
+--- @field mode Mode The mode Neovim was in at the moment of broadcasting the event.

@@ -2,7 +2,7 @@ local M = Mod.create("lsp.document.fold")
 
 M.setup = function()
   return {
-    success = true,
+    loaded = true,
   }
 end
 

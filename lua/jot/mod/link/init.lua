@@ -15,40 +15,40 @@ local M = Mod.create("link")
 M.pathType = function(path, anchor)
   if not path then
     return nil
-  elseif string.find(path, '^file:') then
-    return 'file'
+  elseif string.find(path, "^file:") then
+    return "file"
   elseif string.find(path, "https://") then
-    return 'url'
-  elseif string.find(path, '^@') then
-    return 'citation'
-  elseif path == '' and anchor then
-    return 'anchor'
+    return "url"
+  elseif string.find(path, "^@") then
+    return "citation"
+  elseif path == "" and anchor then
+    return "anchor"
   else
-    return 'nb_page'
+    return "nb_page"
   end
 end
 M.setup = function()
   return {
-    success = true,
+    loaded = true,
     requires = {
       "workspace",
-      "data"
-    }
+      "data",
+    },
   }
 end
 
-M.config.public = {
+M.config = {
   conceal = true,
   style = "markdown",
   implicit_extension = nil,
-  tranform_implicit = false,
+  transform_implicit = false,
   create_on_follow_fail = true,
   context = 0,
   name_as_source = false,
   transform_explicit = function(text)
-    text = text:gsub('[ /]', '-')
+    text = text:gsub("[ /]", "-")
     text = text:lower()
-    text = os.date('%Y-%m-%d_') .. text
+    text = os.date("%Y-%m-%d_") .. text
     return text
   end,
 }
@@ -70,14 +70,19 @@ M.public = {
     local capture, start_row, start_col, end_row, end_col, match, match_lines
     col = col or position[2]
     local patterns = {
-      md_link = '(%b[]%b())',
-      wiki_link = '(%[%b[]%])',
-      ref_style_link = '(%b[]%s?%b[])',
-      auto_link = '(%b<>)',
+      md_link = "(%b[]%b())",
+      wiki_link = "(%[%b[]%])",
+      ref_style_link = "(%b[]%s?%b[])",
+      auto_link = "(%b<>)",
       citation = "[^%a%d]-(@[%a%d_%.%-']*[%a%d]+)[%s%p%c]?",
     }
     local row = position[1]
-    local lines = vim.api.nvim_buf_get_lines(0, row - 1 - M.config.public.context, row + M.config.public.context, false)
+    local lines = vim.api.nvim_buf_get_lines(
+      0,
+      row - 1 - M.config.context,
+      row + M.config.context,
+      false
+    )
     -- Iterate through the patterns to see if there's a matching link under the cursor
     for link_type, pattern in pairs(patterns) do
       local init_row, init_col = 1, 1
@@ -86,9 +91,15 @@ M.public = {
         -- Look for the pattern in the line(s)
         --link_start, link_finish, capture = string.find(lines, pattern, init)
         start_row, start_col, end_row, end_col, capture, match_lines =
-            utils.mFind(lines, pattern, row - M.config.public.context, init_row, init_col)
-        if start_row and link_type == 'citation' then
-          local possessor = string.gsub(capture, "'s$", '') -- Remove Saxon genitive if it's on the end of the citekey
+          utils.mFind(
+            lines,
+            pattern,
+            row - M.config.context,
+            init_row,
+            init_col
+          )
+        if start_row and link_type == "citation" then
+          local possessor = string.gsub(capture, "'s$", "") -- Remove Saxon genitive if it's on the end of the citekey
           if #capture > #possessor then
             capture = possessor
             end_col = end_col - 2
@@ -96,8 +107,14 @@ M.public = {
         end
         -- Check for overlap w/ cursor
         if start_row then -- There's a match
-          local overlaps =
-              M.public.contains(start_row, start_col, end_row, end_col, position[1], position[2] + 1)
+          local overlaps = M.public.contains(
+            start_row,
+            start_col,
+            end_row,
+            end_col,
+            position[1],
+            position[2] + 1
+          )
           if overlaps then
             match = capture
             continue = false
@@ -109,38 +126,46 @@ M.public = {
         end
       end
       if match then -- Return the match and type of link if there was a match
-        return { match, match_lines, link_type, start_row, start_col, end_row, end_col }
+        return {
+          match,
+          match_lines,
+          link_type,
+          start_row,
+          start_col,
+          end_row,
+          end_col,
+        }
       end
     end
   end,
   formatLink = function(text, source, part)
     local replacement, path_text
     -- If the text starts with a hash, format the link as an anchor link
-    if string.sub(text, 0, 1) == '#' and not source then
-      path_text = string.gsub(text, '[^%a%s%d%-_]', '')
-      text = string.gsub(text, '^#* *', '')
-      path_text = string.gsub(path_text, '^ ', '')
-      path_text = string.gsub(path_text, ' ', '-')
-      path_text = string.gsub(path_text, '%-%-', '-')
-      path_text = '#' .. string.lower(path_text)
+    if string.sub(text, 0, 1) == "#" and not source then
+      path_text = string.gsub(text, "[^%a%s%d%-_]", "")
+      text = string.gsub(text, "^#* *", "")
+      path_text = string.gsub(path_text, "^ ", "")
+      path_text = string.gsub(path_text, " ", "-")
+      path_text = string.gsub(path_text, "%-%-", "-")
+      path_text = "#" .. string.lower(path_text)
     elseif not source then
       path_text = M.transformPath(text)
       -- If no path_text, end here
       if not path_text then
         return
       end
-      if not M.config.public.implicit_extension then
-        path_text = path_text .. '.md'
+      if not M.config.implicit_extension then
+        path_text = path_text .. ".md"
       end
     else
       path_text = source
     end
     -- Format the replacement depending on the user's link style preference
-    if M.config.public.style == 'wiki' then
-      replacement = (M.config.public.name_as_source and { '[[' .. text .. ']]' })
-          or { '[[' .. path_text .. '|' .. text .. ']]' }
+    if M.config.style == "wiki" then
+      replacement = (M.config.name_as_source and { "[[" .. text .. "]]" })
+        or { "[[" .. path_text .. "|" .. text .. "]]" }
     else
-      replacement = { '[' .. text .. ']' .. '(' .. path_text .. ')' }
+      replacement = { "[" .. text .. "]" .. "(" .. path_text .. ")" }
     end
     -- Return the requested part
     if part == nil then
@@ -225,37 +250,45 @@ M.public = {
     local from_clipboard = args.from_clipboard or false
     local range = args.range or false
     -- Get mode from vim
-    local mode = vim.api.nvim_get_mode()['mode']
+    local mode = vim.api.nvim_get_mode()["mode"]
     -- Get the cursor position
     local position = vim.api.nvim_win_get_cursor(0)
     local row = position[1]
     local col = position[2]
     -- If the current mode is 'normal', make link from jot under cursor
-    if mode == 'n' and not range then
+    if mode == "n" and not range then
       -- Get the text of the line the cursor is on
       local line = vim.api.nvim_get_current_line()
-      local url_start, url_end = M.hasUrl(line, 'positions', col)
+      local url_start, url_end = M.hasUrl(line, "positions", col)
       if url_start and url_end then
         -- Prepare the replacement
         local url = line:sub(url_start, url_end - 1)
-        local replacement = (M.config.public.links.style == 'wiki' and { '[[' .. url .. '|]]' })
-            or { '[]' .. '(' .. url .. ')' }
+        local replacement = (
+          M.config.links.style == "wiki" and { "[[" .. url .. "|]]" }
+        ) or { "[]" .. "(" .. url .. ")" }
         -- Replace
-        vim.api.nvim_buf_set_text(0, row - 1, url_start - 1, row - 1, url_end - 1, replacement)
+        vim.api.nvim_buf_set_text(
+          0,
+          row - 1,
+          url_start - 1,
+          row - 1,
+          url_end - 1,
+          replacement
+        )
         -- Move the cursor to the name part of the link and change mode
-        if M.config.public.links.style == 'wiki' then
+        if M.config.links.style == "wiki" then
           vim.api.nvim_win_set_cursor(0, { row, url_end + 2 })
         else
           vim.api.nvim_win_set_cursor(0, { row, url_start })
         end
-        vim.cmd('startinsert')
+        vim.cmd("startinsert")
       else
         -- Get the jot under the cursor
-        local cursor_jot = vim.fn.expand('<cjot>')
+        local cursor_jot = vim.fn.expand("<cjot>")
         -- Make a markdown link out of the date and cursor
         local replacement
         if from_clipboard then
-          replacement = M.formatLink(cursor_jot, vim.fn.getreg('+'))
+          replacement = M.formatLink(cursor_jot, vim.fn.getreg("+"))
         else
           replacement = M.formatLink(cursor_jot)
         end
@@ -268,7 +301,7 @@ M.public = {
         -- Make sure it's not a duplicate of the jot under the cursor, and if it
         -- is, perform the search until a match is found whose right edge follows
         -- the cursor position
-        if cursor_jot ~= '' then
+        if cursor_jot ~= "" then
           for _left, _right in utils.gmatch(line, cursor_jot) do
             if _right >= col then
               left = _left
@@ -280,26 +313,35 @@ M.public = {
           left, right = col + 1, col
         end
         -- Replace the jot under the cursor w/ the formatted link replacement
-        vim.api.nvim_buf_set_text(0, row - 1, left - 1, row - 1, right, replacement)
+        vim.api.nvim_buf_set_text(
+          0,
+          row - 1,
+          left - 1,
+          row - 1,
+          right,
+          replacement
+        )
         vim.api.nvim_win_set_cursor(0, { row, col + 1 })
       end
       -- If current mode is 'visual', make link from selection
-    elseif mode == 'v' or range then
+    elseif mode == "v" or range then
       -- Get the start of the visual selection (the end is the cursor position)
-      local vis = vim.fn.getpos('v')
+      local vis = vim.fn.getpos("v")
       -- If the start of the visual selection is after the cursor position,
       -- use the cursor position as start and the visual position as finish
       local inverted = range and false or vis[3] > col
       local start, finish
       if range then
-        start = vim.api.nvim_buf_get_mark(0, '<')
-        finish = vim.api.nvim_buf_get_mark(0, '>')
+        start = vim.api.nvim_buf_get_mark(0, "<")
+        finish = vim.api.nvim_buf_get_mark(0, ">")
         -- Update char offsets
         start[1] = start[1] - 1
         finish[1] = finish[1] - 1
       else
-        start = (inverted and { row - 1, col }) or { vis[2] - 1, vis[3] - 1 + vis[4] }
-        finish = (inverted and { vis[2] - 1, vis[3] - 1 + vis[4] }) or { row - 1, col }
+        start = (inverted and { row - 1, col })
+          or { vis[2] - 1, vis[3] - 1 + vis[4] }
+        finish = (inverted and { vis[2] - 1, vis[3] - 1 + vis[4] })
+          or { row - 1, col }
       end
       local start_row = (inverted and row - 1) or vis[2] - 1
       local start_col = (inverted and col) or vis[3] - 1
@@ -309,13 +351,17 @@ M.public = {
       local end_col = (inverted and vis[3]) or finish[2] + 1
       -- Make sure the selection is on a single line; otherwise, do nothing & throw a warning
       if start_row == end_row then
-        local lines = vim.api.nvim_buf_get_lines(0, start[1], finish[1] + 1, false)
+        local lines =
+          vim.api.nvim_buf_get_lines(0, start[1], finish[1] + 1, false)
 
         -- Check if last byte is part of a multibyte character & adjust end index if so
-        local is_multibyte_char =
-            utils.isMultibyteChar({ buffer = 0, row = finish[1], start_col = end_col })
+        local is_multibyte_char = utils.isMultibyteChar({
+          buffer = 0,
+          row = finish[1],
+          start_col = end_col,
+        })
         if is_multibyte_char then
-          end_col = is_multibyte_char['finish']
+          end_col = is_multibyte_char["finish"]
         end
 
         -- Reduce the text only to the visual selection
@@ -328,33 +374,37 @@ M.public = {
         end
         -- Save the text selection & format as a link
         local text = table.concat(lines)
-        local replacement = from_clipboard and M.formatLink(text, vim.fn.getreg('+'))
-            or M.formatLink(text)
+        local replacement = from_clipboard
+            and M.formatLink(text, vim.fn.getreg("+"))
+          or M.formatLink(text)
         -- If no replacement, end here
         if not replacement then
           return
         end
         -- Replace the visual selection w/ the formatted link replacement
-        vim.api.nvim_buf_set_text(0, start_row, start_col, end_row, end_col, replacement)
+        vim.api.nvim_buf_set_text(
+          0,
+          start_row,
+          start_col,
+          end_row,
+          end_col,
+          replacement
+        )
         -- Leave visual mode
         vim.api.nvim_feedkeys(
-          vim.api.nvim_replace_termcodes('<esc>', true, false, true),
-          'x',
+          vim.api.nvim_replace_termcodes("<esc>", true, false, true),
+          "x",
           true
         )
         -- Retain original cursor position
         vim.api.nvim_win_set_cursor(0, { row, col + 1 })
       else
-        vim.api.nvim_echo(
+        vim.api.nvim_echo({
           {
-            {
-              '⬇️  Creating links from multi-line visual selection not supported',
-              'WarningMsg',
-            },
+            "⬇️  Creating links from multi-line visual selection not supported",
+            "WarningMsg",
           },
-          true,
-          {}
-        )
+        }, true, {})
       end
     end
   end,
@@ -367,12 +417,24 @@ the name part of the link.
     -- Get link name, indices, and row the cursor is currently on
     local link = M.getLinkUnderCursor()
     if link then
-      local link_name = M.getLinkPart(link, 'name')
+      local link_name = M.getLinkPart(link, "name")
       -- Replace the link with just the name
-      vim.api.nvim_buf_set_text(0, link[4] - 1, link[5] - 1, link[6] - 1, link[7], { link_name })
+      vim.api.nvim_buf_set_text(
+        0,
+        link[4] - 1,
+        link[5] - 1,
+        link[6] - 1,
+        link[7],
+        { link_name }
+      )
     else
       vim.api.nvim_echo(
-        { { "⬇️  Couldn't find a link under the cursor to destroy!", 'WarningMsg' } },
+        {
+          {
+            "⬇️  Couldn't find a link under the cursor to destroy!",
+            "WarningMsg",
+          },
+        },
         true,
         {}
       )
@@ -394,25 +456,30 @@ link from the jot under the cursor or a visual selection (if there is one).
     if path or anchor then
       path, anchor = path, anchor
     else
-      path, anchor, link_type = M.getLinkPart(M.getLinkUnderCursor(), 'source')
+      path, anchor, link_type = M.getLinkPart(M.getLinkUnderCursor(), "source")
     end
     if path then
-      require('mkdnflow').paths.handlePath(path, anchor)
-    elseif link_type == 'ref_style_link' then -- If this condition is met, no reference was found
+      require("mkdnflow").paths.handlePath(path, anchor)
+    elseif link_type == "ref_style_link" then -- If this condition is met, no reference was found
       vim.api.nvim_echo(
-        { { "⬇️  Couldn't find a matching reference label!", 'WarningMsg' } },
+        {
+          { "⬇️  Couldn't find a matching reference label!", "WarningMsg" },
+        },
         true,
         {}
       )
-    elseif M.config.public.links.create_on_follow_fail then
+    elseif M.config.links.create_on_follow_fail then
       M.createLink({ range = range })
     end
   end,
   transformPath = function(text)
-    if type(M.config.public.links.transform_explicit) ~= 'function' or not M.config.public.links.transform_explicit then
+    if
+      type(M.config.links.transform_explicit) ~= "function"
+      or not M.config.links.transform_explicit
+    then
       return text
     else
-      return (M.config.public.links.transform_explicit(text))
+      return (M.config.links.transform_explicit(text))
     end
   end,
   get_ref = function(refnr, start_row)
@@ -422,16 +489,20 @@ link from the jot under the cursor or a visual selection (if there is one).
     -- Look for reference
     while continue and row <= line_count do
       local line = vim.api.nvim_buf_get_lines(0, row - 1, row, false)[1]
-      local start, finish, match = string.find(line, '^(%[' .. refnr .. '%]: .*)')
+      local start, finish, match =
+        string.find(line, "^(%[" .. refnr .. "%]: .*)")
       if match then
-        local _, label_finish = string.find(match, '^%[.-%]: ')
+        local _, label_finish = string.find(match, "^%[.-%]: ")
         continue = false
-        return string.sub(match, label_finish + 1), row, label_finish + 1, finish
+        return string.sub(match, label_finish + 1),
+          row,
+          label_finish + 1,
+          finish
       else
         row = row + 1
       end
     end
-  end
+  end,
 }
 
 M.load = function()
@@ -442,14 +513,14 @@ M.load = function()
         subcommands = {
           update = {
             args = 0,
-            name = "link.new"
+            name = "link.new",
           },
           insert = {
             name = "link.backlinks",
             args = 0,
           },
         },
-      }
+      },
     })
   end)
 end

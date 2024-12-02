@@ -1,11 +1,12 @@
 local M = Mod.create("ui.win")
+local buf = require("jot.util.buf")
 
 M.setup = function()
   return {
-    success = true,
+    loaded = true,
     requires = {
       -- 'ui'
-    }
+    },
   }
 end
 M.public = {
@@ -30,24 +31,42 @@ M.public = {
       col = col,
       border = "rounded",
       title = "Hi",
-      -- title = "Cancel capture: " k.. keymaps.capture_cancel .. ", Save capture: " .. keymaps.capture_save,
+      -- title = "Cancel capture: " k...keymaps.capture_cancel..", Save capture: "..keymaps.capture_save,
       title_pos = "center",
     }
 
     local win = vim.api.nvim_open_win(buf, true, opts)
     return { buf, win }
   end,
-  win = function(bufnr)
-    vim.api.nvim_open_win(bufnr, false, {
-      relative = "win",
-      width = vim.api.nvim_win_get_width(0) - 0,
-      height = 100,
-      row = 0,
-      col = 0,
-      focusable = false,
+  win = function(title, foot, cmd)
+    local b = vim.api.nvim_create_buf(false, true)
+    local w = vim.api.nvim_open_win(b, false, {
+      relative = "editor",
+      height = math.ceil(vim.api.nvim_win_get_height(buf.win()) / 2),
+      width = math.ceil(vim.api.nvim_win_get_width(buf.win()) / 2),
+      fixed = true,
+      row = 1,
+      col = 1,
+      focusable = true,
+      footer = foot,
+      title = title,
+      title_pos = "center",
+      border = "rounded",
       style = "minimal",
+      footer_pos = "center",
       noautocmd = true,
     })
+    if cmd then
+      vim.api.nvim_win_call(w, function()
+        vim.cmd(cmd)
+      end)
+    end
+    return { b, w }
+  end,
+  ---@param w integer
+  ---@param f function
+  cmd = function(w, f)
+    return vim.api.nvim_win_call(w, f)
   end,
   create_new = function()
     local content = [[
@@ -57,10 +76,7 @@ M.public = {
   ]]
     local buf = vim.api.nvim_create_buf(true, false)
     vim.api.nvim_buf_set_lines(buf, 0, -1, true, vim.split(content, "\n"))
-    vim.api.nvim_buf_set_option(buf, "filetype", "markdown")
     vim.api.nvim_set_current_buf(buf)
-    vim.api.nvim_buf_set_option(buf, "bufhidden", "wipe")
-    vim.api.nvim_buf_set_option(buf, "number", false)
     local width = vim.api.nvim_get_option("columns")
     local height = vim.api.nvim_get_option("lines")
 
@@ -78,12 +94,12 @@ M.public = {
       col = col,
       border = "rounded",
       title = "Hi",
-      -- title = "Cancel capture: " k.. keymaps.capture_cancel .. ", Save capture: " .. keymaps.capture_save,
+      -- title = "Cancel capture: " k...keymaps.capture_cancel..", Save capture: "..keymaps.capture_save,
       title_pos = "center",
     }
 
     local win = vim.api.nvim_open_win(buf, true, opts)
     return { buf, win }
-  end
+  end,
 }
 return M

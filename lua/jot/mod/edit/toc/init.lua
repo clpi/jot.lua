@@ -1,9 +1,9 @@
 local jot = require("jot")
-local inits, utils, log = jot.mod, jot.utils, jot.log
+local mod, utils, log = jot.mod, jot.utils, jot.log
 
-local init = inits.create("edit.toc")
+local M = mod.create("edit.toc")
 
-init.setup = function()
+M.setup = function()
   return {
     requires = { "integration.treesitter", "ui", "cmd" },
   }
@@ -11,8 +11,8 @@ end
 
 ---Track if the next TOC open was automatic. Used to determine if we should enter the TOC or not.
 local next_open_is_auto = false
-init.load = function()
-  inits.await("cmd", function(jotcmd)
+M.load = function()
+  mod.await("cmd", function(jotcmd)
     jotcmd.add_commands_from_table({
       toc = {
         name = "toc",
@@ -25,7 +25,7 @@ init.load = function()
     })
   end)
 
-  if init.config.public.auto_toc.open then
+  if M.config.auto_toc.open then
     vim.api.nvim_create_autocmd("BufWinEnter", {
       pattern = "*.md",
       callback = function()
@@ -40,7 +40,7 @@ init.load = function()
   end
 end
 
-init.config.public = {
+M.config = {
   -- close the Table of Contents after an entry in the table is picked
   close_after_use = false,
 
@@ -64,11 +64,11 @@ init.config.public = {
 
   -- options for automatically opening/entering the ToC window
   auto_toc = {
-    -- automatically open a ToC window when entering any `norg` buffer
+    -- automatically open a ToC window when entering any `jot` buffer
     open = false,
     -- enter an automatically opened ToC window
     enter = false,
-    -- automatically close the ToC window when there is no longer an open norg buffer
+    -- automatically close the ToC window when there is no longer an open jot buffer
     close = true,
     -- will exit nvim if the ToC is the last buffer on the screen, similar to help windows
     exit_nvim = true,
@@ -76,7 +76,7 @@ init.config.public = {
 }
 
 local ui_data_of_tabpage = {}
-local data_of_norg_buf = {}
+local data_of_jot_buf = {}
 local toc_namespace
 
 local function upper_bound(array, v)
@@ -101,23 +101,29 @@ local function get_target_location_under_cursor(ui_data)
   local ui_window = vim.fn.bufwinid(ui_data.buffer)
   local curline = vim.api.nvim_win_get_cursor(ui_window)[1]
   local offset = ui_data.start_lines.offset
-  local extmark_lookup = data_of_norg_buf[ui_data.norg_buffer].extmarks[curline - offset]
+  local extmark_lookup =
+    data_of_jot_buf[ui_data.jot_buffer].extmarks[curline - offset]
 
   if not extmark_lookup then
     return
   end
 
-  return vim.api.nvim_buf_get_extmark_by_id(ui_data.norg_buffer, toc_namespace, extmark_lookup, {})
+  return vim.api.nvim_buf_get_extmark_by_id(
+    ui_data.jot_buffer,
+    toc_namespace,
+    extmark_lookup,
+    {}
+  )
 end
 
 local toc_query
 
 ---@class toc
-init.public = {
+M.public = {
   parse_toc_macro = function(buffer)
     local toc, toc_name = false, nil
 
-    local success = init.required["integration.treesitter"].execute_query(
+    local success = M.required["integration.treesitter"].execute_query(
       [[
                 (infirm_tag
                     (tag_name) @name
@@ -127,12 +133,16 @@ init.public = {
         local capture_name = query.captures[id]
 
         if
-            capture_name == "name"
-            and init.required["integration.treesitter"].get_node_text(node, buffer):lower() == "toc"
+          capture_name == "name"
+          and M.required["integration.treesitter"]
+              .get_node_text(node, buffer)
+              :lower()
+            == "toc"
         then
           toc = true
         elseif capture_name == "parameters" and toc then
-          toc_name = init.required["integration.treesitter"].get_node_text(node, buffer)
+          toc_name =
+            M.required["integration.treesitter"].get_node_text(node, buffer)
           return true
         end
       end,
@@ -150,7 +160,7 @@ init.public = {
     local prefix, title
     local qflist_data = {}
 
-    local success = init.required[".treesitter"].execute_query(
+    local success = M.required[".treesitter"].execute_query(
       [[
             (_
               .
@@ -174,9 +184,14 @@ init.public = {
 
         if prefix and title then
           local prefix_text =
-              init.required["integration.treesitter"].get_node_text(prefix, original_buffer)
-          local title_text =
-              init.required["integration.treesitter"].get_node_text(title, original_buffer)
+            M.required["integration.treesitter"].get_node_text(
+              prefix,
+              original_buffer
+            )
+          local title_text = M.required["integration.treesitter"].get_node_text(
+            title,
+            original_buffer
+          )
 
           if prefix_text:sub(1, 1) ~= "*" and prefix_text:match("^%W%W") then
             prefix_text = table.concat({ prefix_text:sub(1, 1), " " })
@@ -201,23 +216,24 @@ init.public = {
     return qflist_data
   end,
 
-  -- Update ui cursor according to norg cursor
+  -- Update ui cursor according to jot cursor
   update_cursor = function(ui_data)
-    local norg_window = vim.fn.bufwinid(ui_data.norg_buffer)
-    local norg_data = data_of_norg_buf[ui_data.norg_buffer]
+    local jot_window = vim.fn.bufwinid(ui_data.jot_buffer)
+    local jot_data = data_of_jot_buf[ui_data.jot_buffer]
     local ui_window = vim.fn.bufwinid(ui_data.buffer)
     assert(ui_window ~= -1)
 
-    local current_row_1b = vim.fn.line(".", norg_window)
-    if norg_data.last_row == current_row_1b then
+    local current_row_1b = vim.fn.line(".", jot_window)
+    if jot_data.last_row == current_row_1b then
       return
     end
-    norg_data.last_row = current_row_1b
+    jot_data.last_row = current_row_1b
 
     local start_lines = ui_data.start_lines
     assert(start_lines)
 
-    local current_toc_item_idx = upper_bound(start_lines, current_row_1b - 1) - 1
+    local current_toc_item_idx = upper_bound(start_lines, current_row_1b - 1)
+      - 1
     local current_toc_row = (
       current_toc_item_idx == 0 and math.max(1, start_lines.offset)
       or current_toc_item_idx + start_lines.offset
@@ -225,9 +241,9 @@ init.public = {
     vim.api.nvim_win_set_cursor(ui_window, { current_toc_row, 0 })
   end,
 
-  update_toc = function(toc_title, ui_data, norg_buffer)
+  update_toc = function(toc_title, ui_data, jot_buffer)
     local ui_buffer = ui_data.buffer
-    ui_data.norg_buffer = norg_buffer
+    ui_data.jot_buffer = jot_buffer
 
     if not vim.api.nvim_buf_is_valid(ui_buffer) then
       log.error("update_toc called with invalid ui buffer")
@@ -235,25 +251,25 @@ init.public = {
     end
 
     vim.bo[ui_buffer].modifiable = true
-    vim.api.nvim_buf_clear_namespace(norg_buffer, toc_namespace, 0, -1)
+    vim.api.nvim_buf_clear_namespace(jot_buffer, toc_namespace, 0, -1)
 
     table.insert(toc_title, "")
     vim.api.nvim_buf_set_lines(ui_buffer, 0, -1, true, toc_title)
 
-    local norg_data = {}
-    data_of_norg_buf[norg_buffer] = norg_data
+    local jot_data = {}
+    data_of_jot_buf[jot_buffer] = jot_data
 
     local extmarks = {}
-    norg_data.extmarks = extmarks
+    jot_data.extmarks = extmarks
 
     local offset = vim.api.nvim_buf_line_count(ui_buffer)
     local start_lines = { offset = offset }
     ui_data.start_lines = start_lines
 
     toc_query = toc_query
-        or utils.ts_parse_query(
-          "norg",
-          [[
+      or utils.ts_parse_query(
+        "jot",
+        [[
         (
             [(heading1_prefix)(heading2_prefix)(heading3_prefix)(heading4_prefix)(heading5_prefix)(heading6_prefix)]@prefix
             .
@@ -261,16 +277,17 @@ init.public = {
             .
             title: (paragraph_segment)@title
         )]]
-        )
+      )
 
-    local norg_root = init.required["integration.treesitter"].get_document_root(norg_buffer)
-    if not norg_root then
+    local jot_root =
+      M.required["integration.treesitter"].get_document_root(jot_buffer)
+    if not jot_root then
       return
     end
 
     local current_capture
     local heading_nodes = {}
-    for id, node in toc_query:iter_captures(norg_root, norg_buffer) do
+    for id, node in toc_query:iter_captures(jot_root, jot_buffer) do
       local type = toc_query.captures[id]
       if type == "prefix" then
         current_capture = {}
@@ -281,7 +298,9 @@ init.public = {
 
     local heading_texts = {}
     for _, capture in ipairs(heading_nodes) do
-      if capture.modifier and capture.modifier:type() == "todo_item_cancelled" then
+      if
+        capture.modifier and capture.modifier:type() == "todo_item_cancelled"
+      then
         goto continue
       end
 
@@ -291,13 +310,26 @@ init.public = {
       table.insert(start_lines, row_start_0b)
       table.insert(
         extmarks,
-        vim.api.nvim_buf_set_extmark(norg_buffer, toc_namespace, row_start_0b, col_start_0b, {})
+        vim.api.nvim_buf_set_extmark(
+          jot_buffer,
+          toc_namespace,
+          row_start_0b,
+          col_start_0b,
+          {}
+        )
       )
 
       for _, line in
-      ipairs(
-        vim.api.nvim_buf_get_text(norg_buffer, row_start_0b, col_start_0b, row_end_0bin, col_end_0bex, {})
-      )
+        ipairs(
+          vim.api.nvim_buf_get_text(
+            jot_buffer,
+            row_start_0b,
+            col_start_0b,
+            row_end_0bin,
+            col_end_0bex,
+            {}
+          )
+        )
       do
         table.insert(heading_texts, line)
       end
@@ -316,47 +348,55 @@ init.public = {
           return
         end
 
-        local norg_window = vim.fn.bufwinid(norg_buffer)
-        if norg_window == -1 then
+        local jot_window = vim.fn.bufwinid(jot_buffer)
+        if jot_window == -1 then
           local toc_window = vim.fn.bufwinid(ui_data.buffer)
           local buf_width = nil
           if toc_window ~= -1 then
-            buf_width = vim.api.nvim_win_get_width(toc_window) - init.private.get_toc_width(ui_data)
+            buf_width = vim.api.nvim_win_get_width(toc_window)
+              - M.public.data.get_toc_width(ui_data)
             if buf_width < 1 then
               buf_width = nil
             end
           end
-          norg_window =
-              vim.api.nvim_open_win(norg_buffer, true, { win = 0, vertical = true, width = buf_width })
+          jot_window = vim.api.nvim_open_win(
+            jot_buffer,
+            true,
+            { win = 0, vertical = true, width = buf_width }
+          )
         else
-          vim.api.nvim_set_current_win(norg_window)
-          vim.api.nvim_set_current_buf(norg_buffer)
+          vim.api.nvim_set_current_win(jot_window)
+          vim.api.nvim_set_current_buf(jot_buffer)
         end
-        vim.api.nvim_win_set_cursor(norg_window, { location[1] + 1, location[2] })
+        vim.api.nvim_win_set_cursor(
+          jot_window,
+          { location[1] + 1, location[2] }
+        )
 
-        if init.config.public.close_after_use then
+        if M.config.close_after_use then
           vim.api.nvim_buf_delete(ui_buffer, { force = true })
         end
       end,
     })
 
-    if init.config.public.sync_cursorline then
-      init.public.update_cursor(ui_data)
+    if M.config.sync_cursorline then
+      M.public.update_cursor(ui_data)
     end
   end,
 }
 
-init.private = {
+M.public.data = {
   ---get the width of the ToC window
   ---@param ui_data table
   ---@return number
   get_toc_width = function(ui_data)
-    if type(init.config.public.fixed_width) == "number" then
-      return init.config.public.fixed_width
+    if type(M.config.fixed_width) == "number" then
+      return M.config.fixed_width
     end
-    local max_virtcol_1bex = init.private.get_max_virtcol(ui_data.window)
+    local max_virtcol_1bex = M.public.data.get_max_virtcol(ui_data.window)
     local current_winwidth = vim.api.nvim_win_get_width(ui_data.window)
-    local new_winwidth = math.min(current_winwidth, init.config.public.max_width, max_virtcol_1bex - 1)
+    local new_winwidth =
+      math.min(current_winwidth, M.config.max_width, max_virtcol_1bex - 1)
     return new_winwidth + 1
   end,
 
@@ -370,8 +410,8 @@ init.private = {
   end,
 }
 
-local function get_norg_ui(norg_buffer)
-  local tabpage = vim.api.nvim_win_get_tabpage(vim.fn.bufwinid(norg_buffer))
+local function get_jot_ui(jot_buffer)
+  local tabpage = vim.api.nvim_win_get_tabpage(vim.fn.bufwinid(jot_buffer))
   return ui_data_of_tabpage[tabpage]
 end
 
@@ -384,13 +424,13 @@ local function unlisten_if_closed(listener)
       return true
     end
 
-    local norg_buffer = ev.buf
-    local ui_data = get_norg_ui(norg_buffer)
+    local jot_buffer = ev.buf
+    local ui_data = get_jot_ui(jot_buffer)
     if not ui_data or vim.fn.bufwinid(ui_data.buffer) == -1 then
       return
     end
 
-    return listener(norg_buffer, ui_data)
+    return listener(jot_buffer, ui_data)
   end
 end
 
@@ -404,10 +444,10 @@ local function create_ui(tabpage, split_dir, enter)
   assert(tabpage == vim.api.nvim_get_current_tabpage())
 
   toc_namespace = toc_namespace or vim.api.nvim_create_namespace("jot/toc")
-  local ui_buffer, ui_window = init.required["core.ui"].create_vsplit(
+  local ui_buffer, ui_window = M.required["core.ui"].create_vsplit(
     ("toc-%d"):format(tabpage),
     enter,
-    { ft = "norg" },
+    { ft = "jot" },
     { split = split_dir, win = 0, style = "minimal" }
   )
 
@@ -419,7 +459,7 @@ local function create_ui(tabpage, split_dir, enter)
   ui_wo.foldlevel = 99
   ui_wo.winfixbuf = true
 
-  if init.config.public.sync_cursorline then
+  if M.config.sync_cursorline then
     ui_wo.cursorline = true
   end
 
@@ -436,26 +476,32 @@ end
 
 --- should we enter the ToC window?
 local function enter_toc_win()
-  local do_enter = init.config.public.enter
+  local do_enter = M.config.enter
   if next_open_is_auto then
-    do_enter = init.config.public.auto_toc.enter
+    do_enter = M.config.auto_toc.enter
   end
   return do_enter
 end
 
-init.on_event = function(event)
-  if event.split_type[2] ~= init.name then
+M.on_event = function(event)
+  if event.split_type[2] ~= M.name then
     return
   end
 
-  local toc_title = vim.split(init.public.parse_toc_macro(event.buffer) or "Table of Contents", "\n")
-  local norg_buffer = event.buffer
+  local toc_title = vim.split(
+    M.public.parse_toc_macro(event.buffer) or "Table of Contents",
+    "\n"
+  )
+  local jot_buffer = event.buffer
 
   if event.content and event.content[1] == "qflist" then
-    local qflist = init.public.generate_qflist(event.buffer)
+    local qflist = M.public.generate_qflist(event.buffer)
 
     if not qflist then
-      utils.notify("An error occurred and the qflist could not be generated", vim.log.levels.WARN)
+      utils.notify(
+        "An error occurred and the qflist could not be generated",
+        vim.log.levels.WARN
+      )
       return
     end
 
@@ -466,12 +512,12 @@ init.on_event = function(event)
     return
   end
 
-  local tabpage = vim.api.nvim_win_get_tabpage(vim.fn.bufwinid(norg_buffer))
+  local tabpage = vim.api.nvim_win_get_tabpage(vim.fn.bufwinid(jot_buffer))
   if ui_data_of_tabpage[tabpage] then
-    if norg_buffer == ui_data_of_tabpage[tabpage].buffer then
+    if jot_buffer == ui_data_of_tabpage[tabpage].buffer then
       return
     end
-    init.public.update_toc(toc_title, ui_data_of_tabpage[tabpage], norg_buffer)
+    M.public.update_toc(toc_title, ui_data_of_tabpage[tabpage], jot_buffer)
 
     if enter_toc_win() then
       vim.api.nvim_set_current_win(ui_data_of_tabpage[tabpage].window)
@@ -479,13 +525,14 @@ init.on_event = function(event)
     return
   end
 
-  local ui_data = create_ui(tabpage, event.content[1] or "left", enter_toc_win())
+  local ui_data =
+    create_ui(tabpage, event.content[1] or "left", enter_toc_win())
   next_open_is_auto = false
 
-  init.public.update_toc(toc_title, ui_data_of_tabpage[tabpage], norg_buffer)
+  M.public.update_toc(toc_title, ui_data_of_tabpage[tabpage], jot_buffer)
 
-  if init.config.public.fit_width then
-    vim.api.nvim_win_set_width(ui_data.window, init.private.get_toc_width(ui_data))
+  if M.config.fit_width then
+    vim.api.nvim_win_set_width(ui_data.window, M.public.data.get_toc_width(ui_data))
   end
 
   local close_buffer_callback = function()
@@ -505,28 +552,30 @@ init.on_event = function(event)
   })
 
   vim.api.nvim_create_autocmd("BufWritePost", {
-    pattern = "*.norg",
+    pattern = "*.jot",
     callback = unlisten_if_closed(function(buf, ui)
-      toc_title = vim.split(init.public.parse_toc_macro(buf) or "Table of Contents", "\n")
-      data_of_norg_buf[buf].last_row = nil -- invalidate cursor cache
-      init.public.update_toc(toc_title, ui, buf)
+      toc_title =
+        vim.split(M.public.parse_toc_macro(buf) or "Table of Contents", "\n")
+      data_of_jot_buf[buf].last_row = nil -- invalidate cursor cache
+      M.public.update_toc(toc_title, ui, buf)
     end),
   })
 
   vim.api.nvim_create_autocmd("BufEnter", {
-    pattern = "*.norg",
+    pattern = "*.jot",
     callback = unlisten_if_closed(function(buf, ui)
-      if buf == ui.buffer or buf == ui.norg_buffer then
+      if buf == ui.buffer or buf == ui.jot_buffer then
         return
       end
 
-      toc_title = vim.split(init.public.parse_toc_macro(buf) or "Table of Contents", "\n")
-      init.public.update_toc(toc_title, ui, buf)
+      toc_title =
+        vim.split(M.public.parse_toc_macro(buf) or "Table of Contents", "\n")
+      M.public.update_toc(toc_title, ui, buf)
     end),
   })
 
   -- Sync cursor: ToC -> content
-  if init.config.public.sync_cursorline then
+  if M.config.sync_cursorline then
     -- Ignore the first (fake) CursorMoved coming together with BufEnter of the ToC buffer
     vim.api.nvim_create_autocmd("BufEnter", {
       buffer = ui_data.buffer,
@@ -540,7 +589,7 @@ init.on_event = function(event)
       callback = function(ev)
         assert(ev.buf == ui_data.buffer)
 
-        if vim.fn.bufwinid(ui_data.norg_buffer) == -1 then
+        if vim.fn.bufwinid(ui_data.jot_buffer) == -1 then
           return
         end
 
@@ -548,9 +597,12 @@ init.on_event = function(event)
         if ui_data.cursor_start_moving then
           local location = get_target_location_under_cursor(ui_data)
           if location then
-            local norg_window = vim.fn.bufwinid(ui_data.norg_buffer)
-            vim.api.nvim_win_set_cursor(norg_window, { location[1] + 1, location[2] })
-            vim.api.nvim_buf_call(ui_data.norg_buffer, function()
+            local jot_window = vim.fn.bufwinid(ui_data.jot_buffer)
+            vim.api.nvim_win_set_cursor(
+              jot_window,
+              { location[1] + 1, location[2] }
+            )
+            vim.api.nvim_buf_call(ui_data.jot_buffer, function()
               vim.cmd("normal! zz")
             end)
           end
@@ -561,42 +613,41 @@ init.on_event = function(event)
 
     -- Sync cursor: content -> ToC
     vim.api.nvim_create_autocmd({ "CursorMoved", "CursorMovedI" }, {
-      pattern = "*.norg",
+      pattern = "*.jot",
       callback = unlisten_if_closed(function(buf, ui)
-        if buf ~= ui.norg_buffer then
+        if buf ~= ui.jot_buffer then
           return
         end
 
-        if not data_of_norg_buf[buf] then
+        if not data_of_jot_buf[buf] then
           -- toc not yet created because BufEnter is not yet triggered
           return
         end
 
-        init.public.update_cursor(ui)
+        M.public.update_cursor(ui)
       end),
     })
 
     -- When leaving the content buffer, add its last cursor position to jump list
     vim.api.nvim_create_autocmd("BufLeave", {
-      pattern = "*.norg",
-      callback = unlisten_if_closed(function(_norg_buffer, _ui_data)
+      pattern = "*.jot",
+      callback = unlisten_if_closed(function(_jot_buffer, _ui_data)
         vim.cmd("normal! m'")
       end),
     })
   end
 
-  if init.config.public.auto_toc.exit_nvim then
+  if M.config.auto_toc.exit_nvim then
     vim.api.nvim_create_autocmd("WinEnter", {
       buffer = ui_data.buffer,
       callback = unlisten_if_closed(function(_, _)
         vim.schedule(function()
-          -- count the number of 'real' (non-floating) windows. This avoids noice popups
-          -- and nvim notify popups causing nvim to stay open
-          local real_windows = vim.iter(vim.api.nvim_list_wins())
-              :filter(function(win)
-                return vim.api.nvim_win_get_config(win).relative == ""
-              end)
-              :totable()
+          local real_windows = vim
+            .iter(vim.api.nvim_list_wins())
+            :filter(function(win)
+              return vim.api.nvim_win_get_config(win).relative == ""
+            end)
+            :totable()
           if #real_windows == 1 then
             vim.schedule(vim.cmd.q)
           end
@@ -605,9 +656,9 @@ init.on_event = function(event)
     })
   end
 
-  if init.config.public.auto_toc.close then
+  if M.config.auto_toc.close then
     vim.api.nvim_create_autocmd("BufWinLeave", {
-      pattern = "*.norg",
+      pattern = "*.jot",
       callback = unlisten_if_closed(function(_buf, ui)
         vim.schedule(function()
           if vim.fn.winnr("$") > 1 then
@@ -623,10 +674,10 @@ init.on_event = function(event)
   end
 end
 
-init.events.subscribed = {
+M.events.subscribed = {
   ["core.jotcmd"] = {
-    [init.name] = true,
+    [M.name] = true,
   },
 }
 
-return init
+return M

@@ -34,12 +34,20 @@ M.public = {
     notify_reply_callback()
   end,
 
-
   ---@type lsp.SignatureHelpOptions
   opts = {
     workDoneProgress = true,
-    retriggerCharacters = { "(", "," },
-    triggerCharacters = { "(", "," },
+    triggerCharacters = {
+      "#",
+      "@",
+      "_",
+      "-",
+    },
+    retriggerCharacters = {
+      ".",
+      "[",
+      "(",
+    },
   },
   ---@type lsp.SignatureHelpClientCapabilities
   capabilities = {

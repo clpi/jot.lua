@@ -13,7 +13,7 @@ local mod = jot.mod
 local init = mod.create("cmd.rename")
 
 init.setup = function()
-  return { success = true, requires = { "cmd" } }
+  return { loaded = true, requires = { "cmd" } }
 end
 
 init.public = {

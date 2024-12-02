@@ -1,7 +1,6 @@
 {
   "$schema": "https://raw.githubusercontent.com/sumneko/vscode-lua/master/setting/schema.json",
   "runtime.version": "LuaJIT",
-  ,
   "runtime.path": [
     "?.lua",
     "?/init.lua",
@@ -21,6 +20,18 @@
   "format.enable": true,
   "completion.enable": true,
   "codeLens.enable": true,
+  "semantic": {
+    "enable": true
+  },
+  "codeLens": {
+    "enable": true
+  },
+  "completion": {
+    "enable": true
+  },
+  "hover": {
+    "enable": true
+  },
   "workspace.maxPreload": 1600,
   "workspace.preloadFileSize": 1000,
   "diagnostics.unusedLocalExclude": [

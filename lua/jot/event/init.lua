@@ -114,7 +114,7 @@ function C.define_event(init, name)
   }
 
   if name then
-    new_event.type = init.name .. ".events." .. name
+    new_event.type = init.name..".events."..name
   end
 
   new_event.referrer = init.name
@@ -183,7 +183,7 @@ function C.broadcast_event(event, callback)
   end
 
   -- Let the callback handler know of the event
-  -- log.info(event.content.name .. event.type)
+  -- log.info(event.content.name..event.type)
   cb.handle(event)
 
   -- Loop through all the mod

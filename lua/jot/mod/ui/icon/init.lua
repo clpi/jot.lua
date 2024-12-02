@@ -27,7 +27,14 @@ local function in_range(k, l, r_ex)
   return l <= k and k < r_ex
 end
 
-local function is_concealing_on_row_range(mode, conceallevel, concealcursor, current_row_0b, row_start_0b, row_end_0bex)
+local function is_concealing_on_row_range(
+    mode,
+    conceallevel,
+    concealcursor,
+    current_row_0b,
+    row_start_0b,
+    row_end_0bex
+)
   if conceallevel < 1 then
     return false
   elseif not in_range(current_row_0b, row_start_0b, row_end_0bex) then
@@ -47,7 +54,7 @@ local function get_node_position_and_text_length(bufid, node)
   local row_start_0b, col_start_0b = node:range()
 
   -- FIXME parser: multi_definition_suffix, weak_paragraph_delimiter should not span across lines
-  -- assert(row_start_0b == row_end_0bin, row_start_0b .. "," .. row_end_0bin)
+  -- assert(row_start_0b == row_end_0bin, row_start_0b..","..row_end_0bin)
   local text = vim.treesitter.get_node_text(node, bufid)
   local past_end_offset_1b = text:find("%s") or text:len() + 1
   return row_start_0b, col_start_0b, (past_end_offset_1b - 1)
@@ -55,12 +62,14 @@ end
 
 local function get_header_prefix_node(header_node)
   local first_child = header_node:child(0)
-  assert(first_child:type() == header_node:type() .. "_prefix")
+  assert(first_child:type() == header_node:type().."_prefix")
   return first_child
 end
 
 local function get_line_length(bufid, row_0b)
-  return vim.api.nvim_strwidth(vim.api.nvim_buf_get_lines(bufid, row_0b, row_0b + 1, true)[1])
+  return vim.api.nvim_strwidth(
+    vim.api.nvim_buf_get_lines(bufid, row_0b, row_0b + 1, true)[1]
+  )
 end
 
 --- end utils
@@ -73,14 +82,14 @@ local module = Mod.create("ui.icon", {
 
 module.setup = function()
   return {
-    success = true,
+    loaded = true,
     requires = {
       "integration.treesitter",
     },
   }
 end
 
-module.private = {
+module.public.data = {
   ns_icon = vim.api.nvim_create_namespace("jot/icon"),
   ns_prettify_flag = vim.api.nvim_create_namespace("jot/icon.prettify-flag"),
   rerendering_scheduled_bufids = {},
@@ -89,7 +98,7 @@ module.private = {
 }
 
 local function set_mark(bufid, row_0b, col_0b, text, highlight, ext_opts)
-  local ns_icon = module.private.ns_icon
+  local ns_icon = module.public.data.ns_icon
   local opt = {
     virt_text = { { text, highlight } },
     virt_text_pos = "overlay",
@@ -136,12 +145,13 @@ local function get_ordered_index(bufid, prefix_node)
   local _, _, level = get_node_position_and_text_length(bufid, prefix_node)
   local header_node = prefix_node:parent()
   -- TODO: fix parser: `(ERROR)` on standalone prefix not followed by text, like `- `
-  -- assert(header_node:type() .. "_prefix" == prefix_node:type())
+  -- assert(header_node:type().."_prefix" == prefix_node:type())
   local sibling = header_node:prev_named_sibling()
   local count = 1
 
   while sibling and (sibling:type() == header_node:type()) do
-    local _, _, sibling_level = get_node_position_and_text_length(bufid, get_header_prefix_node(sibling))
+    local _, _, sibling_level =
+        get_node_position_and_text_length(bufid, get_header_prefix_node(sibling))
     if sibling_level < level then
       break
     elseif sibling_level == level then
@@ -405,11 +415,14 @@ local function format_ordered_icon(pattern, index)
   end
 
   for char_one, number_table in pairs(ordered_icon_table) do
-    local l, r = pattern:find(char_one:find("%w") and "%f[%w]" .. char_one .. "%f[%W]" or char_one)
+    local l, r = pattern:find(
+      char_one:find("%w") and "%f[%w]"..char_one.."%f[%W]" or char_one
+    )
     if l then
       gen = function(index_)
-        local icon = type(number_table) == "function" and number_table(index_) or number_table[index_]
-        return icon and pattern:sub(1, l - 1) .. icon .. pattern:sub(r + 1)
+        local icon = type(number_table) == "function" and number_table(index_)
+            or number_table[index_]
+        return icon and pattern:sub(1, l - 1)..icon..pattern:sub(r + 1)
       end
       break
     end
@@ -443,7 +456,7 @@ module.public = {
         return
       end
       local row_0b, col_0b, len = get_node_position_and_text_length(bufid, node)
-      local text = (" "):rep(len - 1) .. config.icon
+      local text = (" "):rep(len - 1)..config.icon
       set_mark(bufid, row_0b, col_0b, text, config.highlight)
     end,
 
@@ -453,7 +466,8 @@ module.public = {
           return
         end
 
-        local row_0b, col_0b, len = get_node_position_and_text_length(bufid, node)
+        local row_0b, col_0b, len =
+            get_node_position_and_text_length(bufid, node)
         local icon_pattern = table_get_default_last(config.icons, len)
         if not icon_pattern then
           return
@@ -465,15 +479,30 @@ module.public = {
           return
         end
 
-        local text = (" "):rep(len - 1) .. icon
+        local text = (" "):rep(len - 1)..icon
 
-        local _, first_unicode_end = text:find("[%z\1-\127\194-\244][\128-\191]*", len)
-        local highlight = config.highlights and table_get_default_last(config.highlights, len)
-        set_mark(bufid, row_0b, col_0b, text:sub(1, first_unicode_end), highlight)
+        local _, first_unicode_end =
+            text:find("[%z\1-\127\194-\244][\128-\191]*", len)
+        local highlight = config.highlights
+            and table_get_default_last(config.highlights, len)
+        set_mark(
+          bufid,
+          row_0b,
+          col_0b,
+          text:sub(1, first_unicode_end),
+          highlight
+        )
         if vim.fn.strcharlen(text) > len then
-          set_mark(bufid, row_0b, col_0b + len, text:sub(first_unicode_end + 1), highlight, {
-            virt_text_pos = "inline",
-          })
+          set_mark(
+            bufid,
+            row_0b,
+            col_0b + len,
+            text:sub(first_unicode_end + 1),
+            highlight,
+            {
+              virt_text_pos = "inline",
+            }
+          )
         end
       end
     end,
@@ -490,7 +519,13 @@ module.public = {
         local superscripted_title = table.concat(t)
         local row_start_0b, col_start_0b, _, _ = link_title_node:range()
         local highlight = config.title_highlight
-        set_mark(bufid, row_start_0b, col_start_0b, superscripted_title, highlight)
+        set_mark(
+          bufid,
+          row_start_0b,
+          col_start_0b,
+          superscripted_title,
+          highlight
+        )
       end
     end,
 
@@ -502,7 +537,8 @@ module.public = {
 
       local prefix = node:named_child(0)
 
-      local row_0b, col_0b, len = get_node_position_and_text_length(bufid, prefix)
+      local row_0b, col_0b, len =
+          get_node_position_and_text_length(bufid, prefix)
 
       local last_icon, last_highlight
 
@@ -526,7 +562,13 @@ module.public = {
                 goto continue
               end
               last_highlight = config.highlights[col] or last_highlight
-              set_mark(bufid, line, col_0b + (col - 1), last_icon, last_highlight)
+              set_mark(
+                bufid,
+                line,
+                col_0b + (col - 1),
+                last_icon,
+                last_highlight
+              )
               ::continue::
             end
           end
@@ -547,10 +589,12 @@ module.public = {
       if not config.icon then
         return
       end
-      local row_start_0b, col_start_0b, row_end_0bin, col_end_0bex = node:range()
+      local row_start_0b, col_start_0b, row_end_0bin, col_end_0bex =
+          node:range()
       for i = row_start_0b, row_end_0bin do
         local l = i == row_start_0b and col_start_0b + 1 or 0
-        local r_ex = i == row_end_0bin and col_end_0bex - 1 or get_line_length(bufid, i)
+        local r_ex = i == row_end_0bin and col_end_0bex - 1
+            or get_line_length(bufid, i)
         set_mark(bufid, i, l, config.icon:rep(r_ex - l), config.highlight)
       end
     end,
@@ -563,10 +607,20 @@ module.public = {
       local row_start_0b, col_start_0b, _, col_end_0bex = node:range()
       local render_col_start_0b = config.left == "here" and col_start_0b or 0
       local opt_textwidth = vim.bo[bufid].textwidth
-      local render_col_end_0bex = config.right == "textwidth" and (opt_textwidth > 0 and opt_textwidth or 79)
+      local render_col_end_0bex = config.right == "textwidth"
+          and (opt_textwidth > 0 and opt_textwidth or 79)
           or vim.api.nvim_win_get_width(assert(vim.fn.bufwinid(bufid)))
-      local len = math.max(col_end_0bex - col_start_0b, render_col_end_0bex - render_col_start_0b)
-      set_mark(bufid, row_start_0b, render_col_start_0b, config.icon:rep(len), config.highlight)
+      local len = math.max(
+        col_end_0bex - col_start_0b,
+        render_col_end_0bex - render_col_start_0b
+      )
+      set_mark(
+        bufid,
+        row_start_0b,
+        render_col_start_0b,
+        config.icon:rep(len),
+        config.highlight
+      )
     end,
 
     render_code_block = function(config, bufid, node)
@@ -583,7 +637,7 @@ module.public = {
         for _, row_0b in ipairs({ row_start_0b, row_end_0bin }) do
           vim.api.nvim_buf_set_extmark(
             bufid,
-            module.private.ns_icon,
+            module.public.data.ns_icon,
             row_0b,
             0,
             { end_col = get_line_length(bufid, row_0b), conceal = "" }
@@ -610,36 +664,58 @@ module.public = {
 
       for row_0b = row_start_0b, row_end_0bin do
         local len = line_lengths[row_0b - row_start_0b + 1]
-        local mark_col_start_0b = math.max(0, col_start_0b - config.padding.left)
+        local mark_col_start_0b =
+            math.max(0, col_start_0b - config.padding.left)
         local mark_col_end_0bex = max_len + config.padding.right
         local priority = 101
         if len >= mark_col_start_0b then
-          vim.api.nvim_buf_set_extmark(bufid, module.private.ns_icon, row_0b, mark_col_start_0b, {
-            end_row = row_0b + 1,
-            hl_eol = to_eol,
-            hl_group = config.highlight,
-            hl_mode = "blend",
-            virt_text = not to_eol and { { (" "):rep(mark_col_end_0bex - len), config.highlight } } or nil,
-            virt_text_pos = "overlay",
-            virt_text_win_col = len,
-            spell = config.spell_check,
-            priority = priority,
-          })
+          vim.api.nvim_buf_set_extmark(
+            bufid,
+            module.public.data.ns_icon,
+            row_0b,
+            mark_col_start_0b,
+            {
+              end_row = row_0b + 1,
+              hl_eol = to_eol,
+              hl_group = config.highlight,
+              hl_mode = "blend",
+              virt_text = not to_eol
+                  and {
+                    { (" "):rep(mark_col_end_0bex - len), config.highlight },
+                  }
+                  or nil,
+              virt_text_pos = "overlay",
+              virt_text_win_col = len,
+              spell = config.spell_check,
+              priority = priority,
+            }
+          )
         else
-          vim.api.nvim_buf_set_extmark(bufid, module.private.ns_icon, row_0b, len, {
-            end_row = row_0b + 1,
-            hl_eol = to_eol,
-            hl_group = config.highlight,
-            hl_mode = "blend",
-            virt_text = {
-              { (" "):rep(mark_col_start_0b - len) },
-              { not to_eol and (" "):rep(mark_col_end_0bex - mark_col_start_0b) or "", config.highlight },
-            },
-            virt_text_pos = "overlay",
-            virt_text_win_col = len,
-            spell = config.spell_check,
-            priority = priority,
-          })
+          vim.api.nvim_buf_set_extmark(
+            bufid,
+            module.public.data.ns_icon,
+            row_0b,
+            len,
+            {
+              end_row = row_0b + 1,
+              hl_eol = to_eol,
+              hl_group = config.highlight,
+              hl_mode = "blend",
+              virt_text = {
+                { (" "):rep(mark_col_start_0b - len) },
+                {
+                  not to_eol
+                  and (" "):rep(mark_col_end_0bex - mark_col_start_0b)
+                  or "",
+                  config.highlight,
+                },
+              },
+              virt_text_pos = "overlay",
+              virt_text_win_col = len,
+              spell = config.spell_check,
+              priority = priority,
+            }
+          )
         end
       end
     end,
@@ -656,13 +732,18 @@ module.public = {
           end_row = end_row - 1
         end
 
-        vim.api.nvim_buf_clear_namespace(bufid, module.private.ns_icon, (content:start()), end_row + 1)
+        vim.api.nvim_buf_clear_namespace(
+          bufid,
+          module.public.data.ns_icon,
+          (content:start()),
+          end_row + 1
+        )
       end
     end,
   },
 }
 
-module.config.public = {
+module.config = {
   -- Which icon preset to use.
   --
   -- The currently available icon presets are:
@@ -815,7 +896,10 @@ module.config.public = {
     definition = {
       single = {
         icon = "≡",
-        nodes = { "single_definition_prefix", concealed = { "link_target_definition" } },
+        nodes = {
+          "single_definition_prefix",
+          concealed = { "link_target_definition" },
+        },
         render = module.public.icon_renderers.on_left,
       },
       multi_prefix = {
@@ -837,7 +921,10 @@ module.config.public = {
         -- concealed to superscripts.
         numeric_superscript = true,
         title_highlight = "@jot.footnotes.title",
-        nodes = { "single_footnote_prefix", concealed = { "link_target_footnote" } },
+        nodes = {
+          "single_footnote_prefix",
+          concealed = { "link_target_footnote" },
+        },
         render = module.public.icon_renderers.on_left,
         render_concealed = module.public.icon_renderers.footnote_concealed,
       },
@@ -952,14 +1039,17 @@ local function remove_extmarks(bufid, pos_start_0b_0b, pos_end_0bin_0bex)
     return
   end
 
-  local ns_icon = module.private.ns_icon
+  local ns_icon = module.public.data.ns_icon
   for _, result in
   ipairs(
     vim.api.nvim_buf_get_extmarks(
       bufid,
       ns_icon,
       { pos_start_0b_0b.x, pos_start_0b_0b.y },
-      { pos_end_0bin_0bex.x - ((pos_end_0bin_0bex.y == 0) and 1 or 0), pos_end_0bin_0bex.y - 1 },
+      {
+        pos_end_0bin_0bex.x - ((pos_end_0bin_0bex.y == 0) and 1 or 0),
+        pos_end_0bin_0bex.y - 1,
+      },
       {}
     )
   )
@@ -984,11 +1074,20 @@ local function is_inside_example(_)
   return false
 end
 
-local function should_skip_prettify(mode, current_row_0b, node, config, row_start_0b, row_end_0bex)
+local function should_skip_prettify(
+    mode,
+    current_row_0b,
+    node,
+    config,
+    row_start_0b,
+    row_end_0bex
+)
   local result
   if config.insert_enabled then
     result = false
-  elseif (mode == "i") and in_range(current_row_0b, row_start_0b, row_end_0bex) then
+  elseif
+      (mode == "i") and in_range(current_row_0b, row_start_0b, row_end_0bex)
+  then
     result = true
   elseif is_inside_example(node) then
     result = true
@@ -998,10 +1097,18 @@ local function should_skip_prettify(mode, current_row_0b, node, config, row_star
   return result
 end
 
-local function query_get_nodes(query, document_root, bufid, row_start_0b, row_end_0bex)
+local function query_get_nodes(
+    query,
+    document_root,
+    bufid,
+    row_start_0b,
+    row_end_0bex
+)
   local result = {}
   local concealed_node_ids = {}
-  for id, node in query:iter_captures(document_root, bufid, row_start_0b, row_end_0bex) do
+  for id, node in
+  query:iter_captures(document_root, bufid, row_start_0b, row_end_0bex)
+  do
     if node:missing() then
       goto continue
     end
@@ -1029,7 +1136,7 @@ local function check_max(xy, x_new, y_new)
 end
 
 local function add_prettify_flag_line(bufid, row)
-  local ns_prettify_flag = module.private.ns_prettify_flag
+  local ns_prettify_flag = module.public.data.ns_prettify_flag
   vim.api.nvim_buf_set_extmark(bufid, ns_prettify_flag, row, 0, {})
 end
 
@@ -1041,14 +1148,19 @@ end
 
 local function remove_prettify_flag_on_line(bufid, row_0b)
   -- TODO: optimize
-  local ns_prettify_flag = module.private.ns_prettify_flag
+  local ns_prettify_flag = module.public.data.ns_prettify_flag
   vim.api.nvim_buf_clear_namespace(bufid, ns_prettify_flag, row_0b, row_0b + 1)
 end
 
 local function remove_prettify_flag_range(bufid, row_start_0b, row_end_0bex)
   -- TODO: optimize
-  local ns_prettify_flag = module.private.ns_prettify_flag
-  vim.api.nvim_buf_clear_namespace(bufid, ns_prettify_flag, row_start_0b, row_end_0bex)
+  local ns_prettify_flag = module.public.data.ns_prettify_flag
+  vim.api.nvim_buf_clear_namespace(
+    bufid,
+    ns_prettify_flag,
+    row_start_0b,
+    row_end_0bex
+  )
 end
 
 local function remove_prettify_flag_all(bufid)
@@ -1062,8 +1174,8 @@ local function get_visible_line_range(winid)
 end
 
 local function get_parsed_query_lazy()
-  if module.private.prettify_query then
-    return module.private.prettify_query
+  if module.public.data.prettify_query then
+    return module.public.data.prettify_query
   end
 
   local keys = { "config", "icons" }
@@ -1076,7 +1188,12 @@ local function get_parsed_query_lazy()
       return
     end
     if type(config) ~= "table" then
-      log.warn(("unsupported icon config: %s = %s"):format(table.concat(keys, "."), config))
+      log.warn(
+        ("unsupported icon config: %s = %s"):format(
+          table.concat(keys, "."),
+          config
+        )
+      )
       return
     end
     local key_pos = #keys + 1
@@ -1090,7 +1207,7 @@ local function get_parsed_query_lazy()
   local config_by_node_name = {}
   local queries = { "[" }
 
-  traverse_config(module.config.public.icons, function(config)
+  traverse_config(module.config.icons, function(config)
     for _, node_type in ipairs(config.nodes) do
       table.insert(queries, ("(%s)@icon"):format(node_type))
       config_by_node_name[node_type] = config
@@ -1103,10 +1220,11 @@ local function get_parsed_query_lazy()
 
   table.insert(queries, "]")
   local query_combined = table.concat(queries, " ")
-  module.private.prettify_query = utils.ts_parse_query("markdown", query_combined)
-  assert(module.private.prettify_query)
-  module.private.config_by_node_name = config_by_node_name
-  return module.private.prettify_query
+  module.public.data.prettify_query =
+      utils.ts_parse_query("markdown", query_combined)
+  assert(module.public.data.prettify_query)
+  module.public.data.config_by_node_name = config_by_node_name
+  return module.public.data.prettify_query
 end
 
 local function prettify_range(bufid, row_start_0b, row_end_0bex)
@@ -1118,8 +1236,13 @@ local function prettify_range(bufid, row_start_0b, row_end_0bex)
   local document_root = treesitter_module.get_document_root(bufid)
   assert(document_root)
 
-  local nodes, concealed_node_ids =
-      query_get_nodes(get_parsed_query_lazy(), document_root, bufid, row_start_0b, row_end_0bex)
+  local nodes, concealed_node_ids = query_get_nodes(
+    get_parsed_query_lazy(),
+    document_root,
+    bufid,
+    row_start_0b,
+    row_end_0bex
+  )
 
   local winid = vim.fn.bufwinid(bufid)
   assert(winid > 0)
@@ -1131,15 +1254,17 @@ local function prettify_range(bufid, row_start_0b, row_end_0bex)
   assert(document_root)
 
   for _, node in ipairs(nodes) do
-    local node_row_start_0b, node_col_start_0b, node_row_end_0bin, node_col_end_0bex = node:range()
+    local node_row_start_0b, node_col_start_0b, node_row_end_0bin, node_col_end_0bex =
+        node:range()
     local node_row_end_0bex = node_row_end_0bin + 1
-    local config = module.private.config_by_node_name[node:type()]
+    local config = module.public.data.config_by_node_name[node:type()]
 
     if config.clear then
       config:clear(bufid, node)
     else
       local pos_start_0b_0b, pos_end_0bin_0bex =
-          { x = node_row_start_0b, y = node_col_start_0b }, { x = node_row_end_0bin, y = node_col_end_0bex }
+          { x = node_row_start_0b, y = node_col_start_0b },
+          { x = node_row_end_0bin, y = node_col_end_0bex }
 
       check_min(pos_start_0b_0b, node:start())
       check_max(pos_end_0bin_0bex, node:end_())
@@ -1150,7 +1275,16 @@ local function prettify_range(bufid, row_start_0b, row_end_0bex)
     remove_prettify_flag_range(bufid, node_row_start_0b, node_row_end_0bex)
     add_prettify_flag_range(bufid, node_row_start_0b, node_row_end_0bex)
 
-    if should_skip_prettify(current_mode, current_row_0b, node, config, node_row_start_0b, node_row_end_0bex) then
+    if
+        should_skip_prettify(
+          current_mode,
+          current_row_0b,
+          node,
+          config,
+          node_row_start_0b,
+          node_row_end_0bex
+        )
+    then
       goto continue
     end
 
@@ -1180,7 +1314,7 @@ local function prettify_range(bufid, row_start_0b, row_end_0bex)
 end
 
 local function render_window_buffer(bufid)
-  local ns_prettify_flag = module.private.ns_prettify_flag
+  local ns_prettify_flag = module.public.data.ns_prettify_flag
   local winid = vim.fn.bufwinid(bufid)
   local row_start_0b, row_end_0bex = get_visible_line_range(winid)
   local prettify_flags_0b = vim.api.nvim_buf_get_extmarks(
@@ -1200,7 +1334,13 @@ local function render_window_buffer(bufid)
     if i_flag <= #prettify_flags_0b and i == prettify_flags_0b[i_flag][2] then
       i_flag = i_flag + 1
     else
-      assert(i < (prettify_flags_0b[i_flag] and prettify_flags_0b[i_flag][2] or row_end_0bex))
+      assert(
+        i
+        < (
+          prettify_flags_0b[i_flag] and prettify_flags_0b[i_flag][2]
+          or row_end_0bex
+        )
+      )
       row_nomark_start_0b = row_nomark_start_0b or i
       row_nomark_end_0bin = i
     end
@@ -1213,17 +1353,18 @@ local function render_window_buffer(bufid)
 end
 
 local function render_all_scheduled_and_done()
-  for bufid, _ in pairs(module.private.rerendering_scheduled_bufids) do
+  for bufid, _ in pairs(module.public.data.rerendering_scheduled_bufids) do
     if vim.fn.bufwinid(bufid) >= 0 then
       render_window_buffer(bufid)
     end
   end
-  module.private.rerendering_scheduled_bufids = {}
+  module.public.data.rerendering_scheduled_bufids = {}
 end
 
 local function schedule_rendering(bufid)
-  local not_scheduled = vim.tbl_isempty(module.private.rerendering_scheduled_bufids)
-  module.private.rerendering_scheduled_bufids[bufid] = true
+  local not_scheduled =
+      vim.tbl_isempty(module.public.data.rerendering_scheduled_bufids)
+  module.public.data.rerendering_scheduled_bufids[bufid] = true
   if not_scheduled then
     vim.schedule(render_all_scheduled_and_done)
   end
@@ -1240,7 +1381,7 @@ local function mark_line_range_changed(bufid, row_start_0b, row_end_0bex)
 end
 
 local function mark_all_lines_changed(bufid)
-  if not module.private.enabled then
+  if not module.public.data.enabled then
     return
   end
 
@@ -1249,8 +1390,8 @@ local function mark_all_lines_changed(bufid)
 end
 
 local function clear_all_extmarks(bufid)
-  local ns_icon = module.private.ns_icon
-  local ns_prettify_flag = module.private.ns_prettify_flag
+  local ns_icon = module.public.data.ns_icon
+  local ns_prettify_flag = module.public.data.ns_prettify_flag
   vim.api.nvim_buf_clear_namespace(bufid, ns_icon, 0, -1)
   vim.api.nvim_buf_clear_namespace(bufid, ns_prettify_flag, 0, -1)
 end
@@ -1263,7 +1404,8 @@ local function get_table_default_empty(tbl, key)
 end
 
 local function update_cursor(event)
-  local cursor_record = get_table_default_empty(module.private.cursor_record, event.buffer)
+  local cursor_record =
+      get_table_default_empty(module.public.data.cursor_record, event.buffer)
   cursor_record.row_0b = event.cursor_position[1] - 1
   cursor_record.col_0b = event.cursor_position[2]
   cursor_record.line_content = event.line_content
@@ -1284,14 +1426,15 @@ local function handle_mod_event(event)
   )
     assert(tag == "lines")
 
-    if not module.private.enabled then
+    if not module.public.data.enabled then
       return
     end
 
     mark_line_range_changed(bufid, row_start_0b, row_updated_0bex)
   end
 
-  local attach_succeeded = vim.api.nvim_buf_attach(event.buffer, true, { on_lines = on_line_callback })
+  local attach_succeeded =
+      vim.api.nvim_buf_attach(event.buffer, true, { on_lines = on_line_callback })
   assert(attach_succeeded)
   local language_tree = vim.treesitter.get_parser(event.buffer, "markdown")
 
@@ -1313,7 +1456,7 @@ local function handle_mod_event(event)
   mark_all_lines_changed(event.buffer)
 
   if
-      module.config.public.folds
+      module.config.folds
       and vim.api.nvim_win_is_valid(event.window)
       and vim.api.nvim_buf_is_valid(event.buffer)
   then
@@ -1322,10 +1465,12 @@ local function handle_mod_event(event)
       -- hence the `buf_call` here.
       local wo = vim.wo[event.window][0]
       wo.foldmethod = "expr"
-      wo.foldexpr = vim.treesitter.foldexpr and "v:lua.vim.treesitter.foldexpr()" or "nvim_treesitter#foldexpr()"
+      wo.foldexpr = vim.treesitter.foldexpr
+          and "v:lua.vim.treesitter.foldexpr()"
+          or "nvim_treesitter#foldexpr()"
       wo.foldtext = ""
 
-      local mod_open_folds = module.config.public.mod_open_folds
+      local mod_open_folds = module.config.mod_open_folds
       local function open_folds()
         vim.cmd("normal! zR")
       end
@@ -1360,12 +1505,12 @@ local function handle_insertleave(event)
 end
 
 local function handle_toggle_prettifier(event)
-  -- FIXME: module.private.enabled should be a map from bufid to boolean
-  module.private.enabled = not module.private.enabled
-  if module.private.enabled then
+  -- FIXME: module.public.data.enabled should be a map from bufid to boolean
+  module.public.data.enabled = not module.public.data.enabled
+  if module.public.data.enabled then
     mark_all_lines_changed(event.buffer)
   else
-    module.private.rerendering_scheduled_bufids[event.buffer] = nil
+    module.public.data.rerendering_scheduled_bufids[event.buffer] = nil
     clear_all_extmarks(event.buffer)
   end
 end
@@ -1373,7 +1518,7 @@ end
 local function is_same_line_movement(event)
   -- some operations like dd / u cannot yet be listened reliably
   -- below is our best approximation
-  local cursor_record = module.private.cursor_record
+  local cursor_record = module.public.data.cursor_record
   return (
     cursor_record
     and cursor_record.row_0b == event.cursor_position[1] - 1
@@ -1386,7 +1531,7 @@ local function handle_cursor_moved(event)
   -- reveal/conceal when conceallevel>0
   -- also triggered when dd / u
   if not is_same_line_movement(event) then
-    local cursor_record = module.private.cursor_record[event.buffer]
+    local cursor_record = module.public.data.cursor_record[event.buffer]
     if cursor_record then
       -- leaving previous line, conceal it if necessary
       mark_line_changed(event.buffer, cursor_record.row_0b)
@@ -1415,7 +1560,9 @@ local event_handlers = {
 }
 
 module.on_event = function(event)
-  if (not module.private.enabled) and (event.type ~= "cmd.events.icon.toggle") then
+  if
+      not module.public.data.enabled and (event.type ~= "cmd.events.icon.toggle")
+  then
     return
   end
   return event_handlers[event.type](event)
@@ -1423,23 +1570,28 @@ end
 
 module.load = function()
   local icon =
-      module.import[module.name .. "." .. module.config.public.icon].config.private
-      ["icon_" .. module.config.public.icon]
+      module.import[module.name.."."..module.config.icon].config["icon_"..module.config.icon]
   if not icon then
     log.error(
-      ("Unable to load icon preset '%s' - such a preset does not exist"):format(module.config.public.icon)
+      ("Unable to load icon preset '%s' - such a preset does not exist"):format(
+        module.config.icon
+      )
     )
     return
   end
 
-  module.config.public =
-      vim.tbl_deep_extend("force", module.config.public, { icons = icon }, module.config.custom or {})
+  module.config = vim.tbl_deep_extend(
+    "force",
+    module.config,
+    { icons = icon },
+    module.config.custom or {}
+  )
 
   -- module.required["core.autocommands"].enable_autocommand("BufNewFile")
 
   mod.await("cmd", function(jotcmd)
     jotcmd.add_commands_from_table({
-      ["toggle"] = {
+      toggle = {
         name = "icon.toggle",
         args = 0,
         condition = "markdown",

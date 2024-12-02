@@ -44,6 +44,7 @@ if MODREV == "scm" then
 end
 
 dependencies = {
+  "lua == 5.4",
   "pathlib.nvim ~> 2.2",
   "nvim-nio ~> 1.7",
   "plenary.nvim == 0.1.4",

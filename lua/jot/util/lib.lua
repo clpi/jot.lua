@@ -6,7 +6,7 @@ local lib = {}
 --- @return fun(statements: table<any, any>): any # A function to invoke with a table of potential matches.
 function lib.match(value, compare)
   -- Returning a function allows for such syntax:
-  -- match(something) { ..matches.. }
+  -- match(something) { ...atches...}
   return function(statements)
     if value == nil then
       return
@@ -246,7 +246,7 @@ end
 --- Lazily concatenates a string to prevent runtime errors where an object may not exist
 --- Consider the following example:
 ---
----     lib.when(str ~= nil, str .. " extra text", "")
+---     lib.when(str ~= nil, str.." extra text", "")
 ---
 --- This would fail, simply because the string concatenation will still be evaluated in order
 --- to be placed inside the variable. You may use:
@@ -372,7 +372,7 @@ function lib.title(str)
   for w in str:gmatch("[^%s]+") do
     local lower = w:sub(2):lower()
 
-    table.insert(result, w:sub(1, 1):upper() .. lower)
+    table.insert(result, w:sub(1, 1):upper()..lower)
   end
   return table.concat(result, " ")
 end

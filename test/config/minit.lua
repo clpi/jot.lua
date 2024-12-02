@@ -9,9 +9,19 @@ if not vim.loop.fs_stat(lazypath) then
     lazypath,
   })
 end
-vim.wo.foldmethod = 'expr'
+vim.api.nvim_create_autocmd("FileType", {
+  pattern = "markdown",
+  callback = function(args)
+    vim.lsp.start({
+      name = "jot-lsp",
+      root_dir = vim.fs.root(args.buf, ".git"),
+      cmd = { "/Users/clp/jot/scripts/bin/jot-lsp" },
+    })
+  end,
+})
+vim.wo.foldmethod = "expr"
 vim.wo.foldenable = false
-vim.wo.foldexpr = 'v:lua.vim.treesitter.foldexpr()'
+vim.wo.foldexpr = "v:lua.vim.treesitter.foldexpr()"
 vim.opt.rtp:prepend(lazypath)
 vim.opt.termguicolors = true
 vim.opt.nu = true
@@ -36,7 +46,7 @@ vim.opt.termguicolors = true
 
 vim.opt.scrolloff = 8
 
-
+-- vim.o.completeopt = { "menu", "menuone", "noselect", "popup" }
 vim.g.mapleader = " "
 
 vim.keymap.set("i", "kj", "<Esc>")
@@ -44,12 +54,10 @@ vim.keymap.set("i", "kj", "<Esc>")
 vim.keymap.set("v", "J", ":m '>+1<CR>gv=gv")
 vim.keymap.set("v", "K", ":m '<-2<CR>gv=gv")
 
-
 vim.keymap.set({ "n", "v" }, "<leader>y", [["+y]])
 vim.keymap.set("n", "<leader>Y", [["+Y]])
 
 vim.keymap.set("x", "<leader>p", [["_dP]])
-
 
 vim.keymap.set("n", "Q", "<nop>")
 
@@ -75,8 +83,10 @@ nno L <CMD>bn<CR>
 nno H <CMD>bp<CR>
 nno ; :
 ]])
+vim.o.updatetime = 100
 
 require("lazy").setup({
+  "JoosepAlviste/nvim-ts-context-commentstring",
   {
     "folke/tokyonight.nvim",
     config = function()
@@ -104,9 +114,10 @@ require("lazy").setup({
 
   {
     "nvim-telescope/telescope.nvim",
-    opts = {}
+    opts = {},
   },
-  'JoosepAlviste/nvim-ts-context-commentstring',
+  { "nvim-lua/plenary.nvim" },
+  "JoosepAlviste/nvim-ts-context-commentstring",
   {
     "clpi/jot.lua",
     lazy = false,
@@ -116,6 +127,8 @@ require("lazy").setup({
       { "MunifTanjim/nui.nvim" },
       { "nvim-telescope/telescope.nvim" },
       { "nvim-lua/plenary.nvim" },
+
+      { "neovim/nvim-lspconfig" },
       {
         "nvim-treesitter/nvim-treesitter",
         build = ":TSUpdate",
@@ -123,11 +136,11 @@ require("lazy").setup({
           indent = { enable = true },
           context = { enable = true },
           incremental_selection = {
-            enable = true
+            enable = true,
           },
           highlight = {
             additional_vim_regex_highlighting = true,
-            enable = true
+            enable = true,
           },
           ensure_installed = {
             "vimdoc",
@@ -160,15 +173,16 @@ require("lazy").setup({
       })
     end,
   },
+  { "echasnovski/mini.doc", version = false },
   {
-    'saghen/blink.cmp',
+    "saghen/blink.cmp",
     enabled = true,
     lazy = false, -- lazy loading handled internally
     -- optional: provides snippets for the snippet source
-    dependencies = 'rafamadriz/friendly-snippets',
+    dependencies = "rafamadriz/friendly-snippets",
 
     -- use a release tag to download pre-built binaries
-    version = 'v0.*',
+    version = "v0.*",
     -- OR build from source, requires nightly: https://rust-lang.github.io/rustup/concepts/channels.html#working-with-nightly-rust
     -- build = 'cargo build --release',
     -- If you use nix, you can build from source using latest nightly rust with:
@@ -214,20 +228,19 @@ require("lazy").setup({
       },
       sources = {
         completion = {
-          enabled_providers = { 'lsp', 'path', 'snippets', 'buffer', 'lazydev' },
+          enabled_providers = { "lsp", "path", "snippets", "buffer" },
         },
-        lazydev = {
-
-
-          name = "LazyDev",
-          module = "lazydev.integration.blink"
-        },
+        -- lazydev = {
+        --
+        --   name = "LazyDev",
+        --   module = "lazydev.integration.blink",
+        -- },
 
         providers = {
           lsp = {
-            name = 'LSP',
-            module = 'blink.cmp.sources.lsp',
-            fallback_for = { 'lazydev' },
+            name = "LSP",
+            module = "blink.cmp.sources.lsp",
+            -- fallback_for = { "lazydev" },
 
             --- *All* of the providers have the following options available
             --- NOTE: All of these options may be functions to get dynamic behavior
@@ -242,45 +255,46 @@ require("lazy").setup({
             override = nil,           -- override the source's functions
           },
           path = {
-            name = 'Path',
-            module = 'blink.cmp.sources.path',
+            name = "Path",
+            module = "blink.cmp.sources.path",
             score_offset = 3,
             opts = {
               trailing_slash = false,
               label_trailing_slash = true,
-              get_cwd = function(context) return vim.fn.expand(('#%d:p:h'):format(context.bufnr)) end,
+              get_cwd = function(context)
+                return vim.fn.expand(("#%d:p:h"):format(context.bufnr))
+              end,
               show_hidden_files_by_default = false,
-            }
+            },
           },
           snippets = {
-            name = 'Snippets',
+            name = "Snippets",
             enabled = false,
-            module = 'blink.cmp.sources.snippets',
+            module = "blink.cmp.sources.snippets",
             score_offset = -3,
             opts = {
               friendly_snippets = true,
-              search_paths = { vim.fn.stdpath('config') .. '/snippets' },
-              global_snippets = { 'all' },
+              search_paths = { vim.fn.stdpath("config") .. "/snippets" },
+              global_snippets = { "all" },
               extended_filetypes = {},
               ignored_filetypes = {},
-            }
+            },
 
             --- Example usage for disabling the snippet provider after pressing trigger characters (i.e. ".")
             -- enabled = function(ctx) return ctx ~= nil and ctx.trigger.kind == vim.lsp.protocol.CompletionTriggerKind.TriggerCharacter end,
           },
           buffer = {
             enabled = false,
-            name = 'Buffer',
-            module = 'blink.cmp.sources.buffer',
-            fallback_for = { 'lsp' },
+            name = "Buffer",
+            module = "blink.cmp.sources.buffer",
+            fallback_for = { "lsp" },
           },
         },
-
       },
       signature_help = {
         enabled = true,
       },
-      nerd_font_variant = 'normal',
+      nerd_font_variant = "normal",
       highlight = {
         -- sets the fallback highlight groups to nvim-cmp's highlight groups
         -- useful for when your theme doesn't support blink.cmp
@@ -294,10 +308,10 @@ require("lazy").setup({
       accept = { auto_brackets = { enabled = true } },
 
       -- experimental signature help support
-      trigger = { signature_help = { enabled = true } }
+      trigger = { signature_help = { enabled = true } },
     },
     opts_extend = {
-      "sources.completion.enabled_providers"
+      "sources.completion.enabled_providers",
     },
     specs = {
       {
@@ -318,8 +332,8 @@ require("lazy").setup({
           },
         },
       },
-    }
-  }
+    },
+  },
 })
 -- vim.lsp.on_attach(function(client, bufnr)
 --   local opts = { buffer = bufnr, remap = false }

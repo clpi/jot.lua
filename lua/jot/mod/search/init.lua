@@ -13,46 +13,33 @@ init.load = function()
         subcommands = {
           update = {
             args = 0,
-            name = "agenda.update"
+            name = "agenda.update",
           },
           insert = {
             name = "agenda.insert",
             args = 0,
           },
         },
-        name = "agenda"
-      }
+        name = "agenda",
+      },
     })
   end)
 end
 
-
-
 init.setup = function()
   return {
-    success = true,
+    loaded = true,
     requires = {
-      "workspace"
-    }
-
+      "workspace",
+    },
   }
 end
 
-init.public = {
+init.public = {}
 
-}
-
-init.config.private = {
-
-}
-init.config.public = {
-
-}
-init.private = {
-
-}
+init.config = {}
+init.public.data = {}
 init.events = {}
-
 
 init.events.subscribed = {
   cmd = {

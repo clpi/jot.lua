@@ -1,5 +1,8 @@
 #!/usr/bin/env lua
 
+local c = require "coroutine"
+
+
 S = {}
 
 S.server = function(disp)
@@ -34,6 +37,7 @@ S.server = function(disp)
 
   return srv
 end
+
 
 return S
 

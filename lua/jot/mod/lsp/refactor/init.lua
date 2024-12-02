@@ -7,7 +7,7 @@ local M = mod.create("lsp.refactor")
 
 M.setup = function()
   return {
-    success = true,
+    loaded = true,
     requires = {
       "integration.treesitter",
       "workspace",
@@ -23,14 +23,15 @@ end
 
 ---@class lsp.refactor
 M.public = {
+
+  ---@class lsp.refactor.rename
   rename = {
     file = {
       ---@type lsp.RenameFileOptions
       opts = {
         ignoreIfExists = true,
         overwrite = true,
-      }
-
+      },
     },
     ---@type lsp.RenameClientCapabilities
     capabilities = {
@@ -38,17 +39,12 @@ M.public = {
       prepareSupport = true,
       prepareSupportDefaultBehavior = 1,
       dynamicRegistration = true,
-
     },
     ---@type lsp.RenameOptions
     opts = {
       prepareProvider = true,
       workDoneProgress = true,
-
-    }
-
-
-
+    },
   },
   ---move the current file from one location to another, and update all the links to/from the file
   ---in the current workspace. Deletes the buffer of the original file if it exists
@@ -80,7 +76,7 @@ M.public = {
     ---@type lsp.WorkspaceEdit
     local wsEdit = { changes = {} }
     ---@param link Link
-    local current_file_changes = M.private.fix_links(
+    local current_file_changes = M.public.data.fix_links(
       current_path,
       function(link)
         local range = link.file and link.file.range
@@ -127,7 +123,7 @@ M.public = {
         goto continue
       end
       ---@param link Link
-      local file_changes = M.private.fix_links(file, function(link)
+      local file_changes = M.public.data.fix_links(file, function(link)
         local range = link.file and link.file.range
         local link_str = link.file and link.file.text
         local raw = false
@@ -219,10 +215,10 @@ M.public = {
     ---@type lsp.WorkspaceEdit
     local wsEdit = { changes = {} }
     ---@param link Link
-    local changes = M.private.fix_links(buf, function(link)
+    local changes = M.public.data.fix_links(buf, function(link)
       local link_prefix = link.type and link.type.text
       local link_heading = link.text and link.text.text
-      -- NOTE: This will not work for {:path/to/current/file:# heading} but who would do that..
+      -- NOTE: This will not work for {:path/to/current/file:# heading} but who would do that.public.data.
       if
           not link.file
           and (link_prefix == "# " or link_prefix == prefix)
@@ -269,7 +265,7 @@ M.public = {
       end
 
       ---@param link Link
-      changes = M.private.fix_links(file, function(link)
+      changes = M.public.data.fix_links(file, function(link)
         local link_str = link.file and link.file.text
         if not link_str then
           return
@@ -325,34 +321,36 @@ M.public = {
 ---@param source number | string bufnr or filepath
 ---@param fix_link function takes a string, the current link, returns a string, the new link,
 ---or nil if this shouldn't be changed
-M.private.fix_links = function(source, fix_link)
-  local links = nil
-  links = M.private.get_links(source)
+M.public.data = {
+  fix_links = function(source, fix_link)
+    local links = nil
+    links = M.public.data.get_links(source)
 
-  local edits = {}
-  for _, link in ipairs(links) do
-    local new_link, start_line, start_char, end_line, end_char = fix_link(link)
-    if new_link then
-      ---@type lsp.TextEdit
-      local text_edit = {
-        newText = new_link,
-        range = {
-          start = {
-            line = start_line or link.range[1],
-            character = start_char or link.range[2],
+    local edits = {}
+    for _, link in ipairs(links) do
+      local new_link, start_line, start_char, end_line, end_char = fix_link(link)
+      if new_link then
+        ---@type lsp.TextEdit
+        local text_edit = {
+          newText = new_link,
+          range = {
+            start = {
+              line = start_line or link.range[1],
+              character = start_char or link.range[2],
+            },
+            ["end"] = {
+              line = end_line or link.range[3],
+              character = end_char or link.range[4],
+            },
           },
-          ["end"] = {
-            line = end_line or link.range[3],
-            character = end_char or link.range[4],
-          },
-        },
-      }
-      table.insert(edits, text_edit)
+        }
+        table.insert(edits, text_edit)
+      end
     end
-  end
 
-  return edits
-end
+    return edits
+  end
+}
 
 ---@class NodeText
 ---@field range Range
@@ -367,7 +365,7 @@ end
 ---fetch all the links in the given buffer
 ---@param source number | string bufnr or full path to file
 ---@return Link[]
-M.private.get_links = function(source)
+M.public.data.get_links = function(source)
   local link_query_string = [[
         (link_location
             file: (_)* @file

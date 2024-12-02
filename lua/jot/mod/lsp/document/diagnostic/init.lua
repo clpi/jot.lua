@@ -2,7 +2,7 @@ local M = Mod.create("lsp.document.diagnostic")
 
 M.setup = function()
   return {
-    success = true,
+    loaded = true,
   }
 end
 

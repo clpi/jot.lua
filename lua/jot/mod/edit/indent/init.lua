@@ -37,7 +37,7 @@ M.public = {
           return
         end
 
-        text = text:gsub("^" .. markers, markers .. "#")
+        text = text:gsub("^"..markers, markers.."#")
 
         vim.api.nvim_buf_set_lines(
           vim.api.nvim_get_current_buf(),
@@ -60,7 +60,7 @@ M.public = {
         end
 
         text = text:gsub(
-          "^" .. markers,
+          "^"..markers,
           vim.fn.strcharpart(markers, 0, vim.fn.strchars(markers) - 1)
         )
 

@@ -5,7 +5,7 @@ M.public = {
 
   ---@type lsp.HoverOptions
   opts = {
-
+    workDoneProgress = true,
   },
 
   ---@type lsp.HoverClientCapabilities

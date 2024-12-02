@@ -15,19 +15,19 @@
 --- | "error"
 --- | "fatal"
 
---- @class (exact) jot.log.configuration
+--- @class (exact) jot.log.config
 --- @field plugin string                                           Name of the plugin. Prepended to log messages.
 --- @field use_console boolean                                     Whether to print the output to Neovim while running.
 --- @field highlights boolean                                      Whether highlighting should be used in console (using `:echohl`).
 --- @field use_file boolean                                        Whether to write output to a file.
 --- @field level LogLevel                                          Any messages above this level will be logged.
---- @field modes ({ name: LogLevel, hl: string, level: number })[] Level configuration.
+--- @field modes ({ name: LogLevel, hl: string, level: number })[] Level config.
 --- @field float_precision number                                  Can limit the number of decimals displayed for floats.
 
 local vl, a, lvl, ext = vim.log, vim.api, vim.log.levels, vim.tbl_deep_extend
 
---- User configuration section
---- @type jot.log.configuration
+--- User config section
+--- @type jot.log.config
 local default_config = {
   plugin = "jot",
 
@@ -40,12 +40,12 @@ local default_config = {
   level = "warn",
 
   modes = {
-    { name = "trace", hl = "Comment",    level = lvl.TRACE },
-    { name = "debug", hl = "Comment",    level = lvl.DEBUG },
-    { name = "info",  hl = "None",       level = lvl.INFO },
-    { name = "warn",  hl = "WarningMsg", level = lvl.WARN },
-    { name = "error", hl = "ErrorMsg",   level = lvl.ERROR },
-    { name = "fatal", hl = "ErrorMsg",   level = 5 },
+    { name = "trace", hl = "Comment", level = lvl.TRACE },
+    { name = "debug", hl = "Comment", level = lvl.DEBUG },
+    { name = "info", hl = "None", level = lvl.INFO },
+    { name = "warn", hl = "WarningMsg", level = lvl.WARN },
+    { name = "error", hl = "ErrorMsg", level = lvl.ERROR },
+    { name = "fatal", hl = "ErrorMsg", level = 5 },
   },
 
   float_precision = 0.01,
@@ -79,13 +79,17 @@ Log.trace = function(inp)
   -- print("TRACE: ", inp)
 end
 
---- @param config jot.log.configuration
+--- @param config jot.log.config
 --- @param standalone boolean
 Log.new = function(config, standalone)
   config = ext("force", default_config, config)
   config.plugin = "jot" -- Force the plugin name to be jot
 
-  local outfile = string.format("%s/%s.log", a.nvim_call_function("stdpath", { "data" }), config.plugin)
+  local outfile = string.format(
+    "%s/%s.log",
+    a.nvim_call_function("stdpath", { "data" }),
+    config.plugin
+  )
 
   local obj = standalone ~= nil and log or {}
 
@@ -131,7 +135,8 @@ Log.new = function(config, standalone)
 
     -- Output to console
     if config.use_console then
-      local v = string.format("(%s)\n%s\n%s", os.date("%H:%M:%S"), lineinfo, msg)
+      local v =
+        string.format("(%s)\n%s\n%s", os.date("%H:%M:%S"), lineinfo, msg)
 
       if config.highlights and level_config.hl then
         (vim.schedule_wrap(function()
@@ -140,7 +145,10 @@ Log.new = function(config, standalone)
       end
 
       (vim.schedule_wrap(function()
-        vim.notify(string.format("[%s] %s", config.plugin, vim.fn.escape(v, '"')), level_config.level)
+        vim.notify(
+          string.format("[%s] %s", config.plugin, vim.fn.escape(v, '"')),
+          level_config.level
+        )
         -- vim.cmd(string.format([[echom "[%s] %s"]], config.plugin, vim.fn.escape(v, '"')))
       end))()
 
@@ -154,7 +162,8 @@ Log.new = function(config, standalone)
     -- Output to log file
     if config.use_file then
       local fp = assert(io.open(outfile, "a"))
-      local str = string.format("[%-6s%s] %s: %s\n", nameupper, os.date(), lineinfo, msg)
+      local str =
+        string.format("[%-6s%s] %s: %s\n", nameupper, os.date(), lineinfo, msg)
       fp:write(str)
       fp:close()
     end

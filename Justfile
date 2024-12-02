@@ -3,6 +3,9 @@ all: slint llint clean
 test:
   nvim --headless -u test/minit.lua -c "PlenaryBustedDirectory tests/plenary/ {options}"
 
+doc:
+  nvim --headless --noplugin -u test/config/minit.lua -c "luafile scripts/gendoc.lua" -c "qa"
+
 nv:
   nvim -u test/config/minit.lua
 
@@ -19,7 +22,7 @@ slint :
   stylua --check .
 
 clean:
-	fd --glob '*-E' -x rm
+	fd --glob '*-E' --exec-batch "rm" --no-ignore
 
 llint:
   luacheck .

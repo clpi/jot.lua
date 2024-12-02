@@ -1,15 +1,14 @@
 local C = {}
--- local defaults = require("jot.config.default")
 local osi = require("jot.util").get_os_info()
--- local wv = require("jot.config.version")
 local f = vim.fn
 
 --- @type jot.config
--- TODO: What goes below this line until the next notice used to belong to mod
 C.config = {
   ---@type jot.config.user
   user = {
-    mods = {},
+    mods = {
+      config = {},
+    },
   },
 
   data = f.stdpath("data") .. "/jot.mpack",
@@ -19,6 +18,7 @@ C.config = {
     md = true,
     mdx = true,
     markdown = true,
+    jot = true,
   },
 
   mods = {},

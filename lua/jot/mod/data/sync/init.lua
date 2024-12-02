@@ -10,47 +10,34 @@ M.load = function()
         subcommands = {
           update = {
             args = 0,
-            name = "sync.update"
+            name = "sync.update",
           },
           insert = {
             name = "sync.insert",
             args = 0,
           },
         },
-        name = "sync"
-      }
+        name = "sync",
+      },
     })
   end)
 end
 
-
-
 M.setup = function()
   return {
-    success = true,
+    loaded = true,
     requires = {
       "cmd",
-      "workspace"
-    }
-
+      "workspace",
+    },
   }
 end
 
-M.public = {
+M.public = {}
 
-}
-
-M.config.private = {
-
-}
-M.config.public = {
-
-}
-M.private = {
-
-}
+M.config = {}
+M.public.data = {}
 M.events = {}
-
 
 M.events.subscribed = {
   cmd = {

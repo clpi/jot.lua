@@ -7,15 +7,16 @@ init.maps = function()
   Map.nmap(",wt", "<CMD>Telescope jot todo<CR>")
 end
 
-init.private = {
-  namespace = vim.api.nvim_create_namespace("jot/todo"),
+init.public = {
+  data = {
+    namespace = vim.api.nvim_create_namespace("jot/todo"),
 
-  --- List of active buffers
-  buffers = {},
+    --- List of active buffers
+    buffers = {},
+  },
 }
-
 ---@class base.todo
-init.config.public = {
+init.config = {
 
   -- Highlight group to display introspector in.
   --
@@ -71,11 +72,11 @@ init.load = function()
     callback = function(ev)
       local buf = ev.buf
 
-      if init.private.buffers[buf] then
+      if init.public.data.buffers[buf] then
         return
       end
 
-      init.private.buffers[buf] = true
+      init.public.data.buffers[buf] = true
       -- init.public.attach_introspector(buf) -- TODO
     end,
   })
@@ -133,7 +134,7 @@ function init.public.attach_introspector(buffer)
 
       vim.api.nvim_buf_clear_namespace(
         buffer,
-        init.private.namespace,
+        init.public.data.namespace,
         first + 1,
         first + 1
       )
@@ -173,8 +174,13 @@ function init.public.attach_introspector(buffer)
     end),
 
     on_detach = function()
-      vim.api.nvim_buf_clear_namespace(buffer, init.private.namespace, 0, -1)
-      init.private.buffers[buffer] = nil
+      vim.api.nvim_buf_clear_namespace(
+        buffer,
+        init.public.data.namespace,
+        0,
+        -1
+      )
+      init.public.data.buffers[buffer] = nil
     end,
   })
 end
@@ -185,7 +191,7 @@ end
 ---@return number total Total number of counted tasks
 function init.public.calculate_items(node)
   local counts = {}
-  for _, status in ipairs(init.config.public.counted_statuses) do
+  for _, status in ipairs(init.config.counted_statuses) do
     counts[status] = 0
   end
 
@@ -213,7 +219,7 @@ function init.public.calculate_items(node)
   end
 
   local completed = 0
-  for _, status in ipairs(init.config.public.completed_statuses) do
+  for _, status in ipairs(init.config.completed_statuses) do
     if counts[status] then
       completed = completed + counts[status]
     end
@@ -232,7 +238,7 @@ function init.public.perform_introspection(buffer, node)
 
   vim.api.nvim_buf_clear_namespace(
     buffer,
-    init.private.namespace,
+    init.public.data.namespace,
     line,
     line + 1
   )
@@ -241,11 +247,11 @@ function init.public.perform_introspection(buffer, node)
     return
   end
 
-  vim.api.nvim_buf_set_extmark(buffer, init.private.namespace, line, col, {
+  vim.api.nvim_buf_set_extmark(buffer, init.public.data.namespace, line, col, {
     virt_text = {
       {
-        init.config.public.format(completed, total),
-        init.config.public.highlight_group,
+        init.config.format(completed, total),
+        init.config.highlight_group,
       },
     },
     invalidate = true,

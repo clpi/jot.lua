@@ -24,76 +24,76 @@ init.setup = function()
   }
 end
 
-init.private = {
-
-  modes = {},
-  views = {},
-
-  get_mode = function(name, callback)
-    if init.private.modes[name] ~= nil then
-      local cur_mode = init.private.modes[name](callback)
-      cur_mode.name = name
-      return cur_mode
-    end
-
-    print("Error: mode not set or not available")
-  end,
-
-  get_view = function(name)
-    if init.private.views[name] ~= nil then
-      return init.private.views[name]
-    end
-
-    print("Error: view not set or not available")
-  end,
-
-  extract_ui_info = function(buffer, window)
-    local width = vim.api.nvim_win_get_width(window)
-    local height = vim.api.nvim_win_get_height(window)
-
-    local half_width = math.floor(width / 2)
-    local half_height = math.floor(height / 2)
-
-    return {
-      window = window,
-      buffer = buffer,
-      width = width,
-      height = height,
-      half_width = half_width,
-      half_height = half_height,
-    }
-  end,
-
-  open_window = function(options)
-    local MIN_HEIGHT = 14
-
-    local buffer, window = init.required["ui"].create_split(
-      "ui.calendar-" .. tostring(os.clock()):gsub("%.", "-"),
-      {},
-      options.height or MIN_HEIGHT + (options.padding or 0)
-    )
-
-    vim.api.nvim_create_autocmd({ "WinClosed", "BufDelete" }, {
-      buffer = buffer,
-
-      callback = function()
-        pcall(vim.api.nvim_win_close, window, true)
-        pcall(vim.api.nvim_buf_delete, buffer, { force = true })
-      end,
-    })
-
-    return buffer, window
-  end,
-}
-
 ---@class base.calendar
 init.public = {
+
+  data = {
+
+    modes = {},
+    views = {},
+
+    get_mode = function(name, callback)
+      if init.public.data.modes[name] ~= nil then
+        local cur_mode = init.public.data.modes[name](callback)
+        cur_mode.name = name
+        return cur_mode
+      end
+
+      print("Error: mode not set or not available")
+    end,
+
+    get_view = function(name)
+      if init.public.data.views[name] ~= nil then
+        return init.public.data.views[name]
+      end
+
+      print("Error: view not set or not available")
+    end,
+
+    extract_ui_info = function(buffer, window)
+      local width = vim.api.nvim_win_get_width(window)
+      local height = vim.api.nvim_win_get_height(window)
+
+      local half_width = math.floor(width / 2)
+      local half_height = math.floor(height / 2)
+
+      return {
+        window = window,
+        buffer = buffer,
+        width = width,
+        height = height,
+        half_width = half_width,
+        half_height = half_height,
+      }
+    end,
+
+    open_window = function(options)
+      local MIN_HEIGHT = 14
+
+      local buffer, window = init.required["ui"].create_split(
+        "ui.calendar-" .. tostring(os.clock()):gsub("%.", "-"),
+        {},
+        options.height or MIN_HEIGHT + (options.padding or 0)
+      )
+
+      vim.api.nvim_create_autocmd({ "WinClosed", "BufDelete" }, {
+        buffer = buffer,
+
+        callback = function()
+          pcall(vim.api.nvim_win_close, window, true)
+          pcall(vim.api.nvim_buf_delete, buffer, { force = true })
+        end,
+      })
+
+      return buffer, window
+    end,
+  },
   add_mode = function(name, factory)
-    init.private.modes[name] = factory
+    init.public.data.modes[name] = factory
   end,
 
   add_view = function(name, details)
-    init.private.views[name] = details
+    init.public.data.views[name] = details
   end,
 
   create_calendar = function(buffer, window, options)
@@ -106,20 +106,20 @@ init.public = {
       pcall(vim.api.nvim_buf_delete, buffer, { force = true })
     end
 
-    local mode = init.private.get_mode(options.mode, callback_and_close)
+    local mode = init.public.data.get_mode(options.mode, callback_and_close)
     if mode == nil then
       return
     end
 
-    local ui_info = init.private.extract_ui_info(buffer, window)
+    local ui_info = init.public.data.extract_ui_info(buffer, window)
 
-    local view = init.private.get_view(options.view or "month")
+    local view = init.public.data.get_view(options.view or "month")
 
     view.setup(ui_info, mode, options.date or os.date("*t"), options)
   end,
 
   open = function(options)
-    local buffer, window = init.private.open_window(options)
+    local buffer, window = init.public.data.open_window(options)
 
     options.mode = "standalone"
 
@@ -127,7 +127,7 @@ init.public = {
   end,
 
   select_date = function(options)
-    local buffer, window = init.private.open_window(options)
+    local buffer, window = init.public.data.open_window(options)
 
     options.mode = "select_date"
 
@@ -135,7 +135,7 @@ init.public = {
   end,
 
   select_date_range = function(options)
-    local buffer, window = init.private.open_window(options)
+    local buffer, window = init.public.data.open_window(options)
 
     options.mode = "select_range"
 
@@ -171,7 +171,9 @@ init.load = function()
           return true
         else
           if os.time(date) <= os.time(self.range_start) then
-            print("Error: you should choose a date that is after the starting day.")
+            print(
+              "Error: you should choose a date that is after the starting day."
+            )
             return false
           end
 

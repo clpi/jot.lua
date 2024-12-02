@@ -2,7 +2,7 @@ local E = Mod.create("data.encrypt")
 
 E.setup = function()
   return {
-    success = true,
+    loaded = true,
     requires = {
       "integration.treesitter",
       'cmd',
@@ -11,7 +11,7 @@ E.setup = function()
   }
 end
 
-E.config.public = {
+E.config = {
 }
 
 E.load = function()
@@ -34,11 +34,11 @@ E.load = function()
   end)
 end
 
-E.config.public = {
+E.config = {
 
 }
 
-E.private = {
+E.public.data = {
 
 }
 

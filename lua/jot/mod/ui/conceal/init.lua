@@ -14,114 +14,203 @@
 -- You should have received a copy of the GNU General Public License
 -- along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-local jot = require('jot')
+local jot = require("jot")
 local mod, config = jot.mod, jot.cfg
 local M = mod.create("ui.conceal")
 local fn, a, madd = vim.fn, vim.api, vim.fn.matchadd
 
 M.setup = function()
   return {
-    success = true,
-    requires = {}
+    loaded = true,
+    requires = {},
   }
 end
 
-M.config.public = {
-  link_style = "markdown"
+M.config = {
+  link_style = "markdown",
 }
-M.private.start_link_concealing = function()
-  if M.config.public == 'markdown' then
-    madd('Conceal', '\\[[^[]\\{-}\\]\\zs([^(]\\{-})\\ze', 0, -1, { conceal = '' })
-    madd('Conceal', '\\zs\\[\\ze[^[]\\{-}\\]([^(]\\{-})', 0, -1, { conceal = '' })
-    madd('Conceal', '\\[[^[]\\{-}\\zs\\]\\ze([^(]\\{-})', 0, -1, { conceal = '' })
+M.public.sub = {
+  [" "] = " ",
+  ["("] = "⁽",
+  [")"] = "⁾",
+
+  ["0"] = "⁰",
+  ["1"] = "¹",
+  ["2"] = "²",
+  ["3"] = "³",
+  ["4"] = "⁴",
+  ["5"] = "⁵",
+  ["6"] = "⁶",
+  ["7"] = "⁷",
+  ["8"] = "⁸",
+  ["9"] = "⁹",
+
+  ["a"] = "ᵃ",
+  ["b"] = "ᵇ",
+  ["c"] = "ᶜ",
+  ["d"] = "ᵈ",
+  ["e"] = "ᵉ",
+  ["f"] = "ᶠ",
+  ["g"] = "ᵍ",
+  ["h"] = "ʰ",
+  ["i"] = "ⁱ",
+  ["j"] = "ʲ",
+  ["k"] = "ᵏ",
+  ["l"] = "ˡ",
+  ["m"] = "ᵐ",
+  ["n"] = "ⁿ",
+  ["o"] = "ᵒ",
+  ["p"] = "ᵖ",
+  ["q"] = nil,
+  ["r"] = "ʳ",
+  ["s"] = "ˢ",
+  ["t"] = "ᵗ",
+  ["u"] = "ᵘ",
+  ["v"] = "ᵛ",
+  ["w"] = "ʷ",
+  ["x"] = "ˣ",
+  ["y"] = "ʸ",
+  ["z"] = "ᶻ",
+
+  ["A"] = "ᴬ",
+  ["B"] = "ᴮ",
+  ["C"] = nil,
+  ["D"] = "ᴰ",
+  ["E"] = "ᴱ",
+  ["F"] = nil,
+  ["G"] = "ᴳ",
+  ["H"] = "ᴴ",
+  ["I"] = "ᴵ",
+  ["J"] = "ᴶ",
+  ["K"] = "ᴷ",
+  ["L"] = "ᴸ",
+  ["M"] = "ᴹ",
+  ["N"] = "ᴺ",
+  ["O"] = "ᴼ",
+  ["P"] = "ᴾ",
+  ["Q"] = nil,
+  ["R"] = "ᴿ",
+  ["S"] = nil,
+  ["T"] = "ᵀ",
+  ["U"] = "ᵁ",
+  ["V"] = "ⱽ",
+  ["W"] = "ᵂ",
+  ["X"] = " ",
+  ["Y"] = nil,
+  ["Z"] = nil,
+}
+M.public.data.start_link_concealing = function()
+  if M.config == "markdown" then
     madd(
-      'Conceal',
-      '\\[[^[]\\{-}\\]\\zs\\%[ ]\\[[^[]\\{-}\\]\\ze\\%[ ]\\v([^(]|$)',
+      "Conceal",
+      "\\[[^[]\\{-}\\]\\zs([^(]\\{-})\\ze",
       0,
       -1,
-      { conceal = '' }
+      { conceal = "" }
     )
     madd(
-      'Conceal',
-      '\\zs\\[\\ze[^[]\\{-}\\]\\%[ ]\\[[^[]\\{-}\\]\\%[ ]\\v([^(]|$)',
+      "Conceal",
+      "\\zs\\[\\ze[^[]\\{-}\\]([^(]\\{-})",
       0,
       -1,
-      { conceal = '' }
+      { conceal = "" }
     )
     madd(
-      'Conceal',
-      '\\[[^[]\\{-}\\zs\\]\\ze\\%[ ]\\[[^[]\\{-}\\]\\%[ ]\\v([^(]|$)',
+      "Conceal",
+      "\\[[^[]\\{-}\\zs\\]\\ze([^(]\\{-})",
       0,
       -1,
-      { conceal = '' }
+      { conceal = "" }
     )
     madd(
-      'Conceal',
-      '\\[[^[]\\{-}\\]\\zs\\%[ ]\\[[^[]\\{-}\\]\\ze\\n',
+      "Conceal",
+      "\\[[^[]\\{-}\\]\\zs\\%[ ]\\[[^[]\\{-}\\]\\ze\\%[ ]\\v([^(]|$)",
       0,
       -1,
-      { conceal = '' }
+      { conceal = "" }
     )
     madd(
-      'Conceal',
-      '\\zs\\[\\ze[^[]\\{-}\\]\\%[ ]\\[[^[]\\{-}\\]\\n',
+      "Conceal",
+      "\\zs\\[\\ze[^[]\\{-}\\]\\%[ ]\\[[^[]\\{-}\\]\\%[ ]\\v([^(]|$)",
       0,
       -1,
-      { conceal = '' }
+      { conceal = "" }
     )
     madd(
-      'Conceal',
-      '\\[[^[]\\{-}\\zs\\]\\ze\\%[ ]\\[[^[]\\{-}\\]\\n',
+      "Conceal",
+      "\\[[^[]\\{-}\\zs\\]\\ze\\%[ ]\\[[^[]\\{-}\\]\\%[ ]\\v([^(]|$)",
       0,
       -1,
-      { conceal = '' }
-    )
-  elseif M.config.public.link_style == 'wiki' then
-    madd(
-      'Conceal',
-      '\\zs\\[\\[[^[]\\{-}[|]\\ze[^[]\\{-}\\]\\]',
-      0,
-      -1,
-      { conceal = '' }
+      { conceal = "" }
     )
     madd(
-      'Conceal',
-      '\\[\\[[^[\\{-}[|][^[]\\{-}\\zs\\]\\]\\ze',
+      "Conceal",
+      "\\[[^[]\\{-}\\]\\zs\\%[ ]\\[[^[]\\{-}\\]\\ze\\n",
       0,
       -1,
-      { conceal = '' }
+      { conceal = "" }
     )
-    madd('Conceal', '\\zs\\[\\[\\ze[^[]\\{-}\\]\\]', 0, -1, { conceal = '' })
-    madd('Conceal', '\\[\\[[^[]\\{-}\\zs\\]\\]\\ze', 0, -1, { conceal = '' })
+    madd(
+      "Conceal",
+      "\\zs\\[\\ze[^[]\\{-}\\]\\%[ ]\\[[^[]\\{-}\\]\\n",
+      0,
+      -1,
+      { conceal = "" }
+    )
+    madd(
+      "Conceal",
+      "\\[[^[]\\{-}\\zs\\]\\ze\\%[ ]\\[[^[]\\{-}\\]\\n",
+      0,
+      -1,
+      { conceal = "" }
+    )
+  elseif M.config.link_style == "wiki" then
+    madd(
+      "Conceal",
+      "\\zs\\[\\[[^[]\\{-}[|]\\ze[^[]\\{-}\\]\\]",
+      0,
+      -1,
+      { conceal = "" }
+    )
+    madd(
+      "Conceal",
+      "\\[\\[[^[\\{-}[|][^[]\\{-}\\zs\\]\\]\\ze",
+      0,
+      -1,
+      { conceal = "" }
+    )
+    madd("Conceal", "\\zs\\[\\[\\ze[^[]\\{-}\\]\\]", 0, -1, { conceal = "" })
+    madd("Conceal", "\\[\\[[^[]\\{-}\\zs\\]\\]\\ze", 0, -1, { conceal = "" })
   end
 
   -- Set conceal level
   vim.wo.conceallevel = 2
 
   -- Don't change the highlighting of concealed characters
-  a.nvim_exec([[highlight Conceal ctermbg=NONE ctermfg=NONE guibg=NONE guifg=NONE]], false)
+  a.nvim_exec(
+    [[highlight Conceal ctermbg=NONE ctermfg=NONE guibg=NONE guifg=NONE]],
+    false
+  )
 end
 
 -- Set up autocommands to trigger the link concealing setup in Markdown files
-M.public.conceal_augroup = a.nvim_create_augroup('MkdnflowLinkConcealing', { clear = true })
 
 M.public.ft_patterns = function()
   -- Create ft pattern
   local filetypes = config.ft
-  local ft_pattern = ''
+  local ft_pattern = ""
 
   for ext, _ in pairs(filetypes) do
-    ft_pattern = ft_pattern .. '*.' .. ext .. ','
+    ft_pattern = ft_pattern .. "*." .. ext .. ","
   end
   return ft_pattern
 end
 
-a.nvim_create_autocmd({ 'FileType', 'BufRead', 'BufEnter' }, {
+a.nvim_create_autocmd({ "FileType", "BufRead", "BufEnter" }, {
   pattern = M.public.ft_patterns(),
   callback = function()
     M.public.start_link_concealing()
   end,
-  group = M.public.conceal_augroup,
 })
 
 return M

@@ -17,7 +17,7 @@ vim.api.nvim_create_autocmd("ColorScheme", {
 ---@param opts? { prefix?:string, default?:boolean, managed?:boolean }
 function M.set_hl(groups, opts)
   for hl_group, hl in pairs(groups) do
-    hl_group = opts and opts.prefix and opts.prefix .. hl_group or hl_group
+    hl_group = opts and opts.prefix and opts.prefix..hl_group or hl_group
     hl = type(hl) == "string" and { link = hl } or hl --[[@as vim.api.keyset.highlight]]
     hl.default = not (opts and opts.default == false)
     if not (opts and opts.managed == false) then

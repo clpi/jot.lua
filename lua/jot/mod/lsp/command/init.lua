@@ -25,11 +25,11 @@ C.public = {
     end
     return {
 
-      success = true,
+      loaded = true,
     }
   end,
 }
-C.config.public = {
+C.config = {
 
   enable = true,
 }

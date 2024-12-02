@@ -35,7 +35,7 @@ M.load = function()
     })
   end)
 
-  if M.config.public.code_on_write then
+  if M.config.code_on_write then
     local augroup = vim.api.nvim_create_augroup("jot_auto_code", { clear = true })
     vim.api.nvim_create_autocmd("BufWritePost", {
       desc = "code the current file on write",
@@ -123,7 +123,7 @@ M.public = {
       if capture == "tag" then
         local ok, parsed_tag = pcall(treesitter.get_tag_info, node, true)
         if not ok then
-          if M.config.public.indent_errors == "print" then
+          if M.config.indent_errors == "print" then
             print(parsed_tag)
           else
             log.error(parsed_tag)
@@ -197,7 +197,7 @@ M.public = {
               language = vim.filetype.match({ filename = file_to_code_to, contents = block_content }) ---@diagnostic disable-line -- TODO: type error workaround <pysan3>
               if not language and declared_filetype then
                 language = vim.filetype.match({
-                  filename = "___." .. declared_filetype,
+                  filename = "___."..declared_filetype,
                   contents = block_content,
                 })
               end
@@ -303,7 +303,7 @@ M.public = {
     return true
   end
 }
-M.config.public = {
+M.config = {
   -- Notify when there is nothing to code (INFO) or when the content is empty (WARN).
   report_on_empty = true,
 
@@ -323,7 +323,7 @@ M.on_event = function(event)
     local codes = M.public.code(event.buffer)
 
     if not codes or vim.tbl_isempty(codes) then
-      if M.config.public.report_on_empty then
+      if M.config.report_on_empty then
         utils.notify("Nothing to code!", vim.log.levels.INFO)
       end
       return
@@ -333,10 +333,10 @@ M.on_event = function(event)
     local coded_count = 0
 
     for file, content in pairs(codes) do
-      -- resolve upward relative path like `../../`
+      -- resolve upward relative path like `......`
       local relative_file, upward_count = string.gsub(file, "%.%.[\\/]", "")
       if upward_count > 0 then
-        local base_dir = vim.fn.expand("%:p" .. string.rep(":h", upward_count + 1)) --[[@as string]]
+        local base_dir = vim.fn.expand("%:p"..string.rep(":h", upward_count + 1)) --[[@as string]]
         file = vim.fs.joinpath(base_dir, relative_file)
       end
 
@@ -344,7 +344,7 @@ M.on_event = function(event)
         assert(not err and fd, lib.lazy_string_concat("Failed to open file '", file, "' for tangling: ", err))
 
         local write_content = table.concat(content, "\n")
-        if M.config.public.report_on_empty and write_content:len() == 0 then
+        if M.config.report_on_empty and write_content:len() == 0 then
           vim.schedule(function()
             utils.notify(string.format("coded content for %s is empty.", file), vim.log.levels.WARN)
           end)

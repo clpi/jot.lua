@@ -1,5 +1,8 @@
 ---@brief lsp
+local Path = require("pathlib")
 local log = require("jot.util.log")
+local tsu = require("nvim-treesitter.ts_utils")
+local tq = vim.treesitter.query
 
 local M = Mod.create("lsp", {
   "notebook",
@@ -22,19 +25,58 @@ local M = Mod.create("lsp", {
   "declaration",
   "completion",
 })
-
+M.opts = function() end
+M.maps = function()
+  local bufnr = require("jot.util.buf").buf()
+  local bufopts = { noremap = true, silent = true, buffer = bufnr }
+  vim.keymap.set("n", "gD", vim.lsp.buf.declaration, bufopts)
+  vim.keymap.set("n", "gd", vim.lsp.buf.definition, bufopts)
+  vim.keymap.set("n", "K", vim.lsp.buf.hover, bufopts)
+  vim.keymap.set("n", "gi", vim.lsp.buf.implementation, bufopts)
+  vim.keymap.set("n", "<C-k>", vim.lsp.buf.signature_help, bufopts)
+  vim.keymap.set("n", "<space>wa", vim.lsp.buf.add_workspace_folder, bufopts)
+  vim.keymap.set("n", "<space>wr", vim.lsp.buf.remove_workspace_folder, bufopts)
+  vim.keymap.set("n", "<space>wl", function()
+    print(vim.inspect(vim.lsp.buf.list_workspace_folders()))
+  end, bufopts)
+  vim.keymap.set("n", "<space>D", vim.lsp.buf.type_definition, bufopts)
+  vim.keymap.set("n", "<space>rn", vim.lsp.buf.rename, bufopts)
+  vim.keymap.set("n", "<space>ca", vim.lsp.buf.code_action, bufopts)
+  vim.keymap.set("n", "gr", vim.lsp.buf.references, bufopts)
+  -- vim.keymap.set("n", "<space>f", vim.lsp.buf.formatting, bufopts)
+  vim.keymap.set("n", "K", vim.lsp.buf.hover, { buffer = 0 })
+  vim.keymap.set("n", "gd", vim.lsp.buf.definition, { buffer = 0 })
+  vim.keymap.set("n", "gt", vim.lsp.buf.type_definition, { buffer = 0 })
+  vim.keymap.set("n", ",.", function()
+    vim.lsp.util.open_floating_preview(
+      vim.api.nvim_buf_get_lines(0, 0, 10, false),
+      "markdown",
+      {
+        wrap = true,
+        focusable = false,
+      }
+    )
+  end, {})
+  vim.keymap.set("n", "gi", vim.lsp.buf.implementation, { buffer = 0 })
+  vim.keymap.set("n", "gR", vim.lsp.buf.references, { buffer = 0 })
+  vim.keymap.set("n", "gr", vim.lsp.buf.rename, { buffer = 0 })
+  -- vim.keymap.set("n", "gf", vim.lsp.buf.formatting, { buffer = 0 })
+  vim.keymap.set("n", "ga", vim.lsp.buf.code_action, { buffer = 0 })
+  vim.keymap.set("n", ",a", vim.lsp.buf.code_action, { buffer = 0 })
+  vim.keymap.set("n", "en", vim.diagnostic.goto_next, { buffer = 0 })
+  vim.keymap.set("n", "ep", vim.diagnostic.goto_prev, { buffer = 0 })
+end
 M.setup = function()
   return {
-    success = true,
+    loaded = true,
     requires = {
       "integration.treesitter",
       "data",
       "workspace",
       "cmd",
       "ui.popup",
+      "ui.win",
       "lsp.workspace.diagnostic",
-      "lsp.file",
-      "lsp.workspace.fileops",
       "lsp.notebook",
       "lsp.workspace.folders",
       "lsp.workspace.config",
@@ -42,7 +84,7 @@ M.setup = function()
       "lsp.workspace.symbol",
       "lsp.workspace.lens",
       "lsp.document.diagnostic",
-      "lsp.document.hl",
+      "lsp.document.highlight",
       "lsp.document.link",
       "lsp.command",
       "lsp.document.symbol",
@@ -50,10 +92,13 @@ M.setup = function()
       "lsp.document.format",
       "lsp.document.lens",
       "lsp.document",
-      "lsp.completion.inline",
+      "lsp.document.highlight",
+      "lsp.workspace.fileops",
       "lsp.semantic",
       "lsp.refactor",
       "lsp.action",
+      "lsp.moniker",
+      "lsp.file",
       "lsp.hint",
       "lsp.hover",
       "lsp.signature",
@@ -114,8 +159,8 @@ M.public = {
   ws_folders = Mod.get_mod("lsp.workspace.folders"),
 }
 
----@class jot.lsp
-M.config.public = {
+---@class jot.lsp.config
+M.config = {
   diagnostic = { enable = true },
   format = { enable = true },
   actions = {
@@ -152,11 +197,12 @@ local ts ---@type treesitter
 local cmp ---@type lsp.completion
 local semantic ---@type lsp.semantic
 local sig ---@type lsp.signature
-local act ---@type lsp.actions
+local act ---@type lsp.action
 local hov ---@type lsp.hover
 local hint ---@type lsp.hint
 
 M.load = function()
+  -- M.maps()
   M.required.cmd.add_commands_from_table({
     rename = {
       args = 1,
@@ -293,15 +339,15 @@ M.public.init_result = function()
   -- ---@type lsp.ServerCapabilities
   -- local cap = initRes.capabilities
 
-  -- if not M.config.public.completion.enable then
+  -- if not M.config.completion.enable then
   --   cap.completionProvider = nil
-  -- elseif not M.config.public.format.enable then
+  -- elseif not M.config.format.enable then
   --   cap.documentFormattingProvider = nil
-  -- elseif not M.config.public.hover.enable then
+  -- elseif not M.config.hover.enable then
   --   cap.hoverProvider = nil
-  -- elseif not M.config.public.lens.enable then
+  -- elseif not M.config.lens.enable then
   --   cap.codeLensProvider = nil
-  -- elseif not M.config.public.actions.enable then
+  -- elseif not M.config.actions.enable then
   --   cap.codeActionProvider = nil
   -- else
   -- end
@@ -311,12 +357,17 @@ M.public.init_result = function()
   }
 end
 
+M.public.handle = function(method, err, result, ctx)
+  return function(err, result, ctx) end
+end
+
 ---@type lsp.ServerCapabilities
 M.public.capabilities = {
   workspace = {
-    workspaceFolders = Mod.get_mod("lsp.workspace.folders").server.capabilities,
+    ---@type lsp.FileOperationOptions
     fileOperations = Mod.get_mod("lsp.workspace.fileops").opts,
-    workspaceSymbolProvider = Mod.get_mod("lsp.workspace.symbol").opts,
+    workspaceFolders = Mod.get_mod("lsp.workspace.folders").server.capabilities,
+    -- workspaceSymbolProvider = Mod.get_mod("lsp.workspace.symbol").opts,
   },
   signatureHelpProvider = Mod.get_mod("lsp.signature").opts,
   renameProvider = Mod.get_mod("lsp.refactor").rename.opts,
@@ -324,36 +375,42 @@ M.public.capabilities = {
     workDoneProgress = true,
   },
   colorProvider = Mod.get_mod("lsp.document.color").opts,
-  diagnosticProvider = Mod.get_mod("lsp.workspace.diagnostic").opts,
-  workspaceSymbolProvider = Mod.get_mod("lsp.workspace.symbol").opts,
+  -- diagnosticProvider = Mod.get_mod("lsp.workspace.diagnostic").opts,
+  -- workspaceSymbolProvider = Mod.get_mod("lsp.workspace.symbol").opts,
   -- documentOnTypeFormattingProvider = Mod.get_mod("lsp.document.format").opts,
   -- documentRangeFormattingProvider = Mod.get_mod("lsp.document.format").opts,
-  foldingRangeProvider = Mod.get_mod("lsp.document.fold").opts,
-  documentSymbolProvider = Mod.get_mod("lsp.document.symbol").opts,
+  -- foldingRangeProvider = Mod.get_mod("lsp.document.fold").opts,
+  -- documentSymbolProvider = Mod.get_mod("lsp.document.symbol").opts,
   documentLinkProvider = Mod.get_mod("lsp.document.link").opts,
   documentColorProvider = Mod.get_mod("lsp.document.color").opts,
   hoverProvider = Mod.get_mod("lsp.hover").opts,
   inlineCompletionProvider = Mod.get_mod("lsp.completion.inline").opts,
   executeCommandProvider = Mod.get_mod("lsp.command").opts,
   inlayHintProvider = Mod.get_mod("lsp.hint").opts,
-  monikerProvider = Mod.get_mod("lsp.moniker").opts,
-  notebookDocumentSync = Mod.get_mod("lsp.notebook").sync.opts,
-  semanticTokensProvider = Mod.get_mod("lsp.semantic").opts,
-  inlineValueProvider = Mod.get_mod("lsp.completion.inline.value").opts,
+  -- monikerProvider = Mod.get_mod("lsp.moniker").opts,
+  -- notebookDocumentSync = Mod.get_mod("lsp.notebook").sync.opts,
+  -- semanticTokensProvider = Mod.get_mod("lsp.semantic").opts,
+  -- inlineValueProvider = Mod.get_mod("lsp.completion.inline.value").opts,
   -- textDocument = Mod.get_mod("lsp.document").opts,
-  textDocumentSync = Mod.get_mod("lsp.document").sync.opts,
+  -- textDocumentSync = Mod.get_mod("lsp.document").sync.opts,
   codeActionProvider = Mod.get_mod("lsp.action").opts,
   codeLensProvider = Mod.get_mod("lsp.workspace.lens").opts,
   -- documentFormattingProvider = Mod.get_mod("lsp.document.format").opts,
   -- documentHighlightProvider = Mod.get_mod("lsp.document.hl").opts,
-  definitionProvider = true,
-  declarationProvider = true,
+  -- definitionProvider = true,
+  -- declarationProvider = true,
+  -- textDocument = {
+  --   diagnostic = {
+  --     markupMessageSupport = true,
+  --   },
+  -- },
+  -- documentHighlightProvider = Mod.get_mod("lsp.document.highlight").opts,
   ---@type lsp.LSPAny
-  experimental = true,
-  callHierarchyProvider = true,
-  implementationProvider = true,
+  -- experimental = true,
+  -- callHierarchyProvider = false,
+  -- implementationProvider = Mod.get_mod("lsp.implementation").opts,
   linkedEditingRangeProvider = true,
-  positionEncoding = "utf-8",
+  -- positionEncoding = "utf-8",
   selectionRangeProvider = true,
   typeDefinitionProvider = true,
   typeHierarchyProvider = true,
@@ -372,6 +429,7 @@ M.public.initializeResult = {
   capabilities = M.public.capabilities,
 }
 
+---@class lsp.handlers
 M.public.handlers = {
 
   ["exit"] = function() end,
@@ -381,17 +439,18 @@ M.public.handlers = {
   ["initialize"] = function(params, callback, notify_reply_callback)
     ---@type lsp.InitializeResult
     local ir = M.public.initializeResult
-    if not M.config.public.completion.enable then
+    if not M.config.completion.enable then
       ir.capabilities.completionProvider = nil
-    elseif not M.config.public.actions.enable then
+    elseif not M.config.actions.enable then
       ir.capabilities.codeActionProvider = nil
-    elseif not M.config.public.lens.enable then
+    elseif not M.config.lens.enable then
       ir.capabilities.codeLensProvider = nil
     end
 
     callback(nil, ir)
   end,
 
+  ["textDocument/didOpen"] = function(err, result, ctx) end,
   ["textDocument/moniker"] = function(
       params,
       callback,
@@ -416,27 +475,34 @@ M.public.handlers = {
       notify_reply_callback
   )
   end,
-  ['textDocument/moniker'] = function(params, callback, notify_reply_callback)
+  ["textDocument/moniker"] = function(
+      params,
+      callback,
+      notify_reply_callback
+  )
   end,
   ["textDocument/hover"] = function(params, callback, _notify_reply_callback)
-    local buf = vim.uri_to_bufnr(params.textDocument.uri)
-    vim.lsp.buf.hover()
-    local node = ts.get_first_node_on_line(buf, params.position.line)
-    if not node then
-      return
-    end
+    -- local buf = vim.uri_to_bufnr(params.textDocument.uri)
+    -- local b = require("jot.util.buf").buf()
+    M.required["ui.win"].win("hi", "bro", "Jot note today")
 
-    local type = node:type()
-    if type:match("^heading%d") then
-      local heading_line = vim.api.nvim_buf_get_lines(
-        buf,
-        params.position.line,
-        params.position.line + 1,
-        true
-      )[1]
-      callback(nil, { contents = { { value = heading_line } } })
-    end
-    callback()
+    -- vim.lsp.buf.hover()
+    -- local node = M.public.ts.get_first_node_on_line(b, params.position.line)
+    -- if not node then
+    --   return
+    -- end
+    --
+    -- local type = node:type()
+    -- if type:match("^heading%d") then
+    --   local heading_line = vim.api.nvim_buf_get_lines(
+    --     buf,
+    --     params.position.line,
+    --     params.position.line + 1,
+    --     true
+    --   )[1]
+    --   callback(nil, { contents = { { value = heading_line } } })
+    -- end
+    -- callback()
   end,
 
   ["textDocument/formatting"] = function(
@@ -549,7 +615,7 @@ M.public.handlers = {
   end,
   ["textDocument/completion"] = function(p, c, _)
     -- Attempt to hijack completion for categories completions
-    if M.config.public.completion.categories then
+    if M.config.completion.categories then
       local cats = cmp.category_completion()
       if cats and not vim.tbl_isempty(cats) then
         c(nil, cmp.category_completion())
@@ -799,6 +865,7 @@ M.public.handlers = {
   )
     vim.lsp.buf.signature_help()
   end,
+  ["completionItem/resolve"] = function() end,
   ["textDocument/codeAction"] = function(
       params,
       callback,
@@ -830,6 +897,10 @@ M.public.handlers = {
     callback(nil, actions)
   end,
 
+  ["window/showDocument"] = function() end,
+  ["workspace/diagnostic/refresh"] = function() end,
+  ["textDocument/documentColor"] = function() end,
+  ["textDocument/declaration"] = function() end,
   ["workspace/willRenameFiles"] = function(
       params,
       _callback,
@@ -846,6 +917,10 @@ M.public.handlers = {
 M.public.start_lsp = function()
   ---@type lsp.InitializeResult
   -- local ir = M.public.init_result()
+  vim.lsp.start({
+    name = "jot-lsp",
+    cmd = { "/Users/clp/jot/scripts/bin/jot-lsp", "serve" },
+  })
   vim.lsp.start(
   ---@type vim.lsp.ClientConfig
     {
@@ -940,18 +1015,19 @@ M.events.subscribed = {
 }
 
 M.on_event = function(event)
-  if M.private[event.split_type[2]] then
-    M.private[event.split_type[2]](event)
+  if M.public.data[event.split_type[2]] then
+    M.public.data[event.split_type[2]](event)
   end
 end
 
-M.private["lsp.stop"] = function(e)
+M.public.data = {}
+M.public.data["lsp.stop"] = function(e)
   vim.lsp.stop_client(vim.lsp.get_clients({
     bufnr = vim.api.nvim_get_current_buf(),
     name = "jot",
   }))
 end
-M.private["lsp.rename.file"] = function(event)
+M.public.data["lsp.rename.file"] = function(event)
   local new_path = event.content[1]
   local current = vim.api.nvim_buf_get_name(0)
   if new_path then
@@ -965,7 +1041,7 @@ M.private["lsp.rename.file"] = function(event)
     end)
   end
 end
-M.private["lsp.hint"] = function(event)
+M.public.data["lsp.hint"] = function(event)
   vim.ui.input({
     prompt = "lsp.hint",
   }, function(selected)
@@ -974,7 +1050,7 @@ M.private["lsp.hint"] = function(event)
     end
   end)
 end
-M.private["lsp.document.format"] = function(event)
+M.public.data["lsp.document.format"] = function(event)
   vim.ui.select({
     "hi",
     "there",
@@ -988,29 +1064,29 @@ M.private["lsp.document.format"] = function(event)
     end
   end)
 end
-M.private["lsp.command"] = function(event)
+M.public.data["lsp.command"] = function(event)
   vim.ui.select({})
 end
-M.private["lsp.semantic"] = function(event) end
-M.private["lsp.implementation"] = function(event) end
-M.private["lsp.declaration"] = function(event) end
-M.private["lsp.typeDefinition"] = function(event) end
-M.private["lsp.definition"] = function(event) end
-M.private["lsp.workspace"] = function(event)
-  M.private["lsp.workspace.lens"] = function(event) end
-  M.private["lsp.document.lens"] = function(event) end
+M.public.data["lsp.semantic"] = function(event) end
+M.public.data["lsp.implementation"] = function(event) end
+M.public.data["lsp.declaration"] = function(event) end
+M.public.data["lsp.typeDefinition"] = function(event) end
+M.public.data["lsp.definition"] = function(event) end
+M.public.data["lsp.workspace"] = function(event)
+  M.public.data["lsp.workspace.lens"] = function(event) end
+  M.public.data["lsp.document.lens"] = function(event) end
   vim.lsp.util.open_floating_preview({})
 end
-M.private["lsp.workspace.config"] = function(event)
+M.public.data["lsp.workspace.config"] = function(event)
   vim.lsp.util.open_floating_preview({})
 end
-M.private["lsp.workspace.folders"] = function(event)
+M.public.data["lsp.workspace.folders"] = function(event)
   vim.lsp.util.open_floating_preview({})
 end
-M.private["lsp.action"] = function(event)
+M.public.data["lsp.action"] = function(event)
   vim.lsp.util.open_floating_preview({})
 end
-M.private["rename.heading"] = function(event)
+M.public.data["rename.heading"] = function(event)
   local line_number = event.cursor_position[1]
   local prefix = string.match(event.line_content, "^%s*%*+ ")
   if not prefix then -- this is a very very simple check that we're on a heading line. We use TS in the actual rename_heading function
@@ -1031,12 +1107,12 @@ M.private["rename.heading"] = function(event)
   end)
 end
 
-M.run_dict = function()
+M.public.jot_lsp = function()
   vim.lsp.start({
-    name = "lsp.sh",
-    cmd = { "lsp.sh" },
-    workspace_folders = M.required.workspace.get_dirs(),
-    root_dir = tostring(M.required.workspace.get_current_workspace()[2]),
+    name = "jot-lsp",
+    cmd = { "/Users/clp/jot/scripts/bin/jot-lsp" },
+    -- workspace_folders = M.required.workspace.get_dirs(),
+    -- root_dir = tostring(M.required.workspace.get_current_workspace()[2]),
   })
 end
 

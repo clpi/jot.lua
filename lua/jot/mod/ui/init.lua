@@ -29,11 +29,11 @@ init.setup = function()
   return {
     namespace = vim.api.nvim_create_namespace("jot/ui"),
     requires = {},
-    success = true,
+    loaded = true,
   }
 end
 
-init.private = {
+init.public.data = {
   namespace = vim.api.nvim_create_namespace("jot/ui"),
 }
 
@@ -110,10 +110,10 @@ init.public = {
       height = { height, "number", true },
     })
 
-    local bufname = "jot://" .. name
+    local bufname = "jot://"..name
 
     if vim.fn.bufexists(bufname) == 1 then ---@diagnostic disable-line
-      log.error("Buffer '" .. name .. "' already exists")
+      log.error("Buffer '"..name.."' already exists")
       return
     end
 
@@ -184,7 +184,7 @@ init.public = {
       filetype = "markdown",
     }
 
-    vim.api.nvim_buf_set_name(buf, "jot://" .. name)
+    vim.api.nvim_buf_set_name(buf, "jot://"..name)
 
     local win_options = {
       vertical = true,
@@ -225,10 +225,10 @@ init.public = {
       return
     end
 
-    local namespace = vim.api.nvim_create_namespace("jot://display/" .. name)
+    local namespace = vim.api.nvim_create_namespace("jot://display/"..name)
 
     local buf = (function()
-      name = "display/" .. name
+      name = "display/"..name
 
       if split_type == "vsplitl" then
         return init.public.create_vsplit(name, true, {}, { split = "left" })
@@ -332,7 +332,7 @@ init.public = {
     end
 
     local buf = (function()
-      name = "jot/" .. name .. ".md"
+      name = "jot/"..name..".md"
 
       if split_type == "vsplitl" then
         return init.public.create_vsplit(name, true, {}, { split = "left" })
@@ -359,8 +359,8 @@ init.public = {
     if opts.del_on_autocmd and #opts.del_on_autocmd ~= 0 then
       vim.cmd(
         "autocmd "
-        .. table.concat(opts.del_on_autocmd, ",")
-        .. (" <buffer=%s> silent! bd! %s"):format(buf, buf)
+       ..table.concat(opts.del_on_autocmd, ",")
+       ..(" <buffer=%s> silent! bd! %s"):format(buf, buf)
       )
     end
 

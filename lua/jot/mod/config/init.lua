@@ -1,6 +1,8 @@
 local M = Mod.create_meta(
--- "integration.treesitter"  ,
--- "config",
+  "config",
+  "ui",
+  -- "integration.treesitter"  ,
+  -- "config",
   "edit",
   -- "autocmd",
   "note",
@@ -43,6 +45,5 @@ local M = Mod.create_meta(
   -- "link"
   "todo"
 )
-
 
 return M

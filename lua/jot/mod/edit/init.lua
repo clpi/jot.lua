@@ -9,12 +9,12 @@ local config, lib, log, mod = jot.cfg, jot.lib, jot.log, jot.mod
 
 M.setup = function()
   return {
-    success = true,
+    loaded = true,
     requires = { 'link' }
   }
 end
 
-M.config.public = {
+M.config = {
   silent = false,
   wrap = false,
   continue = true, ---@type boolean | nil
@@ -68,10 +68,10 @@ M.public.jump = function(pattern, reverse)
   -- Get the line's contents
   line = vim.api.nvim_buf_get_lines(0, row - 1, row, false)[1]
   line_len = #line
-  if M.config.public.context > 0 and line_len > 0 then
-    for i = 1, M.config.public.context, 1 do
+  if M.config.context > 0 and line_len > 0 then
+    for i = 1, M.config.context, 1 do
       local following_line = vim.api.nvim_buf_get_lines(0, row, row + 1, false)[1]
-      line = (following_line and line .. following_line) or line
+      line = (following_line and line..following_line) or line
     end
   end
   -- Get start & end indices of match (if any)
@@ -96,31 +96,31 @@ M.public.jump = function(pattern, reverse)
     else -- If there's not a match on the current line, keep checking line-by-line
       -- Update row to search next line
       row = (reverse and row - 1) or row + 1
-      -- Get the content of the next line (if any), appending M.config.public.contextual lines if M.config.public.context > 0
+      -- Get the content of the next line (if any), appending M.config.contextual lines if M.config.context > 0
       line = vim.api.nvim_buf_get_lines(0, row - 1, row, false)[1]
       line_len = line and #line
       -- Since we're on the next line, cursor position no longer matters and we want to make
       -- sure that `col` is always < left (or > if reverse == true)
       col = reverse and line_len or -1
-      if line and M.config.public.context > 0 and line_len > 0 then
-        for i = 1, M.config.public.context, 1 do
+      if line and M.config.context > 0 and line_len > 0 then
+        for i = 1, M.config.context, 1 do
           local following_line = vim.api.nvim_buf_get_lines(0, row, row + 1, false)[1]
-          line = (following_line and line .. following_line) or line
+          line = (following_line and line..following_line) or line
         end
       end
       if line then -- If it's a real line, search it
         left, right = M.public.find_patterns(line, pattern, reverse)
       else
         -- If the line is nil, there is no next line and the loop should stop (unless wrapping is on)
-        if M.config.public.wrap == true then -- If searching backwards & user wants search to wrap, go to last line in file
+        if M.config.wrap == true then -- If searching backwards & user wants search to wrap, go to last line in file
           if not already_wrapped then
             row = (reverse and vim.api.nvim_buf_line_count(0) + 1) or 0
             already_wrapped = true
           else
-            M.config.public.continue = nil
+            M.config.continue = nil
           end
         else -- Otherwise, search is done
-          M.config.public.continue = nil
+          M.config.continue = nil
         end
       end
     end
@@ -169,16 +169,16 @@ M.public.go_to_heading = function(anchor_text, reverse)
       end
       row = (reverse and row - 1) or row + 1
       if row == starting_row + 1 then
-        M.config.public.continue = nil
+        M.config.continue = nil
         if anchor_text == nil then
           local message = "⬇️  Couldn't find a heading to go to!"
-          if not M.config.public.silent then
+          if not M.config.silent then
             vim.api.nvim_echo({ { message, 'WarningMsg' } }, true, {})
           end
         else
           local message = "⬇️  Couldn't find a heading matching "
-              .. anchor_text
-              .. '!'
+             ..anchor_text
+             ..'!'
           if not silent then
             vim.api.nvim_echo({ { message, 'WarningMsg' } }, true, {})
           end
@@ -194,10 +194,10 @@ M.public.go_to_heading = function(anchor_text, reverse)
         local place = (reverse and 'beginning') or 'end'
         local preposition = (reverse and 'after') or 'before'
         local message = '⬇️  There are no more headings '
-            .. preposition
-            .. ' the '
-            .. place
-            .. ' of the document!'
+           ..preposition
+           ..' the '
+           ..place
+           ..' of the document!'
         if not silent then
           vim.api.nvim_echo({ { message, 'WarningMsg' } }, true, {})
         end
@@ -220,7 +220,7 @@ M.public.go_to_id = function(id, starting_row)
     end
     if start then
       local substring = string.sub(line, start, finish)
-      if substring:match('{[^%}]*' .. utils.luaEscape(id) .. '[^%}]*}') then
+      if substring:match('{[^%}]*'..utils.luaEscape(id)..'[^%}]*}') then
         continue = false
       else
         local continue_line = true
@@ -228,7 +228,7 @@ M.public.go_to_id = function(id, starting_row)
           start, finish = line:find('%b[]%b{}', finish)
           if start then
             substring = string.sub(line, start, finish)
-            if substring:match('{[^%}]*' .. utils.luaEscape(id) .. '[^%}]*}') then
+            if substring:match('{[^%}]*'..utils.luaEscape(id)..'[^%}]*}') then
               continue_line = false
               continue = false
             end
@@ -329,11 +329,11 @@ M.public.yankAsAnchorLink = function(full_path)
       local buffer = vim.api.nvim_buf_get_name(0)
       local left = anchor_link:match('(%b[]%()#')
       local right = anchor_link:match('%b[]%((#.*)$')
-      anchor_link = left .. buffer .. right
-      vim.cmd('let @"="' .. anchor_link .. '"')
+      anchor_link = left..buffer..right
+      vim.cmd('let @"="'..anchor_link..'"')
     else
       -- Add to the unnamed register
-      vim.cmd('let @"="' .. anchor_link .. '"')
+      vim.cmd('let @"="'..anchor_link..'"')
     end
   elseif is_bracketed_span then
     local name = links.getBracketedSpanPart('text')
@@ -342,11 +342,11 @@ M.public.yankAsAnchorLink = function(full_path)
     if name and attr then
       if full_path then
         local buffer = vim.api.nvim_buf_get_name(0)
-        anchor_link = '[' .. name .. ']' .. '(' .. buffer .. attr .. ')'
+        anchor_link = '['..name..']'..'('..buffer..attr..')'
       else
-        anchor_link = '[' .. name .. ']' .. '(' .. attr .. ')'
+        anchor_link = '['..name..']'..'('..attr..')'
       end
-      vim.cmd('let @"="' .. anchor_link .. '"')
+      vim.cmd('let @"="'..anchor_link..'"')
     end
   else
     local message = '⬇️  The current line is not a heading or bracketed span!'

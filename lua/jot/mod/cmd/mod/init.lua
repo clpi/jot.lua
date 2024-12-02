@@ -27,7 +27,7 @@ M.public = {
   },
 }
 M.setup = function()
-  return { success = true, requires = { "cmd" } }
+  return { loaded = true, requires = { "cmd" } }
 end
 
 
@@ -72,7 +72,7 @@ M.on_event = function(event)
     local lines = {}
 
     for name, _ in pairs(jot.mod.loaded_mod) do
-      table.insert(lines, "- `" .. name .. "`")
+      table.insert(lines, "- `"..name.."`")
     end
 
     vim.api.nvim_buf_set_lines(mod_list_popup.bufnr, 0, -1, true, lines)
