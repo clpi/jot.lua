@@ -1,1 +1,3 @@
-local M = Mod.create("ui.inline")
+local M = Mod.create("ui.render.md")
+
+return M
