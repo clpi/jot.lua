@@ -1,5 +1,14 @@
 local M = Mod.create("lsp.action")
 
+function M.setup()
+  return {
+    requires = {
+      "workspace",
+    },
+    loaded = true,
+  }
+end
+
 ---@class lsp.action
 M.data = {
 
@@ -15,7 +24,7 @@ M.data = {
       "refactor.rewrite",
       "source",
       "source.fixAll",
-      "source.organizeImports"
+      "source.organizeImports",
     },
     documentSelector = {
       scheme = "file",
@@ -36,7 +45,7 @@ M.data = {
           "refactor.rewrite",
           "source",
           "source.fixAll",
-          "source.organizeImports"
+          "source.organizeImports",
         },
       },
     },
@@ -56,8 +65,7 @@ M.data = {
         "renameFile",
         "deleteFile",
       },
-    }
-
+    },
   },
   ---@type lsp.CodeActionContext
   context = {
@@ -173,8 +181,8 @@ M.data = {
       "refactor.rewrite",
       "source",
       "source.fixAll",
-      "source.organizeImports"
-    }
+      "source.organizeImports",
+    },
   },
   ---@type lsp.CodeActionClientCapabilities
   capabilities = {},

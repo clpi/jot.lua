@@ -1,5 +1,14 @@
 local S = Mod.create("lsp.workspace.config")
 
+function S.setup()
+  return {
+    requires = {
+      "workspace",
+    },
+    loaded = true,
+  }
+end
+
 ---@class lsp.workspace.config
 S.data = {
 

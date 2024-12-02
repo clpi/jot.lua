@@ -1,5 +1,14 @@
 local M = Mod.create("lsp.hint")
 
+function M.setup()
+  return {
+    requires = {
+      "workspace",
+    },
+    loaded = true,
+  }
+end
+
 ---@class lsp.hint
 M.data = {
   ---@param param lsp.InlayHintParams
@@ -33,8 +42,7 @@ M.data = {
       properties = {
         "label",
       },
-    }
-
+    },
   },
   ---@type lsp.InlayHintOptions
   opts = {

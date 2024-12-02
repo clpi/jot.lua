@@ -1,5 +1,14 @@
 local S = Mod.create("lsp.workspace.diagnostic")
 
+function S.setup()
+  return {
+    requires = {
+      "workspace",
+    },
+    loaded = true,
+  }
+end
+
 ---@class lsp.workspace.diagnostic
 S.data = {
   ---@type lsp.PublishDiagnosticsClientCapabilities

@@ -1,5 +1,14 @@
 local I = Mod.create("lsp.implementation")
 
+function I.setup()
+  return {
+    requires = {
+      "workspace",
+    },
+    loaded = true,
+  }
+end
+
 ---@class lsp.implementation
 I.data = {
   ---@type lsp.ImplementationOptions
@@ -20,7 +29,4 @@ I.data = {
   end,
 }
 
-I.setup = function()
-  return {}
-end
 return I

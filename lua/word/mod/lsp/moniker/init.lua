@@ -1,18 +1,24 @@
 local M = Mod.create("lsp.moniker")
 
+function M.setup()
+  return {
+    requires = {
+      "workspace",
+    },
+    loaded = true,
+  }
+end
+
 ---@class lsp.moniker
 M.data = {
 
   ---@type lsp.MonikerClientCapabilities
   capabilities = {
-    dynamicRegistration = true
-
+    dynamicRegistration = true,
   },
   ---@type lsp.MonikerOptions
   opts = {
     workDoneProgress = true,
-
-
   },
 
   ---@param param lsp.MonikerParams

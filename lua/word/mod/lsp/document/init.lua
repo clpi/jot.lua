@@ -14,7 +14,7 @@ local M = Mod.create("lsp.document", {
 M.setup = function()
   return {
     loaded = true,
-    required = {
+    requires = {
       "workspace",
       "lsp.workspace",
     },

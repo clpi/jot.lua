@@ -1,5 +1,6 @@
 local M = Mod.create("lsp.workspace", {
   "lens",
+  "tag",
   "config",
   "folders",
   "edit",
@@ -10,6 +11,9 @@ local M = Mod.create("lsp.workspace", {
 
 function M.setup()
   return {
+    requires = {
+      "workspace",
+    },
     loaded = true,
   }
 end

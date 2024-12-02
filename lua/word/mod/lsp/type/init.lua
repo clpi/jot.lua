@@ -1,16 +1,15 @@
 local T = Mod.create("lsp.type")
 
 function T.setup()
-    return {
-        loaded = true
-    }
+  return {
+    requires = {
+      "workspace",
+    },
+    loaded = true,
+  }
 end
 
-T.config.public = {
+T.config.public = {}
 
-}
-
-T.data = {
-
-}
+T.data = {}
 return T

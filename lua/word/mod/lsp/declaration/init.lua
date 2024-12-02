@@ -1,16 +1,16 @@
 local I = Mod.create("lsp.declaration")
 
 function I.setup()
-    return {
-        loaded = true
-    }
+  return {
+    requires = {
+      "workspace",
+    },
+    loaded = true,
+  }
 end
-I.config.public = {
 
-}
+I.config.public = {}
 
-I.data = {
-
-}
+I.data = {}
 
 return I

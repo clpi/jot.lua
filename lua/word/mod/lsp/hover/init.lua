@@ -1,5 +1,14 @@
 local M = Mod.create("lsp.hover")
 
+function M.setup()
+  return {
+    requires = {
+      "workspace",
+    },
+    loaded = true,
+  }
+end
+
 ---@class lsp.hover
 M.data = {
 

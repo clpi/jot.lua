@@ -1,6 +1,6 @@
 local D = Mod.create("lsp.document.link")
 
----@class lsp.document.link
+---@class lsp.document.link.Data
 D.data = {
 
   ---@type lsp.DocumentLinkRegistrationOptions
@@ -52,5 +52,39 @@ D.data = {
     tooltipSupport = true,
   },
 }
+
+---@class (exact) lsp.document.link.Wikilink
+---@field public target string: doc
+---@field public doc? string: doc
+---@field public heading? string | nil: doc
+D.data.wikilink = {
+  target = "index",
+  doc = "# index",
+  heading = nil,
+}
+---@class (exact) lsp.document.link.LinkRef
+---@field public content string
+---@field public kind lsp.document.link.LinkRefKind: 'full' | 'collapsed' | 'shortcut'
+---@field public target? string
+D.data.ref = {
+  ---@type string
+  content = "link",
+  ---@type string | nil
+  target = nil,
+  ---@alias lsp.document.link.LinkRefKind "shortcut"|"full"|"collapsed"
+  kind = "shortcut",
+}
+
+---@class (exact) lsp.document.link.DocumentLink
+---@field text string: text
+---@field url? string: url target
+---@field anchor? string: anchor
+D.data.link = {
+  url = "file://./",
+  anchor = "",
+  text = "",
+}
+
+---@alias lsp.document.link.Link lsp.document.link.Wikilink|lsp.document.link.LinkRef|lsp.document.link.DocumentLink
 
 return D

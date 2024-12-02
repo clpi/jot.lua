@@ -1,5 +1,13 @@
 local M = Mod.create("lsp.workspace.symbol")
 
+function M.setup()
+  return {
+    requires = {
+      "workspace",
+    },
+    loaded = true,
+  }
+end
 
 ---@class lsp.workspace.symbol
 M.data = {
@@ -10,26 +18,26 @@ M.data = {
       properties = {
         "documentation",
         "detail",
-        "additionalTextEdits"
-      }
+        "additionalTextEdits",
+      },
     },
     ---@type lsp.SymbolKind[]
     symbolKind = {
-      1, 2, 3, 4
+      1,
+      2,
+      3,
+      4,
     },
     tagSupport = {
       valueSet = {
         1,
-      }
+      },
     },
-
-
   },
   ---@type lsp.WorkspaceSymbolOptions
   opts = {
     resolveProvider = true,
-    workDoneProgress = true
-
-  }
+    workDoneProgress = true,
+  },
 }
 return M

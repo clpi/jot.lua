@@ -1,5 +1,14 @@
 local F = Mod.create("lsp.workspace.fileops")
 
+function F.setup()
+  return {
+    requires = {
+      "workspace",
+    },
+    loaded = true,
+  }
+end
+
 ---@class lsp.workspace.fileops
 F.data = {
   ---@type lsp.FileOperationClientCapabilities

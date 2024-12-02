@@ -1,5 +1,14 @@
 local M = Mod.create("lsp.workspace.edit")
 
+function M.setup()
+  return {
+    requires = {
+      "workspace",
+    },
+    loaded = true,
+  }
+end
+
 ---@class lsp.workspace.edit
 M.data = {
   ---@type lsp.WorkspaceEditClientCapabilities

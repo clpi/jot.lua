@@ -4,7 +4,7 @@ local W = Mod.create("lsp.window", {
 
 function W.setup()
   return {
-    required = {
+    requires = {
       "workspace",
       "lsp.workspace",
     },

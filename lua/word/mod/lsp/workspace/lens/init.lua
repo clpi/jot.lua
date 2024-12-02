@@ -1,5 +1,14 @@
 local M = Mod.create("lsp.workspace.lens")
 
+function M.setup()
+  return {
+    requires = {
+      "workspace",
+    },
+    loaded = true,
+  }
+end
+
 ---@class lsp.workspace.lens
 M.data = {
   ---@type lsp.CodeLensWorkspaceClientCapabilities
@@ -10,8 +19,6 @@ M.data = {
   opts = {
     workDoneProgress = true,
     resolveProvider = true,
-
-
   },
 
   ---@param param lsp.CodeLensParams

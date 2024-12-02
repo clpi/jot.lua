@@ -1,5 +1,14 @@
 local C = Mod.create("lsp.command")
 
+function C.setup()
+  return {
+    requires = {
+      "workspace",
+    },
+    loaded = true,
+  }
+end
+
 ---@class lsp.command
 C.data = {
 

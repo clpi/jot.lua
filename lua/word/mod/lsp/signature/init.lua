@@ -1,5 +1,14 @@
 local M = Mod.create("lsp.signature")
 
+function M.setup()
+  return {
+    requires = {
+      "workspace",
+    },
+    loaded = true,
+  }
+end
+
 ---@class lsp.signature
 M.data = {
   ---@param param lsp.SignatureHelpParams
