@@ -103,12 +103,18 @@ M.setup = function()
       "lsp.hover",
       "lsp.signature",
       "lsp.workspace",
+      "lsp.window",
       "lsp.completion",
     },
   }
 end
 
 M.data = {
+  experimentalCapabilities = {
+    followLinks = true,
+    statusNotification = true,
+    codeLensFindReferences = true,
+  },
   ---@type lsp.moniker
   moniker = Mod.get_mod("lsp.moniker"),
   ---@type lsp.command
@@ -452,39 +458,39 @@ M.data.handlers = {
 
   ["textDocument/didOpen"] = function(err, result, ctx) end,
   ["textDocument/moniker"] = function(
-      params,
-      callback,
-      _notify_reply_callback
+    params,
+    callback,
+    _notify_reply_callback
   )
   end,
   ["workspace/applyEdit"] = function(
-      params,
-      callback,
-      _notify_reply_callback
+    params,
+    callback,
+    _notify_reply_callback
   )
   end,
   ["textDocument/documentLink"] = function(
-      params,
-      callback,
-      _notify_reply_callback
+    params,
+    callback,
+    _notify_reply_callback
   )
   end,
   ["documentLink/resolve"] = function(
-      params,
-      callback,
-      notify_reply_callback
+    params,
+    callback,
+    notify_reply_callback
   )
   end,
-  ["textDocument/moniker"] = function(
-      params,
-      callback,
-      notify_reply_callback
+  ["textDocument/declaration"] = function(
+    params,
+    callback,
+    notify_reply_callback
   )
   end,
   ["textDocument/hover"] = function(params, callback, _notify_reply_callback)
     -- local buf = vim.uri_to_bufnr(params.textDocument.uri)
     -- local b = require("word.util.buf").buf()
-    M.required["ui.win"].win("hi", "bro", "word note today")
+    M.required["ui.win"].win("hi", "bro", "Word note today")
 
     -- vim.lsp.buf.hover()
     -- local node = M.data.ts.get_first_node_on_line(b, params.position.line)
@@ -506,24 +512,31 @@ M.data.handlers = {
   end,
 
   ["textDocument/formatting"] = function(
-      params,
-      callback,
-      _notify_reply_callback
+    params,
+    callback,
+    _notify_reply_callback
   )
     format.format_document(params.textDocument.uri, callback)
   end,
 
+  ["textDocument/inlineValue/refresh"] = function(
+    params,
+    callback,
+    _notify_reply_callback
+  )
+    callback()
+  end,
   ["textDocument/inlineValue"] = function(
-      params,
-      callback,
-      _notify_reply_callback
+    params,
+    callback,
+    _notify_reply_callback
   )
     callback()
   end,
   ["textDocument/inlayHint"] = function(
-      params,
-      _callback,
-      _notify_reply_callback
+    params,
+    _callback,
+    _notify_reply_callback
   )
     local buf = vim.uri_to_bufnr(params.textDocument.uri)
     vim.lsp.inlay_hint.enable(true, { bufnr = buf })
@@ -543,9 +556,9 @@ M.data.handlers = {
     _callback(nil, hints)
   end,
   ["textDocument/documentSymbol"] = function(
-      params,
-      callback,
-      _notify_reply_callback
+    params,
+    callback,
+    _notify_reply_callback
   )
     local buf = vim.uri_to_bufnr(params.textDocument.uri)
     local symbols = {}
@@ -574,9 +587,9 @@ M.data.handlers = {
   end,
 
   ["textDocument/linkedEditingRange"] = function(
-      params,
-      callback,
-      _notify_reply_callback
+    params,
+    callback,
+    _notify_reply_callback
   )
     local buf = vim.uri_to_bufnr(params.textDocument.uri)
     -- local node = ts.get_first_node_on_line(buf, params.position.line)
@@ -594,9 +607,9 @@ M.data.handlers = {
     callback(nil, range)
   end,
   ["textDocument/foldingRange"] = function(
-      params,
-      callback,
-      _notify_reply_callback
+    params,
+    callback,
+    _notify_reply_callback
   )
     local buf = vim.uri_to_bufnr(params.textDocument.uri)
     local ranges = {}
@@ -613,22 +626,25 @@ M.data.handlers = {
     -- end
     callback(nil, ranges)
   end,
-  ["textDocument/completion"] = function(p, c, _)
-    -- Attempt to hijack completion for categories completions
+  ["textDocument/completion"] = function(
+    params,
+    callback,
+    notify_reply_callback
+  )
     if M.config.public.completion.categories then
       local cats = cmp.category_completion()
       if cats and not vim.tbl_isempty(cats) then
-        c(nil, cmp.category_completion())
+        callback(nil, cmp.category_completion())
         return
       end
     end
-    cmp.completion_handler(p, c, _)
+    cmp.handler(params, callback, notify_reply_callback)
   end,
 
   ["textDocument/prepareRename"] = function(
-      params,
-      callback,
-      _notify_reply_callback
+    params,
+    callback,
+    _notify_reply_callback
   )
     local buf = vim.uri_to_bufnr(params.textDocument.uri)
     -- local node = ts.get_first_node_on_line(buf, params.position.line)
@@ -654,9 +670,9 @@ M.data.handlers = {
   end,
 
   ["textDocument/codeLens"] = function(
-      params,
-      callback,
-      _notify_reply_callback
+    params,
+    callback,
+    _notify_reply_callback
   )
     local buf = vim.uri_to_bufnr(params.textDocument.uri)
     local codeLens = {}
@@ -687,12 +703,20 @@ M.data.handlers = {
   end,
 
   ["textDocument/references"] = function(
-      params,
-      callback,
-      _notify_reply_callback
+    params,
+    callback,
+    _notify_reply_callback
   )
     local buf = vim.uri_to_bufnr(params.textDocument.uri)
+    local wspath = M.required["workspace"].get_current_workspace()[2]
+    local nt = vim.treesitter.get_captures_at_cursor(0)
+    local linenr = params.position.line
+    local ln = vim.api.nvim_buf_get_lines(0, linenr, linenr + 1, false)
+    local name = vim.api.nvim_buf_get_name(0)
     local references = {}
+    -- callback(nil, references)
+    return references
+
     -- for _, node in ipairs(ts.get_nodes(buf)) do
     --   if node:type() == "heading1" then
     --     table.insert(references, {
@@ -704,13 +728,12 @@ M.data.handlers = {
     --     })
     --   end
     -- end
-    callback(nil, references)
   end,
 
   ["workspace/inlayHint/refresh"] = function(
-      params,
-      _callback,
-      _notify_reply_callback
+    params,
+    _callback,
+    _notify_reply_callback
   )
     local buf = vim.uri_to_bufnr(params.uri)
     local hints = {}
@@ -730,45 +753,45 @@ M.data.handlers = {
   end,
 
   ["typeHierarchy/subtypes"] = function(
-      params,
-      _callback,
-      _notify_reply_callback
+    params,
+    _callback,
+    _notify_reply_callback
   )
   end,
   ["typeHierarchy/supertypes"] = function(
-      params,
-      _callback,
-      _notify_reply_callback
+    params,
+    _callback,
+    _notify_reply_callback
   )
   end,
   ["textDocument/typeDefinition"] = function(
-      params,
-      _callback,
-      _notify_reply_callback
+    params,
+    _callback,
+    _notify_reply_callback
   )
   end,
   ["workspace/configuration"] = function(
-      params,
-      _callback,
-      _notify_reply_callback
+    params,
+    _callback,
+    _notify_reply_callback
   )
   end,
   ["workspace/executeCommand"] = function(
-      params,
-      _callback,
-      _notify_reply_callback
+    params,
+    _callback,
+    _notify_reply_callback
   )
   end,
   ["workspace/workspaceFolders"] = function(
-      params,
-      _callback,
-      _notify_reply_callback
+    params,
+    _callback,
+    _notify_reply_callback
   )
   end,
   ["workspace/symbol"] = function(
-      params,
-      _callback,
-      _notify_reply_callback
+    params,
+    _callback,
+    _notify_reply_callback
   )
   end,
   -- ["textDocument/semanticTokens/full"] = function(params, _callback, _notify_reply_callback)
@@ -776,21 +799,21 @@ M.data.handlers = {
   -- ["textDocument/semanticTokens/full/delta"] = function(params, _callback, _notify_reply_callback)
   -- end,
   ["textDocument/publishDiagnostics"] = function(
-      params,
-      _callback,
-      _notify_reply_callback
+    params,
+    _callback,
+    _notify_reply_callback
   )
   end,
   ["textDocument/prepareTypeHierarchy"] = function(
-      params,
-      _callback,
-      _notify_reply_callback
+    params,
+    _callback,
+    _notify_reply_callback
   )
   end,
   ["textDocument/implementation"] = function(
-      params,
-      _callback,
-      _notify_reply_callback
+    params,
+    _callback,
+    _notify_reply_callback
   )
     local buf = vim.uri_to_bufnr(params.textDocument.uri)
     -- local node = ts.get_first_node_on_line(buf, params.position.line)
@@ -818,9 +841,9 @@ M.data.handlers = {
   end,
 
   ["textDocument/codeLens"] = function(
-      params,
-      callback,
-      _notify_reply_callback
+    params,
+    callback,
+    _notify_reply_callback
   )
     local buf = vim.uri_to_bufnr(params.textDocument.uri)
     local codeLens = {}
@@ -852,24 +875,24 @@ M.data.handlers = {
   end,
 
   ["textDocument/documentHighlight"] = function(
-      params,
-      callback,
-      _notify_reply_callback
+    params,
+    callback,
+    _notify_reply_callback
   )
     vim.lsp.buf.document_highlight()
   end,
   ["textDocument/signatureHelp"] = function(
-      params,
-      callback,
-      _notify_reply_callback
+    params,
+    callback,
+    _notify_reply_callback
   )
     vim.lsp.buf.signature_help()
   end,
   ["completionItem/resolve"] = function() end,
   ["textDocument/codeAction"] = function(
-      params,
-      callback,
-      _notify_reply_callback
+    params,
+    callback,
+    _notify_reply_callback
   )
     local buf = vim.uri_to_bufnr(params.textDocument.uri)
     local actions = {}
@@ -900,11 +923,11 @@ M.data.handlers = {
   ["window/showDocument"] = function() end,
   ["workspace/diagnostic/refresh"] = function() end,
   ["textDocument/documentColor"] = function() end,
-  ["textDocument/declaration"] = function() end,
+  ["textDocument/definition"] = function() end,
   ["workspace/willRenameFiles"] = function(
-      params,
-      _callback,
-      _notify_reply_callback
+    params,
+    _callback,
+    _notify_reply_callback
   )
     for _, files in ipairs(params.files) do
       local old = vim.uri_to_fname(files.oldUri)
@@ -922,13 +945,15 @@ M.data.start_lsp = function()
   --   cmd = { "word-lsp", "serve" },
   -- })
   vim.lsp.start(
-  ---@type vim.lsp.ClientConfig
+    ---@type vim.lsp.ClientConfig
     {
       name = "word",
       -- workspace_folders = {
       -- Mod.get_mod("workspace").get_current_workspace()
       -- },
       -- capabilities = M.data.initResult().capabilities,
+      capabilities = vim.lsp.protocol.resolve_capabilities(M.data.capabilities)
+        or M.data.capabilities,
       handlers = M.data.handlers,
       commands = {
         ls = {

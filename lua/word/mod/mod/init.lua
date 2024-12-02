@@ -8,6 +8,7 @@ M.setup = function()
   }
 end
 
+
 M.config.public = {
 
 }
@@ -15,6 +16,7 @@ M.config.public = {
 ---@class module
 M.data = {
 
+  data = {}
 }
 
 return M

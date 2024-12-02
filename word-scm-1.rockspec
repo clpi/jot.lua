@@ -56,10 +56,10 @@ test_dependencies = {
   "nvim-treesitter == 0.9.2",
 }
 
--- test = {
---   type = "command",
---   command = "scripts/test.sh"
--- }
+test = {
+  type = "command",
+  command = "make test",
+}
 --
 deploy = {
   wrap_bin_scripts = true,
@@ -72,11 +72,13 @@ build = {
   install = {
     bin = {
       wordls = "scripts/bin/wordls",
+      word_lsp = "scripts/bin/word-lsp",
       word = "scripts/bin/word",
     },
   },
   copy_directories = {
     "queries",
+    "plugin",
     "doc",
   },
 }

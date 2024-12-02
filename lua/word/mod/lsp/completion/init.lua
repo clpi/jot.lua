@@ -1,16 +1,4 @@
---[[
-    file: LSP-Completion
-    title: Completions without a completion plugin
-    summary: Provide an LSP Completion source for word
-    internal: true
-    ---
-This mod works with the [`completion`](@completion) mod to attempt to provide
-intelligent completions.
-
-After setting up `completion` with the `engine` set to `lsp-completion`. Then you can get
-word completions the same way you get completions from other language servers.
---]]
-
+local util = require("word.mod.lsp.completion.util")
 local word = require("word")
 local mod, utils, log = word.mod, word.utils, word.log
 local ls = vim.lsp
@@ -30,7 +18,7 @@ M.data = {
   ---@param callback fun(_, lsp.CompletionList):nil
   ---@param _ fun():nil
   ---@return nil
-  handle = function(param, callback, _)
+  handle = function(param, callback, notify_reply_callback)
     local uri = param.textDocument.uri
     local cl = {
       {
@@ -146,271 +134,6 @@ M.data = {
     },
     completionList = M.data.list,
   },
-}
-
-M.config.public = {
-  enable = true,
-  engine = nil,
-
-  -- The identifier for the word source.
-  name = "[wd]",
-}
-
-M.setup = function()
-  return {
-    loaded = true,
-    requires = {
-      "workspace",
-      "integration.treesitter",
-      "link",
-    },
-  }
-end
-
----@class word.completion_engine
----@field create_source function
-
-M.data.data = {
-  ---@type word.completion_engine
-  engine = nil,
-
-  --- Get a list of all markdown files in current workspace. Returns { workspace_path, markdown_files }
-  --- @return { [1]: PathlibPath, [2]: PathlibPath[]|nil }|nil
-  get_markdown_files = function()
-    local current_workspace = dirman.get_current_workspace()
-    local markdown_files = dirman.get_markdown_files(current_workspace[1])
-    return { current_workspace[2], markdown_files }
-  end,
-
-  --- Get the closing characters for a link completion
-  --- @param context table
-  --- @param colon boolean should there be a closing colon?
-  --- @return string "", ":", or ":}" depending on what's needed
-  get_closing_chars = function(context, colon)
-    local offset = 1
-    local closing_colon = ""
-    if colon then
-      closing_colon = ":"
-      if
-        string.sub(
-          context.full_line,
-          context.char + offset,
-          context.char + offset
-        ) == ":"
-      then
-        closing_colon = ""
-        offset = 2
-      end
-    end
-
-    local closing_brace = "}"
-    if
-      string.sub(
-        context.full_line,
-        context.char + offset,
-        context.char + offset
-      ) == "}"
-    then
-      closing_brace = ""
-    end
-
-    return closing_colon .. closing_brace
-  end,
-
-  --- query all the linkable items in a given buffer/file for a given link type
-  ---@param source number | string | PathlibPath bufnr or file path
-  ---@param link_type "generic" | "definition" | "footnote" | string
-  get_linkables = function(source, link_type)
-    local query_str = link_utils.get_link_target_query_string(link_type)
-    local markdown_parser, iter_src = treesitter.get_ts_parser(source)
-    if not markdown_parser then
-      return {}
-    end
-    local markdown_tree = markdown_parser:parse()[1]
-    local query = vim.treesitter.query.parse("markdown", query_str)
-    local links = {}
-    for id, node in query:iter_captures(markdown_tree:root(), iter_src, 0, -1) do
-      local capture = query.captures[id]
-      if capture == "title" then
-        local original_title = treesitter.get_node_text(node, iter_src)
-        if original_title then
-          local title = original_title:gsub("\\", "")
-          title = title:gsub("%s+", " ")
-          title = title:gsub("^%s+", "")
-          table.insert(links, {
-            original_title = original_title,
-            title = title,
-            node = node,
-          })
-        end
-      end
-    end
-    return links
-  end,
-
-  generate_file_links = function(context, _prev, _saved, _match)
-    local res = {}
-    local files = M.data.data.get_markdown_files()
-    if not files or not files[2] then
-      return {}
-    end
-
-    local closing_chars = M.data.data.get_closing_chars(context, true)
-    for _, file in pairs(files[2]) do
-      if not file:samefile(Path.new(vim.api.nvim_buf_get_name(0))) then
-        local rel = file:relative_to(files[1], false)
-        if rel and rel:len() > 0 then
-          local link = "$/" .. rel:with_suffix(""):tostring() .. closing_chars
-          table.insert(res, link)
-        end
-      end
-    end
-
-    return res
-  end,
-
-  --- Generate list of autocompletion suggestions for links
-  --- @param context table
-  --- @param source number | string | PathlibPath
-  --- @param node_type string
-  --- @return string[]
-  suggestions = function(context, source, node_type)
-    local leading_whitespace = " "
-    if context.before_char == " " then
-      leading_whitespace = ""
-    end
-    local links = M.data.data.get_linkables(source, node_type)
-    local closing_chars = M.data.data.get_closing_chars(context, false)
-    return vim
-      .iter(links)
-      :map(function(x)
-        return leading_whitespace .. x.title .. closing_chars
-      end)
-      :totable()
-  end,
-
-  --- All the things that you can link to (`{#|}` completions)
-  local_link_targets = function(context, _prev, _saved, _match)
-    return M.data.data.suggestions(context, 0, "generic")
-  end,
-
-  local_heading_links = function(context, _prev, _saved, match)
-    local heading_level = match[2] and #match[2]
-    return M.data.data.suggestions(
-      context,
-      0,
-      ("heading%d"):format(heading_level)
-    )
-  end,
-
-  foreign_heading_links = function(context, _prev, _saved, match)
-    local file = match[1]
-    local heading_level = match[2] and #match[2]
-    if file then
-      file = dirutils.expand_pathlib(file)
-      return M.data.data.suggestions(
-        context,
-        file,
-        ("heading%d"):format(heading_level)
-      )
-    end
-    return {}
-  end,
-
-  foreign_generic_links = function(context, _prev, _saved, match)
-    local file = match[1]
-    if file then
-      file = dirutils.expand_pathlib(file)
-      return M.data.data.suggestions(context, file, "generic")
-    end
-    return {}
-  end,
-
-  local_footnote_links = function(context, _prev, _saved, _match)
-    return M.data.data.suggestions(context, 0, "footnote")
-  end,
-
-  foreign_footnote_links = function(context, _prev, _saved, match)
-    local file = match[2]
-    if match[2] then
-      file = dirutils.expand_pathlib(file)
-      return M.data.data.suggestions(context, file, "footnote")
-    end
-    return {}
-  end,
-
-  --- The node context for normal markdown (ie. not in a code block)
-  normal_markdown = function(current, previous, _, _)
-    -- If no previous node exists then try verifying the current node instead
-    if not previous then
-      return current
-          and (current:type() ~= "translation_unit" or current:type() == "document")
-        or false
-    end
-
-    -- If the previous node is not tag parameters or the tag name
-    -- (i.e. we are not inside of a tag) then show auto completions
-    return previous:type() ~= "tag_parameters" and previous:type() ~= "tag_name"
-  end,
-}
-
----Suggest common link names for the given link. Suggests:
---- - target name if the link point to a heading/fnoter/etc.
---- - metadata `title` field
---- - file description
----@return string[]
-M.data.data.foreign_link_names = function(_context, _prev, _saved, match)
-  local file, target = match[2], match[3]
-  local path = dirutils.expand_pathlib(file)
-  local meta = treesitter.get_document_metadata(path)
-  local suggestions = {}
-  if meta then
-    table.insert(suggestions, meta.title)
-    table.insert(suggestions, meta.description)
-  end
-  if target ~= "" then
-    table.insert(suggestions, target)
-  end
-  return suggestions
-end
-
----provide suggestions for anchors that are already defined in the document
----@return string[]
-M.data.data.anchor_suggestions = function(_context, _prev, _saved, _match)
-  local suggestions = {}
-
-  local anchor_query_string = [[
-        (anchor_definition
-            (link_description
-              text: (paragraph) @anchor_name ))
-    ]]
-
-  treesitter.execute_query(
-    anchor_query_string,
-    function(query, id, node, _metadata)
-      local capture_name = query.captures[id]
-      if capture_name == "anchor_name" then
-        table.insert(suggestions, treesitter.get_node_text(node, 0))
-      end
-    end,
-    0
-  )
-  return suggestions
-end
-
---- suggest the link target name
----@return string[]
-M.data.data.local_link_names = function(_context, _prev, _saved, match)
-  local target = match[2]
-  if target then
-    target = target:gsub("^%s+", "")
-    target = target:gsub("%s+$", "")
-  end
-  return { target }
-end
-
----@class core.completion
-M.data = {
 
   -- Define completions
   completions = {
@@ -562,14 +285,14 @@ M.data = {
       regex = "^%s*[%-*$~^]+%s+%(",
 
       complete = {
-        { "( ) ", label = "( ) (undone)" },
-        { "(-) ", label = "(-) (pending)" },
-        { "(x) ", label = "(x) (done)" },
-        { "(_) ", label = "(_) (cancelled)" },
-        { "(!) ", label = "(!) (important)" },
-        { "(+) ", label = "(+) (recurring)" },
-        { "(=) ", label = "(=) (on hold)" },
-        { "(?) ", label = "(?) (uncertain)" },
+        { "[ ] ", label = "[ ] (undone)" },
+        { "[-] ", label = "[-] (pending)" },
+        { "[x] ", label = "[x] (done)" },
+        { "[_] ", label = "[_] (cancelled)" },
+        { "[!] ", label = "[!] (important)" },
+        { "[+] ", label = "[+] (recurring)" },
+        { "[=] ", label = "[=] (on hold)" },
+        { "[?] ", label = "[?] (uncertain)" },
       },
 
       options = {
@@ -927,9 +650,285 @@ M.data = {
     end
 
     -- If absolutely no matches were found return empty data (no completions)
-    return { items = {}, options = {} }
+    return {
+      items = {
+        {
+          label = "bye",
+          documentation = "there",
+        },
+        {
+          label = "hi",
+          documentation = "there",
+        },
+      },
+      options = {},
+    }
   end,
 }
+
+M.config.public = {
+  enable = true,
+  engine = nil,
+
+  -- The identifier for the word source.
+  name = "[wd]",
+}
+
+M.setup = function()
+  return {
+    loaded = true,
+    requires = {
+      "workspace",
+      "integration.treesitter",
+      "link",
+    },
+  }
+end
+
+---@class word.completion_engine
+---@field create_source function
+
+M.data.data = {
+  ---@type word.completion_engine
+  engine = nil,
+
+  --- Get a list of all markdown files in current workspace. Returns { workspace_path, markdown_files }
+  --- @return { [1]: PathlibPath, [2]: PathlibPath[]|nil }|nil
+  get_markdown_files = function()
+    local current_workspace = dirman.get_current_workspace()
+    local markdown_files = dirman.get_markdown_files(current_workspace[1])
+    return { current_workspace[2], markdown_files }
+  end,
+
+  --- Get the closing characters for a link completion
+  --- @param context table
+  --- @param colon boolean should there be a closing colon?
+  --- @return string "", ":", or ":}" depending on what's needed
+  get_closing_chars = function(context, colon)
+    local offset = 1
+    local closing_colon = ""
+    if colon then
+      closing_colon = ":"
+      if
+        string.sub(
+          context.full_line,
+          context.char + offset,
+          context.char + offset
+        ) == ":"
+      then
+        closing_colon = ""
+        offset = 2
+      end
+    end
+
+    local closing_brace = "}"
+    if
+      string.sub(
+        context.full_line,
+        context.char + offset,
+        context.char + offset
+      ) == "}"
+    then
+      closing_brace = ""
+    end
+
+    return closing_colon .. closing_brace
+  end,
+
+  --- query all the linkable items in a given buffer/file for a given link type
+  ---@param source number | string | PathlibPath bufnr or file path
+  ---@param link_type "generic" | "definition" | "footnote" | string
+  get_linkables = function(source, link_type)
+    local query_str = link_utils.get_link_target_query_string(link_type)
+    local markdown_parser, iter_src = treesitter.get_ts_parser(source)
+    if not markdown_parser then
+      return {}
+    end
+    local markdown_tree = markdown_parser:parse()[1]
+    local query = vim.treesitter.query.parse("markdown", query_str)
+    local links = {}
+    for id, node in query:iter_captures(markdown_tree:root(), iter_src, 0, -1) do
+      local capture = query.captures[id]
+      if capture == "title" then
+        local original_title = treesitter.get_node_text(node, iter_src)
+        if original_title then
+          local title = original_title:gsub("\\", "")
+          title = title:gsub("%s+", " ")
+          title = title:gsub("^%s+", "")
+          table.insert(links, {
+            original_title = original_title,
+            title = title,
+            node = node,
+          })
+        end
+      end
+    end
+    return links
+  end,
+
+  generate_file_links = function(context, _prev, _saved, _match)
+    local res = {}
+    local files = M.data.data.get_markdown_files()
+    if not files or not files[2] then
+      return {}
+    end
+
+    local closing_chars = M.data.data.get_closing_chars(context, true)
+    for _, file in pairs(files[2]) do
+      if not file:samefile(Path.new(vim.api.nvim_buf_get_name(0))) then
+        local rel = file:relative_to(files[1], false)
+        if rel and rel:len() > 0 then
+          local link = "$/" .. rel:with_suffix(""):tostring() .. closing_chars
+          table.insert(res, link)
+        end
+      end
+    end
+
+    return res
+  end,
+
+  --- Generate list of autocompletion suggestions for links
+  --- @param context table
+  --- @param source number | string | PathlibPath
+  --- @param node_type string
+  --- @return string[]
+  suggestions = function(context, source, node_type)
+    local leading_whitespace = " "
+    if context.before_char == " " then
+      leading_whitespace = ""
+    end
+    local links = M.data.data.get_linkables(source, node_type)
+    local closing_chars = M.data.data.get_closing_chars(context, false)
+    return vim
+      .iter(links)
+      :map(function(x)
+        return leading_whitespace .. x.title .. closing_chars
+      end)
+      :totable()
+  end,
+
+  --- All the things that you can link to (`{#|}` completions)
+  local_link_targets = function(context, _prev, _saved, _match)
+    return M.data.data.suggestions(context, 0, "generic")
+  end,
+
+  local_heading_links = function(context, _prev, _saved, match)
+    local heading_level = match[2] and #match[2]
+    return M.data.data.suggestions(
+      context,
+      0,
+      ("heading%d"):format(heading_level)
+    )
+  end,
+
+  foreign_heading_links = function(context, _prev, _saved, match)
+    local file = match[1]
+    local heading_level = match[2] and #match[2]
+    if file then
+      file = dirutils.expand_pathlib(file)
+      return M.data.data.suggestions(
+        context,
+        file,
+        ("heading%d"):format(heading_level)
+      )
+    end
+    return {}
+  end,
+
+  foreign_generic_links = function(context, _prev, _saved, match)
+    local file = match[1]
+    if file then
+      file = dirutils.expand_pathlib(file)
+      return M.data.data.suggestions(context, file, "generic")
+    end
+    return {}
+  end,
+
+  local_footnote_links = function(context, _prev, _saved, _match)
+    return M.data.data.suggestions(context, 0, "footnote")
+  end,
+
+  foreign_footnote_links = function(context, _prev, _saved, match)
+    local file = match[2]
+    if match[2] then
+      file = dirutils.expand_pathlib(file)
+      return M.data.data.suggestions(context, file, "footnote")
+    end
+    return {}
+  end,
+
+  --- The node context for normal markdown (ie. not in a code block)
+  normal_markdown = function(current, previous, _, _)
+    -- If no previous node exists then try verifying the current node instead
+    if not previous then
+      return current
+          and (current:type() ~= "translation_unit" or current:type() == "document")
+        or false
+    end
+
+    -- If the previous node is not tag parameters or the tag name
+    -- (i.e. we are not inside of a tag) then show auto completions
+    return previous:type() ~= "tag_parameters" and previous:type() ~= "tag_name"
+  end,
+}
+
+---Suggest common link names for the given link. Suggests:
+--- - target name if the link point to a heading/fnoter/etc.
+--- - metadata `title` field
+--- - file description
+---@return string[]
+M.data.data.foreign_link_names = function(_context, _prev, _saved, match)
+  local file, target = match[2], match[3]
+  local path = dirutils.expand_pathlib(file)
+  local meta = treesitter.get_document_metadata(path)
+  local suggestions = {}
+  if meta then
+    table.insert(suggestions, meta.title)
+    table.insert(suggestions, meta.description)
+  end
+  if target ~= "" then
+    table.insert(suggestions, target)
+  end
+  return suggestions
+end
+
+---provide suggestions for anchors that are already defined in the document
+---@return string[]
+M.data.data.anchor_suggestions = function(_context, _prev, _saved, _match)
+  local suggestions = {}
+
+  local anchor_query_string = [[
+        (anchor_definition
+            (link_description
+              text: (paragraph) @anchor_name ))
+    ]]
+
+  treesitter.execute_query(
+    anchor_query_string,
+    function(query, id, node, _metadata)
+      local capture_name = query.captures[id]
+      if capture_name == "anchor_name" then
+        table.insert(suggestions, treesitter.get_node_text(node, 0))
+      end
+    end,
+    0
+  )
+  return suggestions
+end
+
+--- suggest the link target name
+---@return string[]
+M.data.data.local_link_names = function(_context, _prev, _saved, match)
+  local target = match[2]
+  if target then
+    target = target:gsub("^%s+", "")
+    target = target:gsub("%s+$", "")
+  end
+  return { target }
+end
+
+---@class core.completion
+M.data = {}
 
 M.load = function()
   -- If we have not defined an engine then bail
@@ -1012,7 +1011,7 @@ M.data.data = {
 M.data = {
   create_source = function()
     -- these numbers come from: https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#completionItemKind
-    M.data.data.oompletion_item_mapping = {
+    M.data.data.completion_item_mapping = {
       Directive = 14,
       Tag = 14,
       Language = 10,
@@ -1024,7 +1023,7 @@ M.data = {
       File = 17,
     }
 
-    function M.data.completion_handler(request, callback, _)
+    function M.data.handler(request, callback, _)
       local abstracted_context = M.data.create_abstracted_context(request)
 
       local completion_cache =
@@ -1046,7 +1045,7 @@ M.data = {
         completions[index] = {
           label = label,
           insertText = insert_text,
-          kind = M.data.data.oompletion_item_mapping[completion_cache.options.type],
+          kind = M.data.data.completion_item_mapping[completion_cache.options.type],
         }
       end
 

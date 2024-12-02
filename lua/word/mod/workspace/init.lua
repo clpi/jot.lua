@@ -24,7 +24,7 @@ M.load = function()
     -- M.config.workspaces[name] = vim.fn.expand(vim.fn.fnameescape(workspace_location)) ---@diagnostic disable-line -- TODO: type error workaround <pysan3>
     -- print(name, workspace_location)
     M.config.public.workspaces[name] =
-        Path(workspace_location):resolve():to_absolute()
+      Path(workspace_location):resolve():to_absolute()
   end
 
   -- vim.keymap.set("<c-\\><c-\\>", "<Plug>(word.workspace.new-note)", M.data.new_note)
@@ -104,6 +104,7 @@ M.config.public = {
 
 ---@class workspace
 M.data = {
+  create_missing_file = function(path) end,
   data = {
     ---@type { [1]: string, [2]: PathlibPath }
     current_workspace = { "default", Path.cwd() },
@@ -152,7 +153,7 @@ M.data = {
       -- If the user has given an empty workspace name (i.e. `$/myfile`)
       if custom_workspace_path:len() == 0 then
         filepath = ws.get_current_workspace()[2]
-            / filepath:relative_to(Path("$"))
+          / filepath:relative_to(Path("$"))
       else -- If the user provided a workspace name (i.e. `$my-workspace/myfile`)
         local workspace = ws.get_workspace(custom_workspace_path)
         if not workspace then
@@ -172,8 +173,8 @@ M.data = {
     -- requested to expand word file
     if not raw_path then
       if
-          type(path) == "string"
-          and (path:sub(#path) == "/" or path:sub(#path) == "\\")
+        type(path) == "string"
+        and (path:sub(#path) == "/" or path:sub(#path) == "\\")
       then
         -- if path ends with `/`, it is an invalid request!
         log.error(table.concat({
@@ -243,8 +244,8 @@ M.data = {
     if not workspace then
       log.warn(
         "Unable to set workspace to"
-        .. workspace
-        .. "- that workspace does not exist"
+          .. workspace
+          .. "- that workspace does not exist"
       )
       return false
     end
@@ -321,7 +322,7 @@ M.data = {
     for workspace, location in pairs(M.config.public.workspaces) do
       if workspace ~= "default" then
         if
-            file:is_relative_to(location) and location:depth() > longest_match
+          file:is_relative_to(location) and location:depth() > longest_match
         then
           ws_name = workspace
           longest_match = location:depth()
@@ -392,12 +393,12 @@ M.data = {
 
     -- Generate parents just in case
     destination
-        :parent_assert()
-        :mkdir(Path.const.o755 + 4 * math.pow(8, 4), true) -- 40755(oct)
+      :parent_assert()
+      :mkdir(Path.const.o755 + 4 * math.pow(8, 4), true) -- 40755(oct)
 
     -- Create or overwrite the file
     local fd =
-        destination:fs_open(opts.force and "w" or "a", Path.const.o644, false)
+      destination:fs_open(opts.force and "w" or "a", Path.const.o644, false)
     if fd then
       vim.loop.fs_close(fd)
     end
@@ -446,16 +447,16 @@ M.data = {
 
     local last_workspace = data.retrieve("last_workspace")
     last_workspace = type(last_workspace) == "string" and last_workspace
-        or M.config.public.default
-        or ""
+      or M.config.public.default
+      or ""
 
     local workspace_path = M.data.get_workspace(last_workspace)
 
     if not workspace_path then
       log.trace(
         "Unable to switch to workspace '"
-        .. last_workspace
-        .. "'. The workspace does not exist."
+          .. last_workspace
+          .. "'. The workspace does not exist."
       )
       return
     end

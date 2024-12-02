@@ -4,29 +4,29 @@ local e = vim.lpeg
 local d = require("word")
 local lib, mod = d.lib, d.mod
 
-local init = mod.create("search")
+local M = mod.create("find")
 
-init.load = function()
+M.load = function()
   mod.await("cmd", function(cmd)
     cmd.add_commands_from_table({
-      agenda = {
+      find = {
         subcommands = {
           update = {
             args = 0,
-            name = "agenda.update",
+            name = "find.update",
           },
           insert = {
-            name = "agenda.insert",
+            name = "find.insert",
             args = 0,
           },
         },
-        name = "agenda",
+        name = "find",
       },
     })
   end)
 end
 
-init.setup = function()
+M.setup = function()
   return {
     loaded = true,
     requires = {
@@ -35,17 +35,17 @@ init.setup = function()
   }
 end
 
-init.data = {}
+M.data = {}
 
-init.config.public = {}
-init.data.data = {}
-init.events = {}
+M.config.public = {}
+M.data.data = {}
+M.events = {}
 
-init.events.subscribed = {
+M.events.subscribed = {
   cmd = {
-    ["agenda.insert"] = true,
-    ["agenda.update"] = true,
+    ["find.insert"] = true,
+    ["find.update"] = true,
   },
 }
 
-return init
+return M

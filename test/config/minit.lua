@@ -9,6 +9,8 @@ if not vim.loop.fs_stat(lazypath) then
     lazypath,
   })
 end
+vim.opt.runtimepath = vim.opt.runtimepath:append(lazypath)
+vim.opt.runtimepath = vim.opt.runtimepath:append(".")
 vim.api.nvim_create_autocmd("FileType", {
   pattern = "markdown",
   callback = function(args)
@@ -27,6 +29,8 @@ vim.opt.termguicolors = true
 vim.opt.nu = true
 vim.opt.relativenumber = true
 
+vim.o.swapfile = false
+vim.bo.swapfile = false
 vim.opt.tabstop = 4
 vim.opt.softtabstop = 4
 vim.opt.shiftwidth = 4
@@ -245,14 +249,14 @@ require("lazy").setup({
             --- *All* of the providers have the following options available
             --- NOTE: All of these options may be functions to get dynamic behavior
             --- See the type definitions for more information
-            enabled = true,           -- whether or not to enable the provider
-            transform_items = nil,    -- function to transform the items before they're returned
+            enabled = true, -- whether or not to enable the provider
+            transform_items = nil, -- function to transform the items before they're returned
             should_show_items = true, -- whether or not to show the items
-            max_items = nil,          -- maximum number of items to return
-            min_keyword_length = 0,    -- minimum number of characters to trigger the provider
-            fallback_for = {},        -- if any of these providers return 0 items, it will fallback to this provider
-            score_offset = 0,         -- boost/penalize the score of the items
-            override = nil,           -- override the source's functions
+            max_items = nil, -- maximum number of items to return
+            min_keyword_length = 0, -- minimum number of characters to trigger the provider
+            fallback_for = {}, -- if any of these providers return 0 items, it will fallback to this provider
+            score_offset = 0, -- boost/penalize the score of the items
+            override = nil, -- override the source's functions
           },
           path = {
             name = "Path",

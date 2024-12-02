@@ -286,6 +286,6 @@ end
 
 U.ts = require("word.util.ts")
 U.buf = require("word.util.buf")
-U.job = require("word.util.job")
+-- U.job = require("word.util.job")
 U.path = require("word.util.path")
 return U

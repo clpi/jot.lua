@@ -6,6 +6,13 @@ M.setup = function()
   }
 end
 
+---@enum lsp.diagnostic.mode
+M.data.mode = {
+  "enabled",
+  "disable-line",
+  "disable-document",
+}
+
 M.load = function() end
 
 ---@class lsp.document.diagnostic
@@ -18,18 +25,17 @@ M.data = {
     workspaceDiagnostics = true,
     documentSelector = {
       scheme = "file",
-      language = "markdown"
+      language = "markdown",
     },
     id = "markdown-diagnostic",
-    identifier = "document/diagnostic",
+    identifier = "textDocument/diagnostic",
   },
   ---@type lsp.DiagnosticOptions
   opts = {
     workDoneProgress = true,
-    identifier = "document/diagnostic",
+    identifier = "textDocument/diagnostic",
     interFileDependencies = true,
     workspaceDiagnostics = true,
-
   },
   ---@type lsp.DiagnosticClientCapabilities
   capabilities = {
