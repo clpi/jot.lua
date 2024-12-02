@@ -10,10 +10,10 @@ nv:
   nvim -u test/config/minit.lua
 
 w:
-  ./scripts/bin/jot
+  ./scripts/bin/word
 
 wl:
-  ./scripts/bin/jotls
+  ./scripts/bin/wordls
 
 t:
   nvim --headless --noplugin -u test/minit.lua
@@ -22,7 +22,7 @@ slint :
   stylua --check .
 
 clean:
-	fd --glob '*-E' --exec-batch "rm" --no-ignore
+	fd --no-ignore --glob '*-E' -x 'rm' ./
 
 llint:
   luacheck .
@@ -32,7 +32,7 @@ version:
   echo "0.1.0"
 
 install:
-  co -r ./scripts/bin/jot
+  co -r ./scripts/bin/word
 
 
 book:

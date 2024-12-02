@@ -1,0 +1,72 @@
+local D = Mod.create("data.dirs")
+
+local Path = require("pathlib")
+local path = require("plenary.path")
+
+local stdp = vim.fn.stdpath
+local uv = vim.uv or vim.loop
+
+D.data.data = {
+  get_mkfile = function(file)
+    local f = path:new(file)
+    if not f:exists() or f:is_dir() then
+      file:touch()
+    end
+    return file
+  end,
+  get_mkdir = function(dir)
+    local d = path:new(dir)
+    if not d:exists() or d:is_file() then
+      dir:mkdir()
+    end
+    return dir
+  end,
+}
+
+D.setup = function()
+  return {
+    requires = {
+      "workspace",
+    },
+    loaded = true,
+  }
+end
+
+D.load = function() end
+
+D.config.public = {
+  vim = {
+    data = vim.fn.stdpath("data"),
+    config = vim.fn.stdpath("config"),
+    cache = vim.fn.stdpath("cache"),
+    state = vim.fn.stdpath("state"),
+    run = vim.fn.stdpath("run"),
+    log = vim.fn.stdpath("log"),
+  },
+}
+
+D.data = {
+  user = {},
+  word = {
+    config = {
+      data = vim.fn.stdpath("data"),
+      config = vim.fn.stdpath("config"),
+      cache = vim.fn.stdpath("cache"),
+      state = vim.fn.stdpath("state"),
+      run = vim.fn.stdpath("run"),
+      log = vim.fn.stdpath("log"),
+    },
+  },
+  vim = {
+    data = vim.fn.stdpath("data"),
+    config = vim.fn.stdpath("config"),
+    cache = vim.fn.stdpath("cache"),
+    state = vim.fn.stdpath("state"),
+    run = vim.fn.stdpath("run"),
+    log = vim.fn.stdpath("log"),
+  },
+}
+
+D.on_event = function(e) end
+
+return D

@@ -1,4 +1,4 @@
 vim.cmd([[
-set rtp+=/Users/clp/jot
+set rtp+=/Users/clp/word
 ]])
 

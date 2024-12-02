@@ -13,9 +13,9 @@ vim.api.nvim_create_autocmd("FileType", {
   pattern = "markdown",
   callback = function(args)
     vim.lsp.start({
-      name = "jot-lsp",
+      name = "word-lsp",
       root_dir = vim.fs.root(args.buf, ".git"),
-      cmd = { "/Users/clp/jot/scripts/bin/jot-lsp" },
+      cmd = { "/Users/clp/word/scripts/bin/word-lsp" },
     })
   end,
 })
@@ -76,7 +76,7 @@ vim.opt.showmode = true
 vim.opt.number = true
 vim.opt.conceallevel = 2
 vim.opt.concealcursor = [[nv]]
-vim.opt.winbar = "jot.lua"
+vim.opt.winbar = "word.lua"
 vim.opt.signcolumn = "yes:2"
 vim.cmd([[
 nno L <CMD>bn<CR>
@@ -119,7 +119,7 @@ require("lazy").setup({
   { "nvim-lua/plenary.nvim" },
   "JoosepAlviste/nvim-ts-context-commentstring",
   {
-    "clpi/jot.lua",
+    "clpi/word.lua",
     lazy = false,
     version = false,
 
@@ -155,7 +155,7 @@ require("lazy").setup({
       { "pysan3/pathlib.nvim" },
     },
     config = function()
-      require("jot").setup({
+      require("word").setup({
         mods = {
           config = {},
           workspace = {
@@ -209,7 +209,7 @@ require("lazy").setup({
         --         return cmp.select_next()
         --       elseif cmp.is_in_snippet() then
         --         return cmp.snippet_forward()
-        --       elseif has_jots_before() then
+        --       elseif has_words_before() then
         --         return cmp.show()
         --       end
         --     end,
@@ -249,7 +249,7 @@ require("lazy").setup({
             transform_items = nil,    -- function to transform the items before they're returned
             should_show_items = true, -- whether or not to show the items
             max_items = nil,          -- maximum number of items to return
-            min_keyjot_length = 0,    -- minimum number of characters to trigger the provider
+            min_keyword_length = 0,    -- minimum number of characters to trigger the provider
             fallback_for = {},        -- if any of these providers return 0 items, it will fallback to this provider
             score_offset = 0,         -- boost/penalize the score of the items
             override = nil,           -- override the source's functions

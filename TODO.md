@@ -155,4 +155,4 @@ require("nvim-treesitter.configs").setup({
 
 - [ ] `...`
 - [ ] Scope indentation?
-- [ ] `.wd` [jot] syntax support/hl
+- [ ] `.wd` [word] syntax support/hl
