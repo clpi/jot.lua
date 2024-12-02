@@ -1,6 +1,7 @@
 local M = require("word.mod").create("edit", {
   "toc",
   "todo",
+  "cursor",
   "indent",
   "link",
 })

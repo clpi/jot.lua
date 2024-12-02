@@ -11,7 +11,7 @@ M.setup = function()
   return {
     requires = {
       "ui.calendar",
-      "time",
+      "data.time",
     },
   }
 end
@@ -383,18 +383,11 @@ M.data.data = {
           }
         end
 
-        local extmark = M.data.data.set_logical_extmark(
-          ui_info,
-          2,
-          0,
-          {
-            { "< ", "Whitespace" },
-            { tostring(year), "@number" },
-            { " >", "Whitespace" },
-          },
-          "center",
-          extra
-        )
+        local extmark = M.data.data.set_logical_extmark(ui_info, 2, 0, {
+          { "< ", "Whitespace" },
+          { tostring(year), "@number" },
+          { " >", "Whitespace" },
+        }, "center", extra)
 
         if self.extmarks.logical.year == nil then
           self.extmarks.logical.year = extmark

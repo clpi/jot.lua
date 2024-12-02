@@ -20,6 +20,7 @@ init.setup = function()
     requires = {
       "ui",
       "ui.calendar.month",
+      "ui.calendar.time",
     },
   }
 end

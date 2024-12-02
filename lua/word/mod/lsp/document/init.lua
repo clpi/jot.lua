@@ -75,7 +75,7 @@ M.data.doc = {
   title = "index",
   ---@type lsp.workspace.Workspace
   workspace = {
-    path = "~/",
+    path = "~" .. config.pathsep,
     name = "default",
     default = true,
     notesDir = "note",
