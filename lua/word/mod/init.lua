@@ -261,7 +261,7 @@ function Mod.load_mod_from_table(m)
       log.trace("Loading submod" .. req_mod)
 
       if not Mod.is_mod_loaded(req_mod) then
-        print(req_mod)
+        -- print(req_mod)
         if not Mod.load_mod(req_mod) then
           log.error(
             ("Unable to load init %s, required dependency %s did not load successfully"):format(
@@ -391,7 +391,7 @@ function Mod.load_mod(modn, cfg)
     modl.config.custom = cfg
     modl.config.public = utils.extend(modl.config.public, cfg)
   else
-    print(modl.config.custom, modl.config.public, config.mods[modn])
+    -- print(modl.config.custom, modl.config.public, config.mods[modn])
     modl.config.custom = config.mods[modn]
     modl.config.public =
       -- vim.tbl_extend("force", modl.config.public, modl.config.custom or {})
