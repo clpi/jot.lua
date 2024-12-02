@@ -9,5 +9,13 @@ local p = vim.lpeg
 
 M.data = {
 }
+M.config.public = {
+
+}
+M.setup = function()
+  return {
+    loaded = true
+  }
+end
 
 return M

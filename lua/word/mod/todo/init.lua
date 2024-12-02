@@ -59,6 +59,7 @@ M.config.public = {
 
 M.setup = function()
   return {
+    loaded = true,
     requires = { "integration.treesitter" },
   }
 end
