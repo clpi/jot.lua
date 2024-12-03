@@ -26,12 +26,17 @@ Welcome -- to the `word.lua` book. I hope this helps!
   - [Keymaps](./extend/keymaps.md)
   - [Autocmds](./extend/autocmd.md)
 
+- [Modules](./modules.md)
+
+  - [Introduction](./modules/intro.md)
+
 - [Customizing](./customizing.md)
 
   - [Themes](./customizing/themes.md)
   - [Highlights](./customizing/highlights.md)
 
 - [Export](./export.md)
+
   - [Frameworks](./publish/frameworks.md)
   - [org](./export/org.md)
 
@@ -42,6 +47,7 @@ Welcome -- to the `word.lua` book. I hope this helps!
   - [Digital garden](./publish/digital_garden.md)
 
 - [Plans](./plans/index.md)
+
   - [Near](./plans/near.md)
   - [Far](./plans/far.md)
 

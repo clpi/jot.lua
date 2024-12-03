@@ -473,7 +473,7 @@ link from the word under the cursor or a visual selection (if there is one).
 M.load = function()
   mod.await("cmd", function(cmd)
     cmd.add_commands_from_table({
-      preview = {
+      link = {
         name = "link",
         subcommands = {
           update = {
