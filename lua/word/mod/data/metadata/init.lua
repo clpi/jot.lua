@@ -17,8 +17,12 @@ M.config.public = {
 M.load = function()
   Mod.await("cmd", function(cmd)
     cmd.add_commands_from_table({
-      metadata = {
+      meta = {
         subcommands = {
+          clear = {
+            args = 0,
+            name = "data.metadata.clear",
+          },
           update = {
             args = 0,
             name = "data.metadata.update",
@@ -38,7 +42,24 @@ M.config.public = {}
 
 M.data.data = {}
 
-M.data = {}
+M.data = {
+  buf_inject_frontmatter = function()
+    local id = ""
+    local title = ""
+    local date = ""
+    local tags = "#day #note"
+    vim.api.nvim_buf_set_lines(0, 0, 0, true, {
+      "---",
+      "id: " .. id,
+      "title: " .. title,
+      "date: " .. date,
+      "tags: " .. tags,
+      "---",
+      "# " .. title,
+      " ",
+    })
+  end,
+}
 
 M.events.subscribed = {
   cmd = {
