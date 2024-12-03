@@ -1,11 +1,6 @@
---[[
-    File: store
-    Title: Store persistent data and query it easily with `base.store`
-    Summary: Deals with storing persistent data across word sessions.
-    Internal: true
-    ---
---]]
 local M = Mod.create("data", {
+  "log",
+  -- "code",
   "template",
   -- "sync",
   -- "log",
@@ -130,7 +125,7 @@ M.data = {
 
     file:write(
       vim.mpack.encode and vim.mpack.encode(M.data.data.data)
-        or vim.mpack.pack(M.data.data.data)
+      or vim.mpack.pack(M.data.data.data)
     )
 
     io.close(file)
