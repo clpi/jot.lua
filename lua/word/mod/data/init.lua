@@ -1,16 +1,8 @@
 local M = Mod.create("data", {
   "log",
-  -- "code",
+  "mod",
+  "dirs",
   "template",
-  -- "sync",
-  -- "log",
-  -- "tag",
-  -- "metadata",
-  -- "media",
-  -- "encrypt",
-  -- "export",
-  -- "dirs",
-  -- "save",
 })
 
 M.setup = function()

@@ -1,5 +1,6 @@
 local M = require("word.mod").create("edit", {
   "toc",
+  "parse",
   "find",
   "todo",
   -- "fold",
@@ -53,8 +54,8 @@ M.data.find_patterns = function(str, patterns, reverse, init)
     -- (NOTE: 'closer' means closer to the beginning of the string if we're doing a forward
     -- search and closer to the end of the string if we're doing a reverse search)
     if
-      left_tmp
-      and (left == nil or ((reverse and left_tmp > left) or left_tmp < left))
+        left_tmp
+        and (left == nil or ((reverse and left_tmp > left) or left_tmp < left))
     then
       left, right = left_tmp, right_tmp
     end
@@ -79,7 +80,7 @@ M.data.jump = function(pattern, reverse)
   if M.config.public.context > 0 and line_len > 0 then
     for i = 1, M.config.public.context, 1 do
       local following_line =
-        vim.api.nvim_buf_get_lines(0, row, row + 1, false)[1]
+          vim.api.nvim_buf_get_lines(0, row, row + 1, false)[1]
       line = (following_line and line .. following_line) or line
     end
   end
@@ -92,8 +93,8 @@ M.data.jump = function(pattern, reverse)
     if left and right then
       -- If there is, see if the cursor is before the match (or after if rev = true)
       if
-        ((reverse and col + 1 > left) or ((not reverse) and col + 1 < left))
-        and left <= line_len
+          ((reverse and col + 1 > left) or ((not reverse) and col + 1 < left))
+          and left <= line_len
       then
         -- If it is, send the cursor to the start of the match
         vim.api.nvim_win_set_cursor(0, { row, left - 1 })
@@ -119,7 +120,7 @@ M.data.jump = function(pattern, reverse)
       if line and M.config.public.context > 0 and line_len > 0 then
         for i = 1, M.config.public.context, 1 do
           local following_line =
-            vim.api.nvim_buf_get_lines(0, row, row + 1, false)[1]
+              vim.api.nvim_buf_get_lines(0, row, row + 1, false)[1]
           line = (following_line and line .. following_line) or line
         end
       end
@@ -174,7 +175,7 @@ M.data.go_to_heading = function(anchor_text, reverse)
         else
           -- Format current heading to see if it matches our search term
           local heading_as_anchor =
-            M.required["link"].formatLink(line[1], nil, 2)
+              M.required["link"].formatLink(line[1], nil, 2)
           if anchor_text == heading_as_anchor then
             -- Set a mark
             vim.api.nvim_buf_set_mark(0, "`", position[1], position[2], {})
@@ -194,8 +195,8 @@ M.data.go_to_heading = function(anchor_text, reverse)
           end
         else
           local message = "⬇️  Couldn't find a heading matching "
-            .. anchor_text
-            .. "!"
+              .. anchor_text
+              .. "!"
           if not M.config.public.silent then
             vim.api.nvim_echo({ { message, "WarningMsg" } }, true, {})
           end
@@ -211,10 +212,10 @@ M.data.go_to_heading = function(anchor_text, reverse)
         local place = (reverse and "beginning") or "end"
         local preposition = (reverse and "after") or "before"
         local message = "⬇️  There are no more headings "
-          .. preposition
-          .. " the "
-          .. place
-          .. " of the document!"
+            .. preposition
+            .. " the "
+            .. place
+            .. " of the document!"
         if not silent then
           vim.api.nvim_echo({ { message, "WarningMsg" } }, true, {})
         end
@@ -246,7 +247,7 @@ M.data.go_to_id = function(id, starting_row)
           if start then
             substring = string.sub(line, start, finish)
             if
-              substring:match("{[^%}]*" .. utils.luaEscape(id) .. "[^%}]*}")
+                substring:match("{[^%}]*" .. utils.luaEscape(id) .. "[^%}]*}")
             then
               continue_line = false
               continue = false
@@ -369,7 +370,7 @@ M.data.yankAsAnchorLink = function(full_path)
     end
   else
     local message =
-      "⬇️  The current line is not a heading or bracketed span!"
+    "⬇️  The current line is not a heading or bracketed span!"
     if not M.config.public.silent then
       vim.api.nvim_echo({ { message, "WarningMsg" } }, true, {})
     end

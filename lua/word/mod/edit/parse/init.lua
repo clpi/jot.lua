@@ -1,5 +1,5 @@
 ---@type word.mod
-local P = Mod.create("parse", { "scan", "datetime", "heading" })
+local P = Mod.create("edit.parse", { "scan", "datetime", "heading" })
 
 local p = vim.lpeg
 local R, V, S, C, Cc, Ct = p.R, p.V, p.S, p.C, p.Cc, p.Ct
@@ -13,12 +13,12 @@ P.data = {
   header_html = function(n)
     pre = string.rep("#", n)
     return P(pre)
-      * (
-        ((1 - V("NL")) ^ 0)
-        / function(str)
-          return string.format("<h%d>%s</h%d>", n, str, n)
-        end
-      )
+        * (
+          ((1 - V("NL")) ^ 0)
+          / function(str)
+            return string.format("<h%d>%s</h%d>", n, str, n)
+          end
+        )
   end,
 }
 

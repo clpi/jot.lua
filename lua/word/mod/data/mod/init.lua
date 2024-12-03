@@ -1,6 +1,5 @@
 ---@type word.mod
-local M = require("word.mod").create("mod")
-
+local M = require("word.mod").create("data.mod")
 
 M.setup = function()
   return {
@@ -8,15 +7,12 @@ M.setup = function()
   }
 end
 
-
-M.config.public = {
-
-}
+M.config.public = {}
 
 ---@class module
 M.data = {
 
-  data = {}
+  data = {},
 }
 
 return M

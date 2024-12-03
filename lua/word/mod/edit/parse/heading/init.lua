@@ -1,4 +1,4 @@
-local M = Mod.create("parse.heading")
+local M = Mod.create("edit.parse.heading")
 
 local l = vim.lpeg
 

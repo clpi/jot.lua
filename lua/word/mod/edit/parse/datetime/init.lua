@@ -1,4 +1,4 @@
-local M = Mod.create("parse.datetime")
+local M = Mod.create("edit.parse.datetime")
 
 local l = vim.lpeg
 
@@ -16,8 +16,7 @@ M.config.public = {}
 ---@field time parse.datetime.Time
 M.data = {}
 ---@class (exact) parse.datetime.Grammar
-M.data.grammar = {
-}
+M.data.grammar = {}
 ---@class (exact) parse.datetime.Time
 M.data.time = {}
 ---@class (exact) parse.datetime.Date
