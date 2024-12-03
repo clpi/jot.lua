@@ -1,15 +1,22 @@
 local M = Mod.create("integration.telescope")
+local tok, t = pcall(require, "telescope")
+
 local k = vim.keymap.set
 
 M.setup = function()
-  return {
-    loaded = true,
-    requires = { "cmd", "workspace" },
-  }
+  if tok then
+    return {
+      loaded = true,
+      requires = { "cmd", "workspace" },
+    }
+  else
+    return {
+      loaded = false
+    }
+  end
 end
 
 M.data = {
-  data = {
     picker_names = {
       "linkable",
       "files",
@@ -23,12 +30,13 @@ M.data = {
       "workspace",
       -- "backlinks.file_backlinks",
       -- "backlinks.header_backlinks",
-    },
   },
 }
-M.pickers = function()
+M.config.public = {
+}
+M.data.pickers = function()
   local r = {}
-  for _, pic in ipairs(M.data.data.picker_names) do
+  for _, pic in ipairs(M.data.picker_names) do
     local ht, te = pcall(require, "telescope._extensions.word.picker." .. pic)
     if ht then
       r[pic] = te
@@ -44,6 +52,7 @@ M.events.subscribed = {
   },
 }
 M.load = function()
+  if tok then
   Mod.await("cmd", function(cmd)
     cmd.add_commands_from_table({
       find = {
@@ -62,12 +71,14 @@ M.load = function()
       },
     })
   end)
-  local hast, t = pcall(require, "telescope")
-  assert(hast, t)
+  assert(tok, t)
   t.load_extension("word")
-  for _, pic in ipairs(M.data.data.picker_names) do
+  for _, pic in ipairs(M.data.picker_names) do
     -- t.load_extension(pic)
-    k("n", "<plug>word.telescope." .. pic .. "", M.pickers()[pic])
+    k("n", "<plug>word.telescope." .. pic .. "", M.data.pickers()[pic])
+  end
+  else
+    return
   end
 end
 
