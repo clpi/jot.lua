@@ -50,6 +50,13 @@
     "incomplete-signature-block",
     "missing-global-doc",
     "missing-local-export-doc"
-    "],
-  },
+  ],
+    "workspace.library": [
+        "${addons}/busted/module/library",
+        "${3rd}/luassert/library",
+        "${addons}/lpeg/module/library",
+        "${addons}/luvit/module/library",
+        "${addons}/luasocket/module/library",
+        "${addons}/luassert/module/library"
+    ]
 }

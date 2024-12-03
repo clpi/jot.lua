@@ -1,6 +1,8 @@
 #!/usr/bin/env lua
 
 local ffi, jit = require("ffi"), require("jit")
+local lp = require("lpeg")
+local cr = coroutine
 local io, i, o, e = io, io.stdin, io.stdout, io.stderr
 
 ---@param arg string

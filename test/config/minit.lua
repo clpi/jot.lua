@@ -38,6 +38,9 @@ vim.opt.expandtab = true
 
 vim.opt.smartindent = true
 vim.o.swapfile = false
+vim.opt.conceallevel = 2
+vim.opt.winbar = [[word.lua]]
+vim.opt.signcolumn = [[yes:2]]
 vim.bo.swapfile = false
 vim.opt.hlsearch = true
 vim.opt.incsearch = true
@@ -52,6 +55,7 @@ vim.opt.scrolloff = 8
 
 -- vim.o.completeopt = { "menu", "menuone", "noselect", "popup" }
 vim.g.mapleader = " "
+vim.g.maplocalleader = ","
 
 vim.keymap.set("i", "kj", "<Esc>")
 
@@ -177,7 +181,10 @@ require("lazy").setup({
       })
     end,
   },
-  { "echasnovski/mini.doc", version = false },
+  { "echasnovski/mini.doc", version = false, config = function()
+    require("mini.doc").setup({
+    })
+  end},
   {
     "saghen/blink.cmp",
     enabled = true,

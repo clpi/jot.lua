@@ -1,7 +1,7 @@
 local word = require("word")
 local lib, log, mod = word.lib, word.log, word.mod
 
-local M = mod.create("ui.hl")
+local M = mod.create("edit.hl")
 
 --[[
 --]]
@@ -474,8 +474,8 @@ M.data = {
         local is_link = highighlightight:sub(1, 1) == "+"
 
         local full_highighlightight_name = "@word"
-          .. prefix
-          .. (highlight_name:len() > 0 and ("." .. highlight_name) or "")
+            .. prefix
+            .. (highlight_name:len() > 0 and ("." .. highlight_name) or "")
         local does_highlight_exist = lib.inline_pcall(
           vim.api.nvim_exec,
           "highighlightight " .. full_highighlightight_name,
@@ -487,9 +487,9 @@ M.data = {
           -- If the highighlightight already exists then assume the user doesn't want it to be
           -- overwritten
           if
-            does_highlight_exist
-            and does_highlight_exist:len() > 0
-            and not does_highlight_exist:match("xxx%s+cleared")
+              does_highlight_exist
+              and does_highlight_exist:len() > 0
+              and not does_highlight_exist:match("xxx%s+cleared")
           then
             return
           end
@@ -525,8 +525,8 @@ M.data = {
         end
 
         local full_highighlightight_name = "@word"
-          .. prefix
-          .. (highlight_name:len() > 0 and ("." .. highlight_name) or "")
+            .. prefix
+            .. (highlight_name:len() > 0 and ("." .. highlight_name) or "")
         local does_highlight_exist = lib.inline_pcall(
           vim.api.nvim_exec,
           "highighlightight " .. full_highighlightight_name,
@@ -536,9 +536,9 @@ M.data = {
         -- If the highighlightight already exists then assume the user doesn't want it to be
         -- overwritten
         if
-          does_highlight_exist
-          and does_highlight_exist:len() > 0
-          and not does_highlight_exist:match("xxx%s+cleared")
+            does_highlight_exist
+            and does_highlight_exist:len() > 0
+            and not does_highlight_exist:match("xxx%s+cleared")
         then
           return
         end
@@ -562,7 +562,7 @@ M.data = {
   ---@param highlight table #A table of highlight
   add_highlight = function(highlight)
     M.config.public.highlight =
-      vim.tbl_deep_extend("force", M.config.public.highlight, highlight or {})
+        vim.tbl_deep_extend("force", M.config.public.highlight, highlight or {})
     M.data.trigger_highlight()
   end,
 
@@ -570,7 +570,7 @@ M.data = {
   ---@param dim table #A table of items to dim
   add_dim = function(dim)
     M.config.public.dim =
-      vim.tbl_deep_extend("force", M.config.public.dim, dim or {})
+        vim.tbl_deep_extend("force", M.config.public.dim, dim or {})
     M.data.trigger_highlight()
   end,
 
@@ -598,7 +598,7 @@ M.data = {
   get_attribute = function(name, attribute)
     -- Attempt to get the highighlightight
     local success, highlight =
-      pcall(vim.api.nvim_get_highlight_by_name, name, true) ---@diagnostic disable-line -- TODO: type error workaround <pysan3>
+        pcall(vim.api.nvim_get_highlight_by_name, name, true) ---@diagnostic disable-line -- TODO: type error workaround <pysan3>
 
     -- If we were successful and if the attribute exists then return it
     if success and highlight[attribute] then
@@ -606,9 +606,9 @@ M.data = {
     else -- Else log the message in a regular info() call, it's not an insanely important error
       log.info(
         "Unable to grab highighlightight for attribute"
-          .. attribute
-          .. " - full error:"
-          .. highlight
+        .. attribute
+        .. " - full error:"
+        .. highlight
       )
     end
 
@@ -617,8 +617,8 @@ M.data = {
 
   hex_to_rgb = function(hex_colour)
     return tonumber(hex_colour:sub(1, 2), 16),
-      tonumber(hex_colour:sub(3, 4), 16),
-      tonumber(hex_colour:sub(5), 16)
+        tonumber(hex_colour:sub(3, 4), 16),
+        tonumber(hex_colour:sub(5), 16)
   end,
 
   dim_color = function(colour, percent)

@@ -1,7 +1,7 @@
 #!/usr/bin/env lua
 
-local c = require "coroutine"
-
+-- local e = require("cmp_avante")
+local c = require("coroutine")
 
 S = {}
 
@@ -37,7 +37,6 @@ S.server = function(disp)
 
   return srv
 end
-
 
 return S
 

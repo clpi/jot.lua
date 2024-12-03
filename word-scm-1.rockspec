@@ -1,10 +1,13 @@
 local MODREV, SPECREV = "scm", "-1"
+local account = "clpi"
+local repo = "word.lua"
 rockspec_format = "3.0"
 package = "word.lua"
 version = MODREV .. SPECREV
 
 source = {
-  url = "git://github.com/clpi/word.lua",
+  url = "git://github.com/" .. account .. "/" .. repo .. ".git",
+  branch = "master",
   version = "0.1.0-alpha",
   tag = "0.1.0-alpha",
 }
@@ -12,6 +15,7 @@ source = {
 description = {
   summary = "Extensibility of org, comfort of markdown, for everyone",
   package = "word.lua",
+  issues_url = "https://github.com/clpi/word.lua/issues",
   version = "0.1.0-alpha",
   detailed = [[
     Extensibility of org, comfort of markdown, for everyone

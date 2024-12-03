@@ -9,11 +9,45 @@ function C.setup()
   }
 end
 
----@class lsp.command
+C.config.public = {
+}
+
+---@class lsp.command.Data
 C.data = {
 
+  ---@type fun(p: lsp.ExecuteCommandParams)
+  handler = function(p)
+    local c = C.data.commands[p.command]
+    if c then c(p.arguments) end
+  end,
+
+  commands = {
+
+  },
+
+  open_file = function(uri)
+    local vu = require("vim.ui")
+    vu.open(uri)
+  end,
+
+  open_uri = function(uri)
+    local vu = require("vim.ui")
+    vu.open(uri)
+  end,
+
+  ---@type lsp.ServerCapabilities
+  server = {
+    executeCommandProvider = {
+      commands = {
+        {
+
+        }
+      },
+    },
+  },
   ---@type lsp.ExecuteCommandClientCapabilities
   capabilities = {
+
     dynamicRegistration = true,
   },
   ---@type lsp.ExecuteCommandOptions
@@ -36,7 +70,7 @@ C.data = {
 
       loaded = true,
     }
-  end,
+  end
 }
 C.config.public = {
 

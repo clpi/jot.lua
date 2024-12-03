@@ -64,7 +64,7 @@ M.data.data = {
 }
 
 M.setup = function()
-  return { loaded = true, requires = { "ui.hl" } }
+  return { loaded = true, requires = { "edit.hl" } }
 end
 
 M.load = function()

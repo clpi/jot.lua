@@ -6,6 +6,8 @@ local utils = require("word.util")
 
 _G.Mod = {}
 
+Mod.__index = Mod
+
 Mod.default_mod = function(name)
   return {
     setup = function()

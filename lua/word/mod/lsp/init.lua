@@ -444,10 +444,31 @@ M.data.initializeResult = {
 ---@class lsp.handlers
 M.data.handlers = {
 
-  ["exit"] = function() end,
-  ---@param params lsp.InitializeParams
+  ---@param params lsp.InitializeParams: params
   ---@param callback fun(err: any, result: lsp.InitializeResult):nil
   ---@param notify_reply_callback fun(err: any, result: lsp.InitializeResult):nil
+  ["exit"] = function(params, callback, notify_reply_callback)
+  end,
+  ---@param params lsp.InitializeParams: params
+  ---@param callback fun(err: any, result: lsp.InitializeResult):nil
+  ---@param notify_reply_callback fun(err: any, result: lsp.InitializeResult):nil
+  ["workspace/didChangeConfiguration"] = function(params, callback, notify_reply_callback)
+  end,
+  ---@param params lsp.InitializeParams: params
+  ---@param callback fun(err: any, result: lsp.InitializeResult):nil
+  ---@param notify_reply_callback fun(err: any, result: lsp.InitializeResult):nil
+  ["workspace/didChangeWorkspaceFolders"] = function(params, callback, notify_reply_callback)
+  end,
+  ---@param params lsp.InitializeParams: params
+  ---@param callback fun(err: any, result: lsp.InitializeResult):nil
+  ---@param notify_reply_callback fun(err: any, result: lsp.InitializeResult):nil
+  ["initialized"] = function(params, callback, notify_reply_callback)
+  end,
+  ---@param params lsp.InitializeParams: params
+  ---@param callback fun(err: any, result: lsp.InitializeResult):nil
+  ---@param notify_reply_callback fun(err: any, result: lsp.InitializeResult):nil
+  ["shutdown"] = function(params, callback, notify_reply_callback)
+  end,
   ["initialize"] = function(params, callback, notify_reply_callback)
     ---@type lsp.InitializeResult
     local ir = M.data.initializeResult
@@ -463,6 +484,9 @@ M.data.handlers = {
   end,
 
   ["textDocument/didOpen"] = function(err, result, ctx) end,
+  -- ["textDocument/didChange"]
+  ["codeLens/resolve"] = function() end,
+  ["inlayHint/resolve"] = function() end,
   ["textDocument/moniker"] = function(
       params,
       callback,

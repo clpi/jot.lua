@@ -1,11 +1,3 @@
---[[
-    File: base-UI
-    Title: init for managing and displaying UIs to the user.
-    Summary: A set of public functions to help developers create and manage UI (selection popups, prompts...) in their mod.
-    Internal: true
-    ---
---]]
-
 local word = require("word")
 local log, mod = word.log, word.mod
 
@@ -15,8 +7,9 @@ local M = mod.create("ui", {
   -- "win",
   -- "conceal",
   "win",
+  "sidebar",
   "dashboard",
-  "hl",
+  -- "hl",
   "popup",
 })
 M.load = function()
@@ -46,7 +39,7 @@ M.data = {
           math.floor(vim.fn.winwidth(0) / 2),
           math.floor(vim.fn.winheight(0) / 2),
         }
-      or { vim.fn.winwidth(0), vim.fn.winheight(0) }
+        or { vim.fn.winwidth(0), vim.fn.winheight(0) }
   end,
 
   --- Returns a modified version of floating window options.
@@ -78,15 +71,15 @@ M.data = {
     -- If we want to center along the x axis then return a configuration that does so
     if user_options.center_x then
       config.row = config.row
-        + halved_window_size[2]
-        - math.floor(config.height / 2)
+          + halved_window_size[2]
+          - math.floor(config.height / 2)
     end
 
     -- If we want to center along the y axis then return a configuration that does so
     if user_options.center_y then
       config.col = config.col
-        + halved_window_size[1]
-        - math.floor(config.width / 2)
+          + halved_window_size[1]
+          - math.floor(config.width / 2)
     end
 
     return config
@@ -226,10 +219,10 @@ M.data = {
   ---@param content table #A table of content for the display
   create_display = function(name, split_type, content)
     if
-      not vim.tbl_contains(
-        { "nosplit", "vsplitl", "vsplitr", "split" },
-        split_type
-      )
+        not vim.tbl_contains(
+          { "nosplit", "vsplitl", "vsplitr", "split" },
+          split_type
+        )
     then
       log.error(
         "Unable to create display. Expected one of 'vsplitl', 'vsplitr', 'split' or 'nosplit', got",
@@ -348,10 +341,10 @@ M.data = {
     )
 
     if
-      not vim.tbl_contains(
-        { "nosplit", "vsplitl", "vsplitr", "split" },
-        split_type
-      )
+        not vim.tbl_contains(
+          { "nosplit", "vsplitl", "vsplitr", "split" },
+          split_type
+        )
     then
       log.error(
         "Unable to create display. Expected one of 'vsplitl', 'vsplitr', 'split' or 'nosplit', got",
@@ -394,8 +387,8 @@ M.data = {
     if opts.del_on_autocmd and #opts.del_on_autocmd ~= 0 then
       vim.cmd(
         "autocmd "
-          .. table.concat(opts.del_on_autocmd, ",")
-          .. (" <buffer=%s> silent! bd! %s"):format(buf, buf)
+        .. table.concat(opts.del_on_autocmd, ",")
+        .. (" <buffer=%s> silent! bd! %s"):format(buf, buf)
       )
     end
 

@@ -1,6 +1,20 @@
 local M = Mod.create("ui.win")
+local a, c = vim.api, vim.cmd
 local buf = require("word.util.buf")
 
+---@class ui.win.Win
+---@field win integer
+---@field buf integer
+M.data.win = {
+  buf = 0,
+  win = 0,
+}
+
+function M.data.win:close()
+  a.nvim_win_close(self.win, true)
+  a.nvim_buf_delete(self.buf, { force = true })
+  c.redraw()
+end
 M.setup = function()
   return {
     loaded = true,
@@ -27,13 +41,14 @@ M.data = {
 
     local opts = {
       relative = "editor",
+      anchor = "SW",
       width = win_width,
       height = win_height,
       row = row,
       col = col,
-      border = "rounded",
+      border = "none",
       title = "Hi",
-      -- title = "Cancel capture: " k...keymaps.capture_cancel..", Save capture: "..keymaps.capture_save,
+      -- title = "Capture" k...keymaps.capture_cancel..", Save capture: "..keymaps.capture_save,
       title_pos = "center",
     }
 
@@ -45,6 +60,7 @@ M.data = {
     local w = vim.api.nvim_open_win(b, false, {
       relative = "editor",
       height = math.ceil(vim.api.nvim_win_get_height(buf.win()) / 2),
+      anchor = "SW",
       width = math.ceil(vim.api.nvim_win_get_width(buf.win()) / 2),
       fixed = true,
       row = 1,
@@ -53,7 +69,7 @@ M.data = {
       footer = foot,
       title = title,
       title_pos = "center",
-      border = "rounded",
+      border = "single",
       style = "minimal",
       footer_pos = "center",
       noautocmd = true,

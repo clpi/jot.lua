@@ -1,0 +1,22 @@
+#!/usr/bin/env fennel
+
+(local cr coroutine)
+(local fnl (require :fennel))
+
+(print "hi")
+(lambda eq? [x y]
+  "equals?"
+  (if (= x y)
+      (print "eq")
+    )
+  (if (~= x y)
+    (print "neq")))
+
+(eq? 3 3)
+(eq? 3 4)
+
+(fn hithere []
+  (fnl))
+
+
+;vim:ft=fennel

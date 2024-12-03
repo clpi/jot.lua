@@ -1,5 +1,9 @@
 all: slint llint clean
 
+minit := "./test/config/minit.lua"
+
+nvimf := "--headless -u ./test/config/minit.lua --noplugin -c ''"
+
 test:
   nvim --headless -u test/minit.lua -c "PlenaryBustedDirectory tests/plenary/ {options}"
 

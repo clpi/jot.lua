@@ -27,3 +27,20 @@ require("word").setup({
   }
 })
 ```
+```mermaid
+graph G
+  A-->B
+  A-->C
+  B-->D
+  C-->D
+```
+
+```mermaid
+classDiagram
+Mod <|-- Config : config
+Mod : name string
+Mod : hook()
+Mod : user table
+Mod : setup()
+Config : version string
+```

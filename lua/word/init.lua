@@ -1,9 +1,8 @@
 ---@author clpi
 ---@file word.lua 0.1.0
----@version JIT
+---@license MIT
 ---@package word.lua
 ---@module "word"
----@see word.mod
 ---
 ---@brief   neovim note-taking plugin with the
 ---@brief   comfort of mmarkdown and the power of org
