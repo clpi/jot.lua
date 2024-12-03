@@ -31,7 +31,7 @@ local W = {
 
 -- local e = require("word")
 local con, log, modu, utils =
-  require("word.config").config, W.log, W.mod, W.utils
+    require("word.config").config, W.log, W.mod, W.utils
 local a, f, ext = vim.api, vim.fn, vim.tbl_deep_extend
 
 --- @init "word.config"
@@ -114,7 +114,7 @@ function W.enter_md(manual, args)
     mode = f.mode(),
   })
   vim.api.nvim_exec_autocmds("User", {
-    pattern = "wordLoaded", --
+    pattern = "WordLoaded", --
   })
 end
 
