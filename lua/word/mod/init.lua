@@ -1,5 +1,5 @@
 local uv, lu, fn = vim.loop or vim.uv, vim.lsp.util, vim.fn
-local cb = require("word.event.callback")
+local cb = require("word.util.event.callback")
 local config = require("word.config").config
 local log = require("word.util.log")
 local utils = require("word.util")

@@ -117,7 +117,7 @@ M.data = {
 
     file:write(
       vim.mpack.encode and vim.mpack.encode(M.data.data.data)
-      or vim.mpack.pack(M.data.data.data)
+        or vim.mpack.pack(M.data.data.data)
     )
 
     io.close(file)

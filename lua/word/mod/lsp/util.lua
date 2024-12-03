@@ -1,3 +1,4 @@
+local e = require("vim.lsp.health")
 local sd = require("plenary.scandir")
 local M = {
   icons = {

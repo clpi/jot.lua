@@ -1,4 +1,3 @@
----@brief lsp
 local Path = require("pathlib")
 local log = require("word.util.log")
 local tsu = require("nvim-treesitter.ts_utils")
@@ -829,10 +828,30 @@ M.data.handlers = {
       _notify_reply_callback
   )
   end,
-  -- ["textDocument/semanticTokens/full"] = function(params, _callback, _notify_reply_callback)
-  -- end,
-  -- ["textDocument/semanticTokens/full/delta"] = function(params, _callback, _notify_reply_callback)
-  -- end,
+  ["textDocument/semanticTokens/full"] = function(
+      params,
+      _callback,
+      _notify_reply_callback
+  )
+  end,
+  ["textDocument/semanticTokens/refresh"] = function(
+      params,
+      _callback,
+      _notify_reply_callback
+  )
+  end,
+  ["textDocument/semanticTokens/delta"] = function(
+      params,
+      _callback,
+      _notify_reply_callback
+  )
+  end,
+  ["textDocument/semanticTokens/range"] = function(
+      params,
+      _callback,
+      _notify_reply_callback
+  )
+  end,
   ["textDocument/publishDiagnostics"] = function(
       params,
       _callback,
@@ -955,10 +974,20 @@ M.data.handlers = {
     callback(nil, actions)
   end,
 
+  ["window/workDoneProgress/cancel"] = function() end,
+  ["window/workDoneProgress/create"] = function() end,
+
+  ["window/showMessage"] = function() end,
+  ["window/logMessage"] = function() end,
   ["window/showDocument"] = function() end,
   ["workspace/diagnostic/refresh"] = function() end,
   ["textDocument/documentColor"] = function() end,
+  ["textDocument/colorPresentation"] = function() end,
   ["textDocument/definition"] = function() end,
+  ["workspace/didCreateFiles"] = function() end,
+  ["workspace/didDeleteFiles"] = function() end,
+  ["workspace/willCreateFiles"] = function() end,
+  ["workspace/willDeleteFiles"] = function() end,
   ["workspace/willRenameFiles"] = function(
       params,
       _callback,

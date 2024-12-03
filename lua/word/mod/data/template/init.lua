@@ -342,7 +342,8 @@ M.data = {
             -- Gets a base format for the entries
             local format = M.config.public.toc_format
               or function(entries)
-                local months_text = require("word.mod.template.util").months
+                local months_text =
+                  require("word.mod.data.template.util").months
                 -- Convert the entries into a certain format to be written
                 local output = {}
                 local current_year

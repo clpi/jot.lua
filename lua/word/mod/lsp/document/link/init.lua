@@ -1,5 +1,8 @@
 local D = Mod.create("lsp.document.link")
 
+local ll = require("vim.lsp.log")
+local lu = require("vim.lsp.util")
+
 ---@class lsp.document.link.Data
 D.data = {
 

@@ -1,14 +1,5 @@
 {
   "$schema": "https://raw.githubusercontent.com/sumneko/vscode-lua/master/setting/schema.json",
-  "runtime.version": "LuaJIT",
-  "runtime.path": [
-    "?.lua",
-    "?/init.lua",
-    "test/?.lua",
-    "test/?/init.lua",
-    "scripts/?.lua",
-    "scripts/?/init.lua",
-  ],
   "workspace.checkThirdParty": false,
   "hover.enable": true,
   "addonManager.enable": true,
@@ -34,15 +25,8 @@
   },
   "workspace.maxPreload": 1600,
   "workspace.preloadFileSize": 1000,
-  "diagnostics.unusedLocalExclude": [
-    "_*"
-  ],
-  "diagnostics.globals": [
-    "vim",
-    "coroutine",
-    "require",
-    "bit"
-  ],
+  "diagnostics.unusedLocalExclude": ["_*"],
+  "diagnostics.globals": ["vim", "coroutine", "require", "bit"],
   "diagnostics.disable": [
     "close-non-object",
     "deprecated",
@@ -51,12 +35,4 @@
     "missing-global-doc",
     "missing-local-export-doc"
   ],
-    "workspace.library": [
-        "${addons}/busted/module/library",
-        "${3rd}/luassert/library",
-        "${addons}/lpeg/module/library",
-        "${addons}/luvit/module/library",
-        "${addons}/luasocket/module/library",
-        "${addons}/luassert/module/library"
-    ]
 }

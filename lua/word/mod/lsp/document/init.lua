@@ -69,6 +69,7 @@ M.data = {
 ---@field id string
 ---@field path lsp.document.Path
 ---@field title string
+---@field uri lsp.DocumentUri
 ---@field workspace lsp.workspace.Workspace
 M.data.doc = {
   id = "index.md",
@@ -83,6 +84,7 @@ M.data.doc = {
     index = "index",
     ext = "md",
   },
+  uri = "file://~" .. config.pathsep .. "index.md",
   ---@class (exact) lsp.document.Path
   ---@field rel string: Relative path from workspace
   ---@field abs string: Absolute path
