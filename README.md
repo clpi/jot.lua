@@ -54,7 +54,7 @@
     branch  = "master",
     config = function(_, opts)
       require("word").setup({
-        mods = {
+        mod = {
           config = {},
           workspace = {
             config = {
@@ -99,7 +99,7 @@ Plug "pysan3/pathlib.nvim"
 Plug "clpi/word.lua", {
     \ "branch" : "master",
     \ "do"     : ':lua require([[word]]).setup({
-    \   mods = {
+    \   mod = {
     \     config = {},
     \     workspace = {
     \       config = {
@@ -182,7 +182,7 @@ use {
   branch = 'master',
   config = function()
       require("word").setup({
-        mods = {
+        mod = {
           config = {},
           workspace = {
             config = {
@@ -244,7 +244,7 @@ use {
 -- with workspace 'home' at ~/home
 -- and make it default
 require("word").setup({
-  mods = {
+  mod = {
     config = {},
     workspace = {
       config = {

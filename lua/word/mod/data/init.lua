@@ -6,6 +6,7 @@
     ---
 --]]
 local M = Mod.create("data", {
+  "template",
   -- "sync",
   -- "log",
   -- "tag",

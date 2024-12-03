@@ -15,7 +15,7 @@
 
 ```lua
 require("word").setup({
-  mods = {
+  mod = {
     config = {},
     workspace = {
       config = {

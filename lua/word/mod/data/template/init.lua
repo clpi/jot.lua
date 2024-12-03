@@ -1,7 +1,7 @@
 local word = require("word")
 local config, lib, log, mod = word.cfg, word.lib, word.log, word.mod
 
-local M = mod.create("template")
+local M = mod.create("data.template")
 
 M.setup = function()
   return {
@@ -27,7 +27,7 @@ M.config.public = {
   workspace = nil,
 
   -- The name for the folder in which the template files are put.
-  template_folder = "template",
+  template_folder = "data.template",
 
   -- The strategy to use to create directories.
   -- May be "flat" (`2022-03-02.word`), "nested" (`2022/03/02.word`),
@@ -36,7 +36,7 @@ M.config.public = {
   strategy = "nested",
 
   -- The name of the template file to use when running `:word template template`.
-  template_name = "template.md",
+  template_name = "data.template.md",
 
   -- Whether to apply the template file to new template entries.
   use_template = true,
@@ -396,19 +396,19 @@ M.load = function()
         min_args = 1,
         max_args = 2,
         subcommands = {
-          index = { args = 0, name = "template.index" },
-          month = { max_args = 1, name = "template.month" },
-          tomorrow = { args = 0, name = "template.tomorrow" },
-          yesterday = { args = 0, name = "template.yesterday" },
-          today = { args = 0, name = "template.today" },
-          custom = { max_args = 1, name = "template.custom" }, -- format :yyyy-mm-dd
-          template = { args = 0, name = "template.template" },
+          index = { args = 0, name = "data.template.index" },
+          month = { max_args = 1, name = "data.template.month" },
+          tomorrow = { args = 0, name = "data.template.tomorrow" },
+          yesterday = { args = 0, name = "data.template.yesterday" },
+          today = { args = 0, name = "data.template.today" },
+          custom = { max_args = 1, name = "data.template.custom" }, -- format :yyyy-mm-dd
+          template = { args = 0, name = "data.template.template" },
           toc = {
             args = 1,
-            name = "template.toc",
+            name = "data.template.toc",
             subcommands = {
-              open = { args = 0, name = "template.toc.open" },
-              update = { args = 0, name = "template.toc.update" },
+              open = { args = 0, name = "data.template.toc.open" },
+              update = { args = 0, name = "data.template.toc.update" },
             },
           },
         },
@@ -419,15 +419,15 @@ end
 
 M.on_event = function(event)
   if event.split_type[1] == "cmd" then
-    if event.split_type[2] == "template.index" then
+    if event.split_type[2] == "data.template.index" then
       M.data.data.open_index()
-    elseif event.split_type[2] == "template.month" then
+    elseif event.split_type[2] == "data.template.month" then
       M.data.data.open_month()
-    elseif event.split_type[2] == "template.tomorrow" then
+    elseif event.split_type[2] == "data.template.tomorrow" then
       M.data.data.oemplate_tomorrow()
-    elseif event.split_type[2] == "template.yesterday" then
+    elseif event.split_type[2] == "data.template.yesterday" then
       M.data.data.oemplate_yesterday()
-    elseif event.split_type[2] == "template.custom" then
+    elseif event.split_type[2] == "data.template.custom" then
       if not event.content[1] then
         local calendar = mod.get_mod("ui.calendar")
 
@@ -453,13 +453,13 @@ M.on_event = function(event)
       else
         M.data.data.open_template(nil, event.content[1])
       end
-    elseif event.split_type[2] == "template.today" then
+    elseif event.split_type[2] == "data.template.today" then
       M.data.data.oemplate_today()
-    elseif event.split_type[2] == "template.template" then
+    elseif event.split_type[2] == "data.template.template" then
       M.data.data.create_template()
-    elseif event.split_type[2] == "template.toc.open" then
+    elseif event.split_type[2] == "data.template.toc.open" then
       M.data.data.open_toc()
-    elseif event.split_type[2] == "template.toc.update" then
+    elseif event.split_type[2] == "data.template.toc.update" then
       M.data.data.create_toc()
     end
   end
@@ -467,15 +467,15 @@ end
 
 M.events.subscribed = {
   cmd = {
-    ["template.index"] = true,
-    ["template.month"] = true,
-    ["template.yesterday"] = true,
-    ["template.tomorrow"] = true,
-    ["template.today"] = true,
-    ["template.custom"] = true,
-    ["template.template"] = true,
-    ["template.toc.update"] = true,
-    ["template.toc.open"] = true,
+    ["data.template.index"] = true,
+    ["data.template.month"] = true,
+    ["data.template.yesterday"] = true,
+    ["data.template.tomorrow"] = true,
+    ["data.template.today"] = true,
+    ["data.template.custom"] = true,
+    ["data.template.template"] = true,
+    ["data.template.toc.update"] = true,
+    ["data.template.toc.open"] = true,
   },
 }
 

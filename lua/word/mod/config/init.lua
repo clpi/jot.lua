@@ -17,7 +17,7 @@ local M = Mod.create_meta(
   "data.log",
   "template",
   "parse",
-  "find",
+  -- "find",
   "edit"
   -- "edit.indent"
   -- "code",

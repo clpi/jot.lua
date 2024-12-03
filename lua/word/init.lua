@@ -38,9 +38,9 @@ local a, f, ext = vim.api, vim.fn, vim.tbl_deep_extend
 --- @see config.user
 --- @see word.config.user
 function W.setup(conf)
-  conf = conf or { mods = {} }
-  if conf.mods == nil then
-    conf.mods = {}
+  conf = conf or { mod = {} }
+  if conf.mod == nil then
+    conf.mod = {}
   end
   con.user = utils.extend(con.user, conf)
   log.new(con.user.logger or log.get_base_config(), true)
@@ -65,7 +65,7 @@ function W.setup(conf)
 end
 
 function W.enter_md(manual, args)
-  local mod_list = con.user and con.user.mods or {}
+  local mod_list = con.user and con.user.mod or {}
   if con.started or not mod_list or vim.tbl_isempty(mod_list) then
     return
   end
@@ -80,7 +80,7 @@ function W.enter_md(manual, args)
   end
 
   for name, lm in pairs(mod_list) do
-    con.mods[name] = utils.extend(con.mods[name] or {}, lm.config or {})
+    con.mod[name] = utils.extend(con.mod[name] or {}, lm.config or {})
   end
   local load_mod = modu.load_mod
   for name, _ in pairs(mod_list) do

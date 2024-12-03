@@ -164,7 +164,7 @@ require("lazy").setup({
     },
     config = function()
       require("word").setup({
-        mods = {
+        mod = {
           config = {},
           workspace = {
             config = {

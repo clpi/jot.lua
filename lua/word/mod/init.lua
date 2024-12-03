@@ -215,7 +215,7 @@ function Mod.load_mod_from_table(m)
       log.trace("Verifying" .. req_mod)
 
       if not Mod.is_mod_loaded(req_mod) then
-        if config.user.mods[req_mod] then
+        if config.user.mod[req_mod] then
           log.trace(
             "Wanted init"
               .. req_mod
@@ -393,8 +393,8 @@ function Mod.load_mod(modn, cfg)
     modl.config.custom = cfg
     modl.config.public = utils.extend(modl.config.public, cfg)
   else
-    -- print(modl.config.custom, modl.config.public, config.mods[modn])
-    modl.config.custom = config.mods[modn]
+    -- print(modl.config.custom, modl.config.public, config.mod[modn])
+    modl.config.custom = config.mod[modn]
     modl.config.public =
       -- vim.tbl_extend("force", modl.config.public, modl.config.custom or {})
       utils.extend(modl.config.public, modl.config.custom or {})

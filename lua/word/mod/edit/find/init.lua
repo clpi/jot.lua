@@ -4,7 +4,7 @@ local e = vim.lpeg
 local d = require("word")
 local lib, mod = d.lib, d.mod
 
-local M = mod.create("find")
+local M = mod.create("edit.find")
 
 M.load = function()
   mod.await("cmd", function(cmd)
@@ -13,14 +13,14 @@ M.load = function()
         subcommands = {
           update = {
             args = 0,
-            name = "find.update",
+            name = "edit.find.update",
           },
           insert = {
-            name = "find.insert",
+            name = "edit.find.insert",
             args = 0,
           },
         },
-        name = "find",
+        name = "edit.find",
       },
     })
   end)
@@ -43,8 +43,8 @@ M.events = {}
 
 M.events.subscribed = {
   cmd = {
-    ["find.insert"] = true,
-    ["find.update"] = true,
+    ["edit.find.insert"] = true,
+    ["edit.find.update"] = true,
   },
 }
 

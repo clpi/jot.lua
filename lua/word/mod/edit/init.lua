@@ -1,5 +1,6 @@
 local M = require("word.mod").create("edit", {
   "toc",
+  "find",
   "todo",
   -- "fold",
   -- "inline",

@@ -1,4 +1,5 @@
 index.md
+**.after/
 **.vscode/
 lib/
 **.DS_Store

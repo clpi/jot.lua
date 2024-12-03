@@ -6,7 +6,7 @@ local f = vim.fn
 C.config = {
   ---@type word.config.user
   user = {
-    mods = {
+    mod = {
       config = {},
     },
   },
@@ -21,7 +21,7 @@ C.config = {
     word = true,
   },
 
-  mods = {},
+  mod = {},
   manual = nil,
   args = {},
   version = "0.1.0",

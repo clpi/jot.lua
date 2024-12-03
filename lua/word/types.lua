@@ -95,7 +95,7 @@
 --- @class (exact) word.config
 --- @field args table<string, string>                   A list of arguments provided to the `:wordStart` function in the form of `key=value` pairs. Only applicable when `user_config.lazy_loading` is `true`.
 --- @field manual boolean?                                   Used if word was manually loaded via `:wordStart`. Only applicable when `user_config.lazy_loading` is `true`.
---- @field mods table<string, word.config.init> Acts as a copy of the user's config that may be modified at runtime.
+--- @field mod table<string, word.config.init> Acts as a copy of the user's config that may be modified at runtime.
 --- @field os OperatingSystem                           The operating system that word is currently running under.
 --- @field pathsep "\\"|"/"                                  The operating system that word is currently running under.
 --- @field started boolean                                   Set to `true` when word is fully initialized.
