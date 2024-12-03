@@ -680,7 +680,7 @@ M.setup = function()
     requires = {
       "workspace",
       "integration.treesitter",
-      "link",
+      "edit.link",
     },
   }
 end

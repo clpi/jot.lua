@@ -4,9 +4,10 @@ lib/
 **.DS_Store
 **.idea/
 **node_modules
-ext/
+**ext/
 **.ropeproject/
 **notes/
+**note/
 /luarocks
 /lua_modules
 /.luarocks

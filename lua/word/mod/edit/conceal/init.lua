@@ -1,23 +1,10 @@
--- mkdnflow.nvim (Tools for personal markdown notebook navigation and management)
--- Copyright (C) 2022 Jake W. Vincent <https://github.com/jakewvincent>
---
--- This program is free software: you can redistribute it and/or modify
--- it under the terms of the GNU General Public License as published by
--- the Free Software Foundation, either version 3 of the License, or
--- (at your option) any later version.
---
--- This program is distributed in the hope that it will be useful,
--- but WITHOUT ANY WARRANTY; without even the implied warranty of
--- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
--- GNU General Public License for more details.
---
--- You should have received a copy of the GNU General Public License
--- along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
 local word = require("word")
 local mod, config = word.mod, word.cfg
-local M = mod.create("ui.conceal")
+local M = mod.create("edit.conceal")
 local fn, a, madd = vim.fn, vim.api, vim.fn.matchadd
+M.chars = require("word.mod.edit.conceal.chars")
+M.math = require("word.mod.edit.conceal.math")
+M.border = require("word.mod.edit.conceal.border")
 
 M.setup = function()
   return {
@@ -26,78 +13,11 @@ M.setup = function()
   }
 end
 
+M.data.math = M.math.data
+M.data.border = M.border.data
+M.data.chars = M.chars.data
 M.config.public = {
   link_style = "markdown",
-}
-M.data.sub = {
-  [" "] = " ",
-  ["("] = "⁽",
-  [")"] = "⁾",
-
-  ["0"] = "⁰",
-  ["1"] = "¹",
-  ["2"] = "²",
-  ["3"] = "³",
-  ["4"] = "⁴",
-  ["5"] = "⁵",
-  ["6"] = "⁶",
-  ["7"] = "⁷",
-  ["8"] = "⁸",
-  ["9"] = "⁹",
-
-  ["a"] = "ᵃ",
-  ["b"] = "ᵇ",
-  ["c"] = "ᶜ",
-  ["d"] = "ᵈ",
-  ["e"] = "ᵉ",
-  ["f"] = "ᶠ",
-  ["g"] = "ᵍ",
-  ["h"] = "ʰ",
-  ["i"] = "ⁱ",
-  ["j"] = "ʲ",
-  ["k"] = "ᵏ",
-  ["l"] = "ˡ",
-  ["m"] = "ᵐ",
-  ["n"] = "ⁿ",
-  ["o"] = "ᵒ",
-  ["p"] = "ᵖ",
-  ["q"] = nil,
-  ["r"] = "ʳ",
-  ["s"] = "ˢ",
-  ["t"] = "ᵗ",
-  ["u"] = "ᵘ",
-  ["v"] = "ᵛ",
-  ["w"] = "ʷ",
-  ["x"] = "ˣ",
-  ["y"] = "ʸ",
-  ["z"] = "ᶻ",
-
-  ["A"] = "ᴬ",
-  ["B"] = "ᴮ",
-  ["C"] = nil,
-  ["D"] = "ᴰ",
-  ["E"] = "ᴱ",
-  ["F"] = nil,
-  ["G"] = "ᴳ",
-  ["H"] = "ᴴ",
-  ["I"] = "ᴵ",
-  ["J"] = "ᴶ",
-  ["K"] = "ᴷ",
-  ["L"] = "ᴸ",
-  ["M"] = "ᴹ",
-  ["N"] = "ᴺ",
-  ["O"] = "ᴼ",
-  ["P"] = "ᴾ",
-  ["Q"] = nil,
-  ["R"] = "ᴿ",
-  ["S"] = nil,
-  ["T"] = "ᵀ",
-  ["U"] = "ᵁ",
-  ["V"] = "ⱽ",
-  ["W"] = "ᵂ",
-  ["X"] = " ",
-  ["Y"] = nil,
-  ["Z"] = nil,
 }
 M.data.data.start_link_concealing = function()
   if M.config.public == "markdown" then
