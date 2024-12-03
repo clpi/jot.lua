@@ -13,13 +13,13 @@ local M = Mod.create_meta(
   "integration.treesitter",
   "data",
   "lsp",
-  "code",
+  -- "code",
   "data.log",
   "template",
   "parse",
   "find",
-  "edit",
-  "edit.indent",
+  "edit"
+  -- "edit.indent"
   -- "code",
   -- "export",
   -- "ui.icon",
@@ -41,7 +41,7 @@ local M = Mod.create_meta(
   -- "sync",
   -- "publish",
   -- "link"
-  "todo"
+  -- "todo"
 )
 
 return M

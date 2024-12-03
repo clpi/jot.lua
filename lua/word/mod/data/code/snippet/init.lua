@@ -1,4 +1,4 @@
-local M = Mod.create("code.snippet")
+local M = Mod.create("data.code.snippet")
 
 M.setup = function()
   return {

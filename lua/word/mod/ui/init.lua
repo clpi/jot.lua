@@ -19,14 +19,14 @@ M.load = function()
 end
 M.setup = function()
   return {
-    namespace = vim.api.nvim_create_namespace("word/ui"),
+    namespace = vim.api.nvim_create_namespace("word.ui"),
     requires = {},
     loaded = true,
   }
 end
 
 M.data.data = {
-  namespace = vim.api.nvim_create_namespace("word/ui"),
+  namespace = vim.api.nvim_create_namespace("word.ui"),
 }
 
 ---@class base.ui

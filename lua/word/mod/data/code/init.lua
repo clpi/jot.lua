@@ -1,7 +1,7 @@
 local word = require("word")
 local lib, mod, utils, log = word.lib, word.mod, word.utils, word.log
 
-local M = Mod.create("code", { 'run', 'snippet' })
+local M = Mod.create("data.code", { 'run', 'snippet' })
 local Path = require("pathlib")
 
 M.setup = function()
@@ -197,7 +197,7 @@ M.data = {
               language = vim.filetype.match({ filename = file_to_code_to, contents = block_content }) ---@diagnostic disable-line -- TODO: type error workaround <pysan3>
               if not language and declared_filetype then
                 language = vim.filetype.match({
-                  filename = "___."..declared_filetype,
+                  filename = "___." .. declared_filetype,
                   contents = block_content,
                 })
               end
@@ -336,7 +336,7 @@ M.on_event = function(event)
       -- resolve upward relative path like `......`
       local relative_file, upward_count = string.gsub(file, "%.%.[\\/]", "")
       if upward_count > 0 then
-        local base_dir = vim.fn.expand("%:p"..string.rep(":h", upward_count + 1)) --[[@as string]]
+        local base_dir = vim.fn.expand("%:p" .. string.rep(":h", upward_count + 1)) --[[@as string]]
         file = vim.fs.joinpath(base_dir, relative_file)
       end
 

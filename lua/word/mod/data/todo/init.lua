@@ -1,6 +1,6 @@
 local word = require("word")
 
-local M = Mod.create("todo")
+local M = Mod.create("data.todo")
 
 M.maps = function()
   Map.nmap(",wt", "<CMD>Telescope word todo<CR>")
@@ -86,8 +86,8 @@ end
 ---@param buffer number #The buffer ID to attach to.
 function M.data.attach_introspector(buffer)
   if
-    not vim.api.nvim_buf_is_valid(buffer)
-    or vim.bo[buffer].filetype ~= "markdown"
+      not vim.api.nvim_buf_is_valid(buffer)
+      or vim.bo[buffer].filetype ~= "markdown"
   then
     error(
       string.format(
@@ -122,7 +122,7 @@ function M.data.attach_introspector(buffer)
 
       ---@type TSNode?
       local node =
-        M.required["integration.treesitter"].get_first_node_on_line(buf, first)
+          M.required["integration.treesitter"].get_first_node_on_line(buf, first)
 
       if not node then
         return
@@ -153,16 +153,16 @@ function M.data.attach_introspector(buffer)
       introspect(node)
 
       local node_above =
-        M.required["integration.treesitter"].get_first_node_on_line(
-          buf,
-          first - 1
-        )
+          M.required["integration.treesitter"].get_first_node_on_line(
+            buf,
+            first - 1
+          )
 
       do
         local todo_status = node_above:named_child(1)
 
         if
-          todo_status and todo_status:type() == "detached_modifier_extension"
+            todo_status and todo_status:type() == "detached_modifier_extension"
         then
           introspect(node_above)
         end
@@ -191,8 +191,8 @@ function M.data.calculate_items(node)
   -- Go through all the children of the current todo item node and count the amount of "done" children
   for child in node:iter_children() do
     if
-      child:named_child(1)
-      and child:named_child(1):type() == "detached_modifier_extension"
+        child:named_child(1)
+        and child:named_child(1):type() == "detached_modifier_extension"
     then
       for status in child:named_child(1):iter_children() do
         if status:type():match("^todo_item_") then
