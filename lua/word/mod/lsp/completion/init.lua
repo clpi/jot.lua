@@ -4,7 +4,7 @@ local mod, utils, log = word.mod, word.utils, word.log
 local ls = vim.lsp
 local Path = require("pathlib")
 
-local M = mod.create("lsp.completion", { "inline" })
+local M = mod.create("lsp.completion", { "inline", "documentation" })
 local ts ---@type treesitter
 local search
 

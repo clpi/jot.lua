@@ -1,3 +1,5 @@
+-- local table = require("table")
+-- local vim = require("vim")
 -- log.lua
 --
 -- Inspired by rxi/log.lua
@@ -61,7 +63,7 @@ Log.get_base_config = function()
   return default_config
 end
 
-local unpack = unpack or table.unpack
+-- local unpack = unpack or table.unpack
 
 Log.debug = function(inp)
   -- print("ERROR: ", inp)
@@ -182,7 +184,7 @@ Log.new = function(config, standalone)
         for _, v in ipairs(passed) do
           table.insert(inspected, vim.inspect(v))
         end
-        return string.format(fmt, unpack(inspected))
+        return string.format(fmt, table.unpack(inspected))
       end)
     end
   end

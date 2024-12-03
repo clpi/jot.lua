@@ -1,4 +1,5 @@
 local lib = {}
+-- local vim = require("vim")
 
 --- Returns the item that matches the first item in statements.
 --- @param value any The value to compare against.
@@ -18,13 +19,13 @@ function lib.match(value, compare)
     -- The default comparison function compares booleans as strings to ensure
     -- that boolean comparisons work as intended.
     compare = compare
-        or function(lhs, rhs)
-          if type(lhs) == "boolean" then
-            return tostring(lhs) == rhs
-          end
-
-          return lhs == rhs
+      or function(lhs, rhs)
+        if type(lhs) == "boolean" then
+          return tostring(lhs) == rhs
         end
+
+        return lhs == rhs
+      end
 
     -- Go through every statement, compare it, and perform the desired action
     -- if the comparison was successful
@@ -80,7 +81,9 @@ function lib.when(comparison, when_true, when_false)
     comparison = (comparison ~= nil)
   end
 
-  return lib.match(type(comparison) == "table" and unpack(comparison) or comparison)({
+  return lib.match(
+    type(comparison) == "table" and unpack(comparison) or comparison
+  )({
     ["true"] = when_true,
     ["false"] = when_false,
   })
@@ -143,10 +146,11 @@ end
 function lib.insert_or(tbl, value)
   local item = lib.find(tbl, value)
 
-  return item and tbl[item] or (function()
-    table.insert(tbl, value)
-    return value
-  end)()
+  return item and tbl[item]
+    or (function()
+      table.insert(tbl, value)
+      return value
+    end)()
 end
 
 --- Picks a set of values from a table and returns them in an array.
@@ -372,7 +376,7 @@ function lib.title(str)
   for w in str:gmatch("[^%s]+") do
     local lower = w:sub(2):lower()
 
-    table.insert(result, w:sub(1, 1):upper()..lower)
+    table.insert(result, w:sub(1, 1):upper() .. lower)
   end
   return table.concat(result, " ")
 end

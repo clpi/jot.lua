@@ -1,7 +1,7 @@
 local word = require("word")
 local lib, mod, utils, log = word.lib, word.mod, word.utils, word.log
 
-local M = Mod.create("data.code", { 'run', 'snippet' })
+local M = Mod.create("data.code", { "run", "snippet" })
 local Path = require("pathlib")
 
 M.setup = function()
@@ -29,14 +29,15 @@ M.load = function()
           workspace = {
             max_args = 1,
             name = "code.workspace",
-          }
+          },
         },
       },
     })
   end)
 
   if M.config.code_on_write then
-    local augroup = vim.api.nvim_create_augroup("word_auto_code", { clear = true })
+    local augroup =
+      vim.api.nvim_create_augroup("word_auto_code", { clear = true })
     vim.api.nvim_create_autocmd("BufWritePost", {
       desc = "code the current file on write",
       pattern = "*.markdown",
@@ -62,11 +63,12 @@ M.data = {
   code = function(buffer)
     ---@type base.treesitter
     local treesitter = M.required["integration.treesitter"]
-    local parsed_document_metadata = treesitter.get_document_metadata(buffer) or {}
+    local parsed_document_metadata = treesitter.get_document_metadata(buffer)
+      or {}
     local code_settings = parsed_document_metadata.code or {}
     local options = {
       languages = code_settings.languages or code_settings,
-      scope = code_settings.scope or "all",             -- "all" | "tagged" | "main"
+      scope = code_settings.scope or "all", -- "all" | "tagged" | "main"
       delimiter = code_settings.delimiter or "newline", -- "newline" | "heading" | "file-content" | "none"
     }
 
@@ -124,7 +126,7 @@ M.data = {
         local ok, parsed_tag = pcall(treesitter.get_tag_info, node, true)
         if not ok then
           if M.config.indent_errors == "print" then
-            print(parsed_tag)
+            -- print(parsed_tag)
           else
             log.error(parsed_tag)
           end
@@ -162,8 +164,11 @@ M.data = {
               if options.filenames_only then
                 for _, filename in ipairs(options.filenames_only) do
                   if
-                      declared_filetype
-                      == vim.filetype.match({ filename = filename, contents = block_content }) ---@diagnostic disable-line -- TODO: type error workaround <pysan3>
+                    declared_filetype
+                    == vim.filetype.match({
+                      filename = filename,
+                      contents = block_content,
+                    }) ---@diagnostic disable-line -- TODO: type error workaround <pysan3>
                   then
                     file_to_code_to = filename
                     break
@@ -185,16 +190,23 @@ M.data = {
           local path_lib_path = Path.new(file_to_code_to)
           if path_lib_path:is_relative() then
             local buf_path = Path.new(buf_name)
-            file_to_code_to = tostring(buf_path:parent():child(file_to_code_to):resolve())
+            file_to_code_to =
+              tostring(buf_path:parent():child(file_to_code_to):resolve())
           end
 
           local delimiter_content
-          if options.delimiter == "heading" or options.delimiter == "file-content" then
+          if
+            options.delimiter == "heading"
+            or options.delimiter == "file-content"
+          then
             local language
             if filename_to_languages[file_to_code_to] then
               language = filename_to_languages[file_to_code_to]
             else
-              language = vim.filetype.match({ filename = file_to_code_to, contents = block_content }) ---@diagnostic disable-line -- TODO: type error workaround <pysan3>
+              language = vim.filetype.match({
+                filename = file_to_code_to,
+                contents = block_content,
+              }) ---@diagnostic disable-line -- TODO: type error workaround <pysan3>
               if not language and declared_filetype then
                 language = vim.filetype.match({
                   filename = "___." .. declared_filetype,
@@ -220,16 +232,23 @@ M.data = {
               local heading = treesitter.find_parent(node, "heading%d+")
               if heading and heading:named_child(1) then
                 local srow, scol, erow, ecol = heading:named_child(1):range()
-                heading_string = vim.api.nvim_buf_get_text(0, srow, scol, erow, ecol, {})[1]
+                heading_string =
+                  vim.api.nvim_buf_get_text(0, srow, scol, erow, ecol, {})[1]
               end
 
               -- don't reuse the same header more than once
-              if heading_string and language and previous_headings[language] ~= heading then
+              if
+                heading_string
+                and language
+                and previous_headings[language] ~= heading
+              then
                 previous_headings[language] = heading
                 if codes[file_to_code_to] then
-                  delimiter_content = { "", commentstrings[language]:format(heading_string), "" }
+                  delimiter_content =
+                    { "", commentstrings[language]:format(heading_string), "" }
                 else
-                  delimiter_content = { commentstrings[language]:format(heading_string), "" }
+                  delimiter_content =
+                    { commentstrings[language]:format(heading_string), "" }
                 end
               elseif codes[file_to_code_to] then
                 delimiter_content = { "" }
@@ -240,7 +259,8 @@ M.data = {
               end
               local start = file_content_line_start[file_to_code_to]
               local srow, _, erow, _ = node:range()
-              delimiter_content = vim.api.nvim_buf_get_lines(buffer, start, srow, true)
+              delimiter_content =
+                vim.api.nvim_buf_get_lines(buffer, start, srow, true)
               file_content_line_start[file_to_code_to] = erow + 1
               for idx, line in ipairs(delimiter_content) do
                 if line ~= "" then
@@ -270,7 +290,8 @@ M.data = {
     if options.delimiter == "file-content" then
       for filename, start in pairs(file_content_line_start) do
         local language = filename_to_languages[filename]
-        local delimiter_content = vim.api.nvim_buf_get_lines(buffer, start, -1, true)
+        local delimiter_content =
+          vim.api.nvim_buf_get_lines(buffer, start, -1, true)
         for idx, line in ipairs(delimiter_content) do
           if line ~= "" then
             delimiter_content[idx] = commentstrings[language]:format(line)
@@ -290,18 +311,19 @@ M.data = {
     else
       reverse = true
     end
-    local lines = reverse and vim.api.nvim_buf_get_lines(0, cursor_row - 1, -1, false)
-        or vim.api.nvim_buf_get_lines(0, 0, cursor_row, false)
+    local lines = reverse
+        and vim.api.nvim_buf_get_lines(0, cursor_row - 1, -1, false)
+      or vim.api.nvim_buf_get_lines(0, 0, cursor_row, false)
     local fences = 0
     for _, line_text in ipairs(lines) do
-      local _, count = string.gsub(line_text, '^```', '```')
+      local _, count = string.gsub(line_text, "^```", "```")
       fences = fences + count
     end
     if fences % 2 == 0 then
       return false
     end
     return true
-  end
+  end,
 }
 M.config.public = {
   -- Notify when there is nothing to code (INFO) or when the content is empty (WARN).
@@ -336,38 +358,63 @@ M.on_event = function(event)
       -- resolve upward relative path like `......`
       local relative_file, upward_count = string.gsub(file, "%.%.[\\/]", "")
       if upward_count > 0 then
-        local base_dir = vim.fn.expand("%:p" .. string.rep(":h", upward_count + 1)) --[[@as string]]
+        local base_dir =
+          vim.fn.expand("%:p" .. string.rep(":h", upward_count + 1)) --[[@as string]]
         file = vim.fs.joinpath(base_dir, relative_file)
       end
 
-      vim.loop.fs_open(vim.fn.expand(file) --[[@as string]], "w", 438, function(err, fd)
-        assert(not err and fd, lib.lazy_string_concat("Failed to open file '", file, "' for tangling: ", err))
+      vim.loop.fs_open(
+        vim.fn.expand(file) --[[@as string]],
+        "w",
+        438,
+        function(err, fd)
+          assert(
+            not err and fd,
+            lib.lazy_string_concat(
+              "Failed to open file '",
+              file,
+              "' for tangling: ",
+              err
+            )
+          )
 
-        local write_content = table.concat(content, "\n")
-        if M.config.report_on_empty and write_content:len() == 0 then
-          vim.schedule(function()
-            utils.notify(string.format("coded content for %s is empty.", file), vim.log.levels.WARN)
-          end)
-        end
+          local write_content = table.concat(content, "\n")
+          if M.config.report_on_empty and write_content:len() == 0 then
+            vim.schedule(function()
+              utils.notify(
+                string.format("coded content for %s is empty.", file),
+                vim.log.levels.WARN
+              )
+            end)
+          end
 
-        vim.loop.fs_write(fd, write_content, 0, function(werr)
-          assert(not werr, lib.lazy_string_concat("Failed to write to '", file, "' for tangling: ", werr))
-          coded_count = coded_count + 1
-          file_count = file_count - 1
-          if file_count == 0 then
-            vim.schedule(
-              lib.wrap(
-                utils.notify,
-                string.format(
-                  "Successfully coded %d file%s!",
-                  coded_count,
-                  coded_count == 1 and "" or "s"
-                )
+          vim.loop.fs_write(fd, write_content, 0, function(werr)
+            assert(
+              not werr,
+              lib.lazy_string_concat(
+                "Failed to write to '",
+                file,
+                "' for tangling: ",
+                werr
               )
             )
-          end
-        end)
-      end)
+            coded_count = coded_count + 1
+            file_count = file_count - 1
+            if file_count == 0 then
+              vim.schedule(
+                lib.wrap(
+                  utils.notify,
+                  string.format(
+                    "Successfully coded %d file%s!",
+                    coded_count,
+                    coded_count == 1 and "" or "s"
+                  )
+                )
+              )
+            end
+          end)
+        end
+      )
     end
   end
 end

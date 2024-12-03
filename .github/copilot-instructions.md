@@ -1,0 +1,3 @@
+# word.lua Copilot Instructions
+
+-

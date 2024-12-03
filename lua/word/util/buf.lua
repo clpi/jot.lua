@@ -4,7 +4,8 @@ B = {}
 local ft = require("plenary.filetype")
 local scandir = require("plenary.scandir")
 
-local fn, uv = vim.fn, vim.uv
+-- local vim = require("vim")
+local fn, uv, v = vim.fn, vim.uv or vim.loop, vim.v
 
 B.lines = function()
   return vim
@@ -19,15 +20,79 @@ B.check_ext = function(ext)
   return ext == fn.expand("%:e")
 end
 
+B.base = function()
+  return fn.expand("%:t:s?\\.[^\\.]\\+$??")
+end
 B.file = function()
   return fn.expand("%:t")
+end
+B.clipboard = function()
+  fn.getreg(v.register, true)
 end
 B.path = function()
   return fn.expand("%:p")
 end
-B.cwd = function()
+function B.weekday()
+  return os.date("%A")
+end
+
+function B.month()
+  return os.date("%m")
+end
+
+function B.month_name()
+  return os.date("%B")
+end
+
+function B.getOffsetTz(ts)
+  local utcdate = os.date("!*t", ts)
+  local localdate = os.date("*t", ts)
+  localdate.isdst = false -- this is the trick
+  ---@diagnostic disable-next-line
+  local diff = os.difftime(os.time(localdate), os.time(utcdate))
+  local h, m = math.modf(diff / 3600)
+  return string.format("%+.4d", 100 * h + 60 * m)
+end
+
+function B.offsetTz()
+  return B.getOffsetTz(os.time()):gsub("([+-])(%d%d)(%d%d)$", "%1%2:%3")
+end
+
+math.randomseed(os.time())
+
+function B.year()
+  return os.date("%Y")
+end
+
+function B.syear()
+  return os.date("%y")
+end
+
+function B.date()
+  return os.date("%d")
+end
+
+function B.smonth_name()
+  return os.date("%b")
+end
+
+function B.sweekday()
+  return os.date("%a")
+end
+
+B.sec = function()
+  return os.date("%S")
+end
+B.min = function()
+  return os.date("%M")
+end
+B.hr = function()
+  return os.date("%H")
+end
+B.dir = function()
   return fn.expand("%:p:h")
 end
+B.cwd = B.dir
 
 ---@return integer
 B.buf = function()

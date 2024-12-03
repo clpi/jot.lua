@@ -1,4 +1,4 @@
-local D = Mod.create("lsp.completion.doc")
+local D = require("word.mod").create("lsp.completion.documentation")
 
 D.setup = function()
   return {

@@ -30,6 +30,7 @@ Mod.default_mod = function(name)
     end,
     maps = function()
       -- TODO: obviously inefficient
+      local Map = require("word.util.maps")
       Map.nmap(",wi", "<CMD>Word index<CR>")
       Map.nmap(",wp", "<CMD>Word note template<CR>")
       Map.nmap(",wc", "<CMD>Word note calendar<CR>")

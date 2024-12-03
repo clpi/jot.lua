@@ -1,4 +1,5 @@
 U = {}
+-- local vim = require("vim")
 
 U.maps = require("word.util.maps")
 
@@ -284,8 +285,10 @@ U.get_os_info = function()
   error("[word]: Unable to determine the currently active operating system!")
 end
 
-U.ts = require("word.util.ts")
 U.buf = require("word.util.buf")
+U.lib = require("word.util.lib")
+U.log = require("word.util.log")
 -- U.job = require("word.util.job")
-U.path = require("word.util.path")
+U.style = require("word.util.style")
+
 return U

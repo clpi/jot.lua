@@ -1,4 +1,6 @@
-_G.Map = {}
+Map = {}
+
+-- local vim = require("vim")
 
 Map.km = vim.keymap.set
 
