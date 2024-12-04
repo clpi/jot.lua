@@ -11,7 +11,7 @@ Mod.__index = Mod
 Mod.default_mod = function(name)
   return {
     setup = function()
-      ---@type word.mod.setup
+      ---@type word.mod.Setup
       return {
         loaded = true,
         requires = {},
@@ -71,9 +71,9 @@ end
 
 --- @param name string The name of the new init. Modake sure this is unique. The recommended naming convention is `category.modn` or `category.subcategory.modn`.
 --- @param imports? string[] A list of imports to attach to the init. Import data is requestable via `init.required`. Use paths relative to the current init.
---- @return word.mod
+--- @return word.Mod
 function Mod.create(name, imports)
-  ---@type word.mod
+  ---@type word.Mod
   local new_mod = Mod.default_mod(name)
   if imports then
     for _, imp in ipairs(imports) do
@@ -102,9 +102,9 @@ end
 --- Constructs a metainit from a list of submod. Modetamod are mod that can autoload batches of mod at once.
 --- @param name string The name of the new metainit. Modake sure this is unique. The recommended naming convention is `category.modn` or `category.subcategory.modn`.
 --- @param ... string A list of init names to load.
---- @return word.mod
+--- @return word.Mod
 Mod.create_meta = function(name, ...)
-  ---@type word.mod
+  ---@type word.Mod
   local m = Mod.create(name)
 
   m.config.public.enable = { ... }
@@ -155,12 +155,12 @@ end
 Mod.loaded_mod_count = 0
 
 --- The table of currently loaded mod
---- @type { [string]: word.mod }
+--- @type { [string]: word.Mod }
 Mod.loaded_mod = {}
 
 --- Loads and enables a init
 --- Loads a specified init. If the init subscribes to any events then they will be activated too.
---- @param m word.mod The actual init to load.
+--- @param m word.Mod The actual init to load.
 --- @return boolean # Whether the init successfully loaded.
 function Mod.load_mod_from_table(m)
   log.info("Loading init with name" .. m.name)
@@ -172,7 +172,7 @@ function Mod.load_mod_from_table(m)
   end
 
   -- Invoke the setup function. This function returns whether or not the loading of the init was successful and some metadata.
-  ---@type word.mod.setup
+  ---@type word.mod.Setup
   local mod_load = m.setup and m.setup()
     or {
       loaded = true,
@@ -406,8 +406,8 @@ function Mod.load_mod(modn, cfg)
 end
 
 --- Has the same principle of operation as load_mod_from_table(), except it then sets up the parent init's "required" table, allowing the parent to access the child as if it were a dependency.
---- @param md word.mod A valid table as returned by mod.create()
---- @param parent_mod string|word.mod If a string, then the parent is searched for in the loaded mod. If a table, then the init is treated as a valid init as returned by mod.create()
+--- @param md word.Mod A valid table as returned by mod.create()
+--- @param parent_mod string|word.Mod If a string, then the parent is searched for in the loaded mod. If a table, then the init is treated as a valid init as returned by mod.create()
 function Mod.load_mod_as_dependency_from_table(md, parent_mod)
   if Mod.load_mod_from_table(md) then
     if type(parent_mod) == "string" then
@@ -528,9 +528,9 @@ function Mod.split_event_type(type)
 end
 
 --- Returns an event template defined in `init.events.defined`.
---- @param m word.mod A reference to the init invoking the function
+--- @param m word.Mod A reference to the init invoking the function
 --- @param type string A full path to a valid event type (e.g. `init.events.some_event`)
---- @return word.event?
+--- @return word.Event?
 function Mod.get_event_template(m, type)
   -- You can't get the event template of a type if the type isn't loaded
   if not Mod.is_mod_loaded(m.name) then
@@ -554,13 +554,13 @@ function Mod.get_event_template(m, type)
 end
 
 --- Creates a deep copy of the `mod.base_event` event and returns it with a custom type and referrer.
---- @param m word.mod A reference to the init invoking the function.
+--- @param m word.Mod A reference to the init invoking the function.
 --- @param name string A relative path to a valid event template.
---- @return word.event
+--- @return word.Event
 function Mod.define_event(m, name)
   -- Create a copy of the base event and override the values with ones specified by the user
 
-  ---@type word.event
+  ---@type word.Event
   local new_event = {
     payload = nil,
     topic = "base_event",
@@ -581,18 +581,16 @@ function Mod.define_event(m, name)
   if name then
     new_event.type = m.name .. ".events." .. name
   end
-
   new_event.referrer = m.name
-
   return new_event
 end
 
 --- Returns a copy of the event template provided by a init.
---- @param init word.mod A reference to the init invoking the function
+--- @param init word.Mod A reference to the init invoking the function
 --- @param type string A full path to a valid .vent type (e.g. `init.events.some_event`)
 --- @param content table|any? The content of the event, can be anything from a string to a table to whatever you please.
 --- @param ev? table The original event data.
---- @return word.event? # New event.
+--- @return word.Event? # New event.
 function Mod.create_event(m, type, content, ev)
   -- Get the init that contains the event
   local modn = Mod.split_event_type(type)[1]
@@ -636,7 +634,7 @@ function Mod.create_event(m, type, content, ev)
 end
 
 --- Sends an event to all subscribed mod. The event contains the filename, filehead, cursor position and line content as a bonus.
---- @param event word.event An event, usually created by `mod.create_event()`.
+--- @param event word.Event An event, usually created by `mod.create_event()`.
 --- @param callback function? A callback to be invoked after all events have been asynchronously broadcast
 function Mod.broadcast_event(event, callback)
   -- Broadcast the event to all mod
@@ -666,7 +664,7 @@ function Mod.broadcast_event(event, callback)
 end
 
 --- @param recv string The name of a loaded init that will be the recipient of the event.
---- @param ev word.event An event, usually created by `mod.create_event()`.
+--- @param ev word.Event An event, usually created by `mod.create_event()`.
 --- @return nil
 function Mod.send_event(recv, ev)
   if not Mod.is_mod_loaded(recv) then
