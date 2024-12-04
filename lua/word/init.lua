@@ -31,7 +31,7 @@ local W = {
 
 -- local e = require("word")
 local con, log, modu, utils =
-    require("word.config").config, W.log, W.mod, W.utils
+  require("word.config").config, W.log, W.mod, W.utils
 local a, f, ext = vim.api, vim.fn, vim.tbl_deep_extend
 
 --- @init "word.config"
@@ -46,7 +46,7 @@ function W.setup(conf)
     conf.mod = {}
   end
   con.user = utils.extend(con.user, conf)
-  log.new(con.user.logger or log.get_base_config(), true)
+  -- log.new(con.user.logger or log.get_base_config(), true)
   require("word.config").setup_maps()
   require("word.config").setup_opts()
 

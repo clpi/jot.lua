@@ -13,6 +13,9 @@ wls:
 clean:
 	fd --no-ignore --glob "*-E" -x "rm" ./
 
+v:
+	nvim -u ./test/config/minit.lua
+
 
 # books:
 #   cd book && mdbook serve

@@ -1,8 +1,12 @@
-local M = Mod.create("data", {
+local M = require("word.mod").create("data", {
   "log",
   "mod",
   "dirs",
+  "clipboard",
   "template",
+  "metadata",
+  "save",
+  -- "code",
 })
 
 M.setup = function()

@@ -2,9 +2,9 @@ local C = {}
 local osi = require("word.util").get_os_info()
 local f = vim.fn
 
---- @type word.config
+--- @type word.Config
 C.config = {
-  ---@type word.config.user
+  ---@type word.config.User
   user = {
     mod = {
       config = {},
@@ -13,7 +13,7 @@ C.config = {
 
   -- data = f.stdpath("data") .. "/word.mpack",
 
-  ---@type word.config.ft
+  ---@type word.config.Ft
   ft = {
     md = true,
     mdx = true,
@@ -21,7 +21,9 @@ C.config = {
     word = true,
   },
 
-  mod = {},
+  mod = {
+    config = {},
+  },
   manual = nil,
   args = {},
   version = "0.1.0",

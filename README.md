@@ -243,9 +243,8 @@ use {
 -- Setup the initial config
 -- with workspace 'home' at ~/home
 -- and make it default
-require("word").setup({
+require("word").setup({ ---@type word.mod.Config
   mod = {
-    config = {},
     workspace = {
       config = {
         default = 'home',
@@ -326,6 +325,7 @@ thank you and keep updated!
 
 <!-- </div> -->
 
-```
+```lua
+---@type word.mod.Config
 
 ```
