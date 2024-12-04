@@ -4,17 +4,17 @@
 
 # ----------------------- exports -----------------------
 
-export word_LSP_BIN="word-lsp"
-export word_LSP_COMPLETIONS=$(head </usr/share/dict/words -n 1000 | jq --raw-input --slurp 'split("\n")[:-1] | map({label: . })')
-export word_LSP_SERVERINFO='{
+export WORD_LSP_BIN="word-lsp"
+export WORD_LSP_COMPLETIONS=$(head </usr/share/dict/words -n 1000 | jq --raw-input --slurp 'split("\n")[:-1] | map({label: . })')
+export WORD_LSP_SERVERINFO='{
   "name": "word-lsp",
   "version": "0.0.1"
 }'
-export word_LSP_CLIENTINFO='{
+export WORD_LSP_CLIENTINFO='{
   "name": "word-lsp",
   "version": "0.0.1"
 }'
-export word_LSP_CAPABILITIES='{
+export WORD_LSP_CAPABILITIES='{
   "textDocumentSync": 1,
   "hoverProvider": true,
   "completionProvider": {
@@ -25,10 +25,10 @@ export word_LSP_CAPABILITIES='{
 
 # -----------------------   var   -----------------------
 
-word_LSP_DEBUG=false
-word_LSP_STDIO=false
-word_LSP_PORT=2088
-word_LSP_HOST=localhost
+WORD_LSP_DEBUG=false
+WORD_LSP_STDIO=false
+WORD_LSP_PORT=2088
+WORD_LSP_HOST=localhost
 
 # ----------------------- methods -----------------------
 
@@ -57,8 +57,8 @@ function lsp-handle() {
   METHOD="$2"
   case $2 in
     'initialize') lsp-reply $ID '{
-    "clientInfo": '"$word_LSP_CLIENTINFO"',
-    "capabilities": '"$word_LSP_CAPABILITIES"'
+    "clientInfo": '"$WORD_LSP_CLIENTINFO"',
+    "capabilities": '"$WORD_LSP_CAPABILITIES"'
   }' ;;
     'textDocument/moniker') lsp-reply "$ID" '[]' ;;
     'textDocument/codeLens') lsp-reply "$ID" '[]' ;;
@@ -73,7 +73,7 @@ function lsp-handle() {
   }' ;;
     'textDocument/completion') lsp-reply "$ID" '{
     "isIncomplete": false,
-    "items": '"$word_LSP_COMPLETIONS"'
+    "items": '"$WORD_LSP_COMPLETIONS"'
   }' ;;
     'textDocument/rename') lsp-reply "$ID" 'null' ;;
     'textDocument/formatting') lsp-reply "$ID" '[]' ;;
@@ -94,7 +94,7 @@ function lsp-format() {
 }
 
 function lsp-serve() {
-  echo "Serving at " $word_LSP_PORT
+  echo "Serving at " $WORD_LSP_PORT
   while IFS= read -r LN; do
     [[ "$LN" =~ ^Content-Length:\ ([0-9]+) ]]
     LEN="${BASH_REMATCH[1]}"
@@ -223,7 +223,7 @@ trace() {
 # ----------------------- subcmds -----------------------
 
 function show-help() {
-  echo "Usage: $word_LSP_BIN [-h] [-v] [-f filename]"
+  echo "Usage: $WORD_LSP_BIN [-h] [-v] [-f filename]"
   echo ""
   echo "COMMANDS"
   echo ""
@@ -257,11 +257,11 @@ function main() {
   case "$1" in
     serve | s | run | r) lsp-serve ;;
     shell | sh) shell ;;
-    --config | -c) word_LSP_CONFIG=$2 ;;
-    --stdio | -s) word_LSP_STDIO=true ;;
-    --debug | -d) word_LSP_DEBUG=true ;;
-    --port | -p) word_LSP_PORT=$2 ;;
-    --host) word_LSP_HOST=$2 ;;
+    --config | -c) WORD_LSP_CONFIG=$2 ;;
+    --stdio | -s) WORD_LSP_STDIO=true ;;
+    --debug | -d) WORD_LSP_DEBUG=true ;;
+    --port | -p) WORD_LSP_PORT=$2 ;;
+    --host) WORD_LSP_HOST=$2 ;;
     help | h | -h | --help) show-help ;;
     format | f) lsp-format ;;
     version | v | --version | -v) show-version ;;

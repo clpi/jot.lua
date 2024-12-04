@@ -58,6 +58,5 @@ end
 
 return M
 ```
+
 - See [example.lua](../../lua/module/example.lua)
-
-

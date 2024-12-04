@@ -5,7 +5,7 @@ local M = Mod.create("lsp.workspace", {
   "folders",
   "edit",
   "diagnostic",
-  "fileops",
+  "file",
   "symbol",
 })
 

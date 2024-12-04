@@ -1,4 +1,4 @@
-local F = Mod.create("lsp.workspace.fileops")
+local F = Mod.create("lsp.workspace.file")
 
 function F.setup()
   return {
@@ -9,7 +9,7 @@ function F.setup()
   }
 end
 
----@class lsp.workspace.fileops
+---@class lsp.workspace.file
 F.data = {
   ---@type lsp.FileOperationClientCapabilities
   capabilities = {

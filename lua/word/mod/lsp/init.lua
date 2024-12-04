@@ -94,7 +94,7 @@ M.setup = function()
       "lsp.document.format",
       "lsp.document.lens",
       "lsp.document",
-      "lsp.workspace.fileops",
+      "lsp.workspace.file",
       "lsp.document.semantic",
       "lsp.refactor",
       "lsp.document.action",
@@ -139,8 +139,8 @@ M.data = {
   hover = Mod.get_mod("lsp.document.hover"),
   ---@type lsp.refactor
   refactor = Mod.get_mod("lsp.refactor"),
-  ---@type lsp.workspace.fileops
-  ws_fileops = Mod.get_mod("lsp.workspace.fileops"),
+  ---@type lsp.workspace.file
+  ws_file = Mod.get_mod("lsp.workspace.file"),
   ---@type lsp.workspace.edit
   ws_edit = Mod.get_mod("lsp.workspace.edit"),
   ---@type lsp.workspace.diagnostic
@@ -320,7 +320,7 @@ M.load = function()
   })
 end
 M.data.ts = Mod.get_mod("integration.treesitter")
-M.data.workspace_fileops = Mod.get_mod("lsp.workspace.fileops")
+M.data.workspace_file = Mod.get_mod("lsp.workspace.file")
 M.data.workspace = Mod.get_mod("workspace")
 M.data.lsp_ws = Mod.get_mod("lsp.workspace")
 M.data.lsp_doc = Mod.get_mod("lsp.document")
@@ -371,7 +371,7 @@ end
 M.data.capabilities = {
   workspace = {
     ---@type lsp.FileOperationOptions
-    fileOperations = Mod.get_mod("lsp.workspace.fileops").opts,
+    fileOperations = Mod.get_mod("lsp.workspace.file").opts,
     workspaceFolders = Mod.get_mod("lsp.workspace.folders").server.capabilities,
     -- workspaceSymbolProvider = Mod.get_mod("lsp.workspace.symbol").opts,
   },
