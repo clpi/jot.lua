@@ -12,14 +12,14 @@ Welcome -- to the `word.lua` book. I hope this helps!
   - [Autocommands](./about/autocommands.md)
   - [Compare](./about/compare.md)
 
-- [Configuring](./index/config.md)
+- [Configuring](./config/index.md)
 
   - [Setting up](./config/setting-up.md)
   - [Keymaps](./config/keymaps.md)
   - [Basic](./config/basic.md)
   - [Advanced](./config/advanced.md)
 
-- [Extending](./extend.md)
+- [Extending](./extend/index.md)
 
   - [Plugins](./extend/plugins.md)
   - [inits](./extend/inits.md)
@@ -31,19 +31,19 @@ Welcome -- to the `word.lua` book. I hope this helps!
   - [Introduction](./modules/intro.md)
   - [Quickstart](./modules/quickstart.md)
 
-- [Customizing](./customizing.md)
+- [Customizing](./customizing/index.md)
 
   - [Themes](./customizing/themes.md)
   - [Highlights](./customizing/highlights.md)
 
-- [Export](./export.md)
+- [Export](./export/index.md)
 
-  - [Pandoc](./public/pandoc.md)
+  - [Pandoc](./export/pandoc.md)
   - [Frameworks](./export/frameworks/index.md)
     - [HTML](./export/frameworks/html.md)
     - [PDF](./export/frameworks/pdf.md)
     - [DOC/DOCX](./export/frameworks/doc.md)
-    - [org](./export/org.md)
+    - [org](./export/frameworks/org.md)
   - [Styling](./export/styling.md)
 
 - [Publishing](./publish.md)
@@ -58,9 +58,11 @@ Welcome -- to the `word.lua` book. I hope this helps!
   - [Far](./plans/far.md)
 
 - [Support](./support.md)
+
   - [Issues](./contributing/issues.md)
   - [Contributing](./contributing/discussions.md)
   - [Sponsorship](./contributing/sponsorship.md)
+
 - [Tools](./tools/index.md)
 
   - [Mobile](./tools/mobile.md)
