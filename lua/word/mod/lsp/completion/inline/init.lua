@@ -2,7 +2,7 @@ local C = Mod.create("lsp.completion.inline", {
   "value"
 })
 
----@class lsp.completion.inline
+---@class lsp.completion.inline.Data
 C.data = {
 
   ---@type lsp.InlineCompletionList

@@ -9,7 +9,9 @@ function I.setup()
   }
 end
 
-I.config.public = {}
+I.config.public = {
+  enable = true
+}
 
 I.data = {}
 

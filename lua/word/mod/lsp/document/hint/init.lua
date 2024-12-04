@@ -1,4 +1,4 @@
-local M = Mod.create("lsp.hint")
+local M = Mod.create("lsp.document.hint")
 
 function M.setup()
   return {
@@ -9,7 +9,7 @@ function M.setup()
   }
 end
 
----@class lsp.hint
+---@class lsp.document.hint.Data
 M.data = {
   ---@param param lsp.InlayHintParams
   ---@param callback fun(hints: lsp.InlayHint[]):nil

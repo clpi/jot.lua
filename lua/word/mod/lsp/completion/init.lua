@@ -4,15 +4,18 @@ local mod, utils, log = word.mod, word.utils, word.log
 local ls = vim.lsp
 local Path = require("pathlib")
 
-local M = mod.create("lsp.completion", { "inline", "documentation" })
+local M = mod.create("lsp.completion", { "inline", "documentation", "signature" })
 local ts ---@type treesitter
 local search
 
 local dirutils, dirman, link_utils, treesitter
 
-M.data.data = {}
+---@class lsp.completion.Config
+M.config.public = {
+  enable = true
 
----@class lsp.completion
+}
+---@class lsp.completion.Data
 M.data = {
   ---@param param lsp.CompletionParams
   ---@param callback fun(_, lsp.CompletionList):nil
@@ -142,7 +145,7 @@ M.data = {
       regex = "^%s*@(%w*)",
 
       -- If regex can be matched, this item then gets verified via TreeSitter's AST
-      node = M.data.data.normal_markdown,
+      node = M.data.normal_markdown,
 
       -- The actual elements to show if the above tests were true
       complete = {
@@ -269,7 +272,7 @@ M.data = {
         end
 
         return previous:type() == "tag_parameters"
-          or previous:type() == "tag_name"
+            or previous:type() == "tag_name"
       end,
 
       complete = {
@@ -299,7 +302,7 @@ M.data = {
         type = "TODO",
         pre = function()
           local sub =
-            vim.api.nvim_get_current_line():gsub("^(%s*%-+%s+%(%s*)%)", "%1")
+              vim.api.nvim_get_current_line():gsub("^(%s*%-+%s+%(%s*)%)", "%1")
 
           if sub then
             vim.api.nvim_set_current_line(sub)
@@ -312,9 +315,9 @@ M.data = {
     { -- links for file paths `{:|`
       regex = "^.*{:([^:}]*)",
 
-      node = M.data.data.normal_markdown,
+      node = M.data.normal_markdown,
 
-      complete = M.data.data.generate_file_links,
+      complete = M.data.generate_file_links,
 
       options = {
         type = "File",
@@ -324,9 +327,9 @@ M.data = {
     { -- links that have a file path, suggest any heading from the file `{:...:#|}`
       regex = "^.*{:(.*):#[^}]*",
 
-      complete = M.data.data.foreign_generic_links,
+      complete = M.data.foreign_generic_links,
 
-      node = M.data.data.normal_markdown,
+      node = M.data.normal_markdown,
 
       options = {
         type = "Reference",
@@ -336,9 +339,9 @@ M.data = {
     { -- links that have a file path, suggest direct headings from the file `{:...:*|}`
       regex = "^.*{:(.*):(%*+)[^}]*",
 
-      complete = M.data.data.foreign_heading_links,
+      complete = M.data.foreign_heading_links,
 
-      node = M.data.data.normal_markdown,
+      node = M.data.normal_markdown,
 
       options = {
         type = "Reference",
@@ -348,10 +351,10 @@ M.data = {
     { -- # links to headings in the current file `{#|}`
       regex = "^.*{#[^}]*",
 
-      -- complete = M.data.data.generate_local_heading_links,
-      complete = M.data.data.local_link_targets,
+      -- complete = M.data.generate_local_heading_links,
+      complete = M.data.local_link_targets,
 
-      node = M.data.data.normal_markdown,
+      node = M.data.normal_markdown,
 
       options = {
         type = "Reference",
@@ -363,9 +366,9 @@ M.data = {
       -- the first capture group is a nothing group so that match[2] is reliably the heading
       -- level or nil if there's no heading level.
 
-      complete = M.data.data.local_heading_links,
+      complete = M.data.local_heading_links,
 
-      node = M.data.data.normal_markdown,
+      node = M.data.normal_markdown,
 
       options = {
         type = "Reference",
@@ -375,9 +378,9 @@ M.data = {
     { -- ^ footnote links in the current file `{^|}`
       regex = "^(.*){%^[^}]*",
 
-      complete = M.data.data.local_footnote_links,
+      complete = M.data.local_footnote_links,
 
-      node = M.data.data.normal_markdown,
+      node = M.data.normal_markdown,
 
       options = {
         type = "Reference",
@@ -387,9 +390,9 @@ M.data = {
     { -- ^ footnote links in another file `{:path:^|}`
       regex = "^(.*){:(.*):%^[^}]*",
 
-      complete = M.data.data.foreign_footnote_links,
+      complete = M.data.foreign_footnote_links,
 
-      node = M.data.data.normal_markdown,
+      node = M.data.normal_markdown,
 
       options = {
         type = "Reference",
@@ -399,9 +402,9 @@ M.data = {
     { -- foreign link name suggestions `{:path:target}[|]`
       regex = "^(.*){:([^:]*):[#$*%^]* ([^}]*)}%[",
 
-      complete = M.data.data.foreign_link_names,
+      complete = M.data.foreign_link_names,
 
-      node = M.data.data.normal_markdown,
+      node = M.data.normal_markdown,
 
       options = {
         type = "Reference",
@@ -411,9 +414,9 @@ M.data = {
     { -- local link name suggestions `{target}[|]` for `#`, `$`, `^`, `*` link targets
       regex = "^(.*){[#$*%^]+ ([^}]*)}%[",
 
-      complete = M.data.data.local_link_names,
+      complete = M.data.local_link_names,
 
-      node = M.data.data.normal_markdown,
+      node = M.data.normal_markdown,
 
       options = {
         type = "Reference",
@@ -426,9 +429,9 @@ M.data = {
         "^%[",
       },
 
-      complete = M.data.data.anchor_suggestions,
+      complete = M.data.anchor_suggestions,
 
-      node = M.data.data.normal_markdown,
+      node = M.data.normal_markdown,
 
       options = {
         type = "Reference",
@@ -479,9 +482,9 @@ M.data = {
           -- Construct a variable that will be returned on a successful match
           local items = type(completion_data.complete) == "table"
               and completion_data.complete
-            or completion_data.complete(context, prev, saved, match)
+              or completion_data.complete(context, prev, saved, match)
           local ret_completions =
-            { items = items, options = completion_data.options or {} }
+          { items = items, options = completion_data.options or {} }
 
           -- Set the match variable for the integration M
           ret_completions.match = match
@@ -495,7 +498,7 @@ M.data = {
             if type(completion_data.node) == "string" then
               -- Split the completion node string down every pipe character
               local split =
-                vim.split(completion_data.node --[[@as string]], "|")
+                  vim.split(completion_data.node --[[@as string]], "|")
               -- Check whether the first character of the string is an exclamation mark
               -- If this is present then it means we're looking for a node that *isn't* the one we specify
               local negate = split[1]:sub(0, 1) == "!"
@@ -517,7 +520,7 @@ M.data = {
                   end
 
                   local previous_node =
-                    ts.get_previous_node(current_node, true, true)
+                      ts.get_previous_node(current_node, true, true)
 
                   -- If the previous node is nil
                   if not previous_node then
@@ -596,12 +599,12 @@ M.data = {
 
               local next_node = ts.get_next_node(current_node, true, true)
               local previous_node =
-                ts.get_previous_node(current_node, true, true)
+                  ts.get_previous_node(current_node, true, true)
 
               -- Execute the callback function with all of our parameters.
               -- If it returns true then that means the match was successful, and so return completions
               if
-                completion_data.node(current_node, previous_node, next_node, ts)
+                  completion_data.node(current_node, previous_node, next_node, ts)
               then
                 return ret_completions
               end
@@ -688,7 +691,7 @@ end
 ---@class word.completion_engine
 ---@field create_source function
 
-M.data.data = {
+M.data = {
   ---@type word.completion_engine
   engine = nil,
 
@@ -710,11 +713,11 @@ M.data.data = {
     if colon then
       closing_colon = ":"
       if
-        string.sub(
-          context.full_line,
-          context.char + offset,
-          context.char + offset
-        ) == ":"
+          string.sub(
+            context.full_line,
+            context.char + offset,
+            context.char + offset
+          ) == ":"
       then
         closing_colon = ""
         offset = 2
@@ -723,11 +726,11 @@ M.data.data = {
 
     local closing_brace = "}"
     if
-      string.sub(
-        context.full_line,
-        context.char + offset,
-        context.char + offset
-      ) == "}"
+        string.sub(
+          context.full_line,
+          context.char + offset,
+          context.char + offset
+        ) == "}"
     then
       closing_brace = ""
     end
@@ -768,12 +771,12 @@ M.data.data = {
 
   generate_file_links = function(context, _prev, _saved, _match)
     local res = {}
-    local files = M.data.data.get_markdown_files()
+    local files = M.data.get_markdown_files()
     if not files or not files[2] then
       return {}
     end
 
-    local closing_chars = M.data.data.get_closing_chars(context, true)
+    local closing_chars = M.data.get_closing_chars(context, true)
     for _, file in pairs(files[2]) do
       if not file:samefile(Path.new(vim.api.nvim_buf_get_name(0))) then
         local rel = file:relative_to(files[1], false)
@@ -797,24 +800,24 @@ M.data.data = {
     if context.before_char == " " then
       leading_whitespace = ""
     end
-    local links = M.data.data.get_linkables(source, node_type)
-    local closing_chars = M.data.data.get_closing_chars(context, false)
+    local links = M.data.get_linkables(source, node_type)
+    local closing_chars = M.data.get_closing_chars(context, false)
     return vim
-      .iter(links)
-      :map(function(x)
-        return leading_whitespace .. x.title .. closing_chars
-      end)
-      :totable()
+        .iter(links)
+        :map(function(x)
+          return leading_whitespace .. x.title .. closing_chars
+        end)
+        :totable()
   end,
 
   --- All the things that you can link to (`{#|}` completions)
   local_link_targets = function(context, _prev, _saved, _match)
-    return M.data.data.suggestions(context, 0, "generic")
+    return M.data.suggestions(context, 0, "generic")
   end,
 
   local_heading_links = function(context, _prev, _saved, match)
     local heading_level = match[2] and #match[2]
-    return M.data.data.suggestions(
+    return M.data.suggestions(
       context,
       0,
       ("heading%d"):format(heading_level)
@@ -826,7 +829,7 @@ M.data.data = {
     local heading_level = match[2] and #match[2]
     if file then
       file = dirutils.expand_pathlib(file)
-      return M.data.data.suggestions(
+      return M.data.suggestions(
         context,
         file,
         ("heading%d"):format(heading_level)
@@ -839,20 +842,20 @@ M.data.data = {
     local file = match[1]
     if file then
       file = dirutils.expand_pathlib(file)
-      return M.data.data.suggestions(context, file, "generic")
+      return M.data.suggestions(context, file, "generic")
     end
     return {}
   end,
 
   local_footnote_links = function(context, _prev, _saved, _match)
-    return M.data.data.suggestions(context, 0, "footnote")
+    return M.data.suggestions(context, 0, "footnote")
   end,
 
   foreign_footnote_links = function(context, _prev, _saved, match)
     local file = match[2]
     if match[2] then
       file = dirutils.expand_pathlib(file)
-      return M.data.data.suggestions(context, file, "footnote")
+      return M.data.suggestions(context, file, "footnote")
     end
     return {}
   end,
@@ -863,7 +866,7 @@ M.data.data = {
     if not previous then
       return current
           and (current:type() ~= "translation_unit" or current:type() == "document")
-        or false
+          or false
     end
 
     -- If the previous node is not tag parameters or the tag name
@@ -877,7 +880,7 @@ M.data.data = {
 --- - metadata `title` field
 --- - file description
 ---@return string[]
-M.data.data.foreign_link_names = function(_context, _prev, _saved, match)
+M.data.foreign_link_names = function(_context, _prev, _saved, match)
   local file, target = match[2], match[3]
   local path = dirutils.expand_pathlib(file)
   local meta = treesitter.get_document_metadata(path)
@@ -894,7 +897,7 @@ end
 
 ---provide suggestions for anchors that are already defined in the document
 ---@return string[]
-M.data.data.anchor_suggestions = function(_context, _prev, _saved, _match)
+M.data.anchor_suggestions = function(_context, _prev, _saved, _match)
   local suggestions = {}
 
   local anchor_query_string = [[
@@ -918,7 +921,7 @@ end
 
 --- suggest the link target name
 ---@return string[]
-M.data.data.local_link_names = function(_context, _prev, _saved, match)
+M.data.local_link_names = function(_context, _prev, _saved, match)
   local target = match[2]
   if target then
     target = target:gsub("^%s+", "")
@@ -939,25 +942,25 @@ M.load = function()
 
   -- check if a custom completion M is provided
   if
-    type(M.config.public.engine) == "table"
-    and M.config.public.engine["mod_name"]
+      type(M.config.public.engine) == "table"
+      and M.config.public.engine["mod_name"]
   then
     local completion_mod = M.config.public.engine == "nvim-compe"
-      and Mod.load_mod("core.integrations.nvim-compe")
+        and Mod.load_mod("core.integrations.nvim-compe")
     mod.load_mod_as_dependency("core.integrations.nvim-compe", M.name, {})
-    M.data.data.engine = mod.get_mod("core.integrations.nvim-compe")
+    M.data.engine = mod.get_mod("core.integrations.nvim-compe")
   elseif
-    M.config.public.engine == "nvim-cmp"
-    and mod.load_mod("core.integrations.nvim-cmp")
+      M.config.public.engine == "nvim-cmp"
+      and mod.load_mod("core.integrations.nvim-cmp")
   then
     mod.load_mod_as_dependency("core.integrations.nvim-cmp", M.name, {})
-    M.data.data.engine = mod.get_mod("core.integrations.nvim-cmp")
+    M.data.engine = mod.get_mod("core.integrations.nvim-cmp")
   elseif
-    M.config.public.engine == "coq_nvim"
-    and mod.load_mod("core.integrations.coq_nvim")
+      M.config.public.engine == "coq_nvim"
+      and mod.load_mod("core.integrations.coq_nvim")
   then
     mod.load_mod_as_dependency("core.integrations.coq_nvim", M.name, {})
-    M.data.data.engine = mod.get_mod("core.integrations.coq_nvim")
+    M.data.engine = mod.get_mod("core.integrations.coq_nvim")
   else
     log.error(
       "Unable to load completion M -",
@@ -973,31 +976,31 @@ M.load = function()
   treesitter = M.required["core.integrations.treesitter"]
 
   -- Set a special function in the integration M to allow it to communicate with us
-  M.data.data.engine.invoke_completion_engine = function(context) ---@diagnostic disable-line
+  M.data.engine.invoke_completion_engine = function(context) ---@diagnostic disable-line
     return M.data.complete(context) ---@diagnostic disable-line -- TODO: type error workaround <pysan3>
   end
 
   -- Create the integration engine's source
-  M.data.data.engine.create_source({
+  M.data.engine.create_source({
     completions = M.config.public.completions,
   })
   -- ts = mod.required["integration.treesitter"]
 end
 
-M.data.data = {
+M.data = {
   ---Query word SE for a list of categories, and format them into completion items
   make_category_suggestions = function()
     if not search then
-      M.data.data.load_search()
+      M.data.load_search()
     end
 
     local categories = search.get_categories()
     return vim
-      .iter(categories)
-      :map(function(c)
-        return { label = c, kind = 12 } -- 12 == "Value"
-      end)
-      :totable()
+        .iter(categories)
+        :map(function(c)
+          return { label = c, kind = 12 } -- 12 == "Value"
+        end)
+        :totable()
   end,
 
   load_search = function()
@@ -1011,7 +1014,7 @@ M.data.data = {
 M.data = {
   create_source = function()
     -- these numbers come from: https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#completionItemKind
-    M.data.data.completion_item_mapping = {
+    M.data.completion_item_mapping = {
       Directive = 14,
       Tag = 14,
       Language = 10,
@@ -1027,7 +1030,7 @@ M.data = {
       local abstracted_context = M.data.create_abstracted_context(request)
 
       local completion_cache =
-        M.data.invoke_completion_engine(abstracted_context)
+          M.data.invoke_completion_engine(abstracted_context)
 
       if completion_cache.options.pre then
         completion_cache.options.pre(abstracted_context)
@@ -1045,7 +1048,7 @@ M.data = {
         completions[index] = {
           label = label,
           insertText = insert_text,
-          kind = M.data.data.completion_item_mapping[completion_cache.options.type],
+          kind = M.data.completion_item_mapping[completion_cache.options.type],
         }
       end
 
@@ -1089,7 +1092,7 @@ M.data = {
 
     local meta_source = ts.get_node_text(meta_node, iter_src)
     local markdown_inline_parser =
-      vim.treesitter.get_string_parser(meta_source, "markdown_inline")
+        vim.treesitter.get_string_parser(meta_source, "markdown_inline")
     local markdown_inline_tree = markdown_inline_parser:parse()[1]
     if not markdown_inline_tree then
       return {}
@@ -1108,7 +1111,7 @@ M.data = {
     )
 
     for id, node in
-      meta_query:iter_captures(markdown_inline_tree:root(), meta_source)
+    meta_query:iter_captures(markdown_inline_tree:root(), meta_source)
     do
       if meta_query.captures[id] == "pair" then
         local range = ts.get_node_range(node)
@@ -1118,9 +1121,9 @@ M.data = {
 
         local cursor = vim.api.nvim_win_get_cursor(0)
         if
-          cursor[1] - 1 >= range.row_start and cursor[1] - 1 <= range.row_end
+            cursor[1] - 1 >= range.row_start and cursor[1] - 1 <= range.row_end
         then
-          return M.data.data.make_category_suggestions()
+          return M.data.make_category_suggestions()
         end
       end
     end
@@ -1161,10 +1164,10 @@ M.data = {
     local col_num = request.position.character
     local buf = vim.uri_to_bufnr(request.textDocument.uri)
     local full_line =
-      vim.api.nvim_buf_get_lines(buf, line_num, line_num + 1, false)[1]
+        vim.api.nvim_buf_get_lines(buf, line_num, line_num + 1, false)[1]
 
     local before_char = (request.context and request.context.triggerCharacter)
-      or full_line:sub(col_num, col_num)
+        or full_line:sub(col_num, col_num)
 
     return {
       start_offset = col_num + 1,

@@ -1,4 +1,7 @@
-local M = Mod.create("lsp.semantic")
+local M = Mod.create("lsp.document.semantic")
+
+---@alias lsp.document.semantic.Kind lsp.SemanticTokenTypes
+---@alias lsp.document.semantic.Modifier lsp.SemanticTokenModifiers
 
 function M.setup()
   return {

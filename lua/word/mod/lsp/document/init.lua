@@ -1,12 +1,16 @@
 local config = require("word.config").config
 local M = Mod.create("lsp.document", {
   "lens",
+  "semantic",
+  'action',
   "highlight",
   "fold",
   "format",
   "diagnostic",
   "symbol",
+  "hint",
   "color",
+  "hover",
   "link",
 })
 

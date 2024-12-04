@@ -1,6 +1,6 @@
 ---@meta
 ---
---- @alias word.mod.Data { [any]: any }
+--- @alias word.Mod.Data { [any]: any }
 
 --- @class (exact) word.config.Mods
 --- @field ['lsp.document']? lsp.document.Data
@@ -59,25 +59,25 @@
 
 --- Defines both a public and private config for a word init.
 --- Public configs may be tweaked by the user from the `word.setup()` function,  whereas private configs are for internal use only.
---- @class (exact) word.mod.Config
+--- @class (exact) word.Mod.Config
 --- @field public public? table  config variables that may be tweaked by the user.
 --- @field public private? table  config variables that may be tweaked by the user.
 --- @field public custom? table  config variables that may be tweaked by the user.
 
---- @class (exact) word.mod.Events
+--- @class (exact) word.Mod.Events
 --- @field defined? { [string]: word.Event }              Lists all events defined by this init.
 --- @field subscribed? { [string]: { [string]: boolean } } Lists the events that the init is subscribed to.
 
---- @alias word.mod.Setup { loaded: boolean, requires?: string[], replaces?: string, merge?: boolean, wants?: string[] }
+--- @alias word.Mod.Setup { loaded: boolean, requires?: string[], replaces?: string, merge?: boolean, wants?: string[] }
 
 --- Defines a init.
 --- A init is an object that contains a set of hooks which are invoked by word whenever something in the
 --- environment occurs. This can be an event, a simple act of the init being loaded or anything else.
 --- @class (exact) word.Mod
 --- @field hook? fun(manual: boolean, arguments?: string)    A user-defined function that is invoked whenever word starts up. May be used to e.g. set custom keybindings.
---- @field config? word.mod.config The config for the init.
---- @field events? word.mod.events Describes all information related to events for this init.
---- @field import? table<string, word.mod> Imported submod of the given init. Contrary to `required`, which only exposes the public API of a init, imported mod can be accessed in their entirety.
+--- @field config? word.Mod.Config The config for the init.
+--- @field events? word.Mod.Events Describes all information related to events for this init.
+--- @field import? table<string, word.Mod> Imported submod of the given init. Contrary to `required`, which only exposes the public API of a init, imported mod can be accessed in their entirety.
 --- @field cmds? fun() Function that adds all the commands for the init.
 --- @field opts? fun() Function that adds all the options for the init.
 --- @field maps? fun() Function that adds all the mappings for the init.
@@ -88,14 +88,14 @@
 --- @field namespace string The name of the init.
 --- @field post_load? fun() Function that is invoked after all mod are loaded. Useful if you want the word environment to be fully set up before performing some task.
 --- @field path string The full path to the init (a more verbose version of `name`). Moday be used in lua's `require()` statements.
---- @field public data? word.mod.Data Every init can expose any set of information it sees fit through this field. All functions and variables declared in this table will be to any other init loaded.
---- @field required? word.mod.Mods Contains the public tables of all mod that were required via the `requires` array provided in the `setup()` function of this init.
---- @field setup? fun(): word.mod.Setup? Function that is invoked before any other loading occurs. Should perform preliminary startup tasks.
+--- @field public data? word.Mod.Data Every init can expose any set of information it sees fit through this field. All functions and variables declared in this table will be to any other init loaded.
+--- @field required? word.Mod.Mods Contains the public tables of all mod that were required via the `requires` array provided in the `setup()` function of this init.
+--- @field setup? fun(): word.Mod.Setup? Function that is invoked before any other loading occurs. Should perform preliminary startup tasks.
 --- @field replaced? boolean If `true`, this means the init is a replacement for a base init. This flag is set automatically whenever `setup().replaces` is set to a value.
 --- @field on_event fun(event: word.Event) A callback that is invoked any time an event the init has subscribed to has fired.
 --- Returns a new word init, exposing all the necessary function and variables.
 --- @param name string The name of the new init. Modake sure this is unique. The recommended naming convention is `category.mod_name` or `category.subcategory.mod_name`.
---- @return word.mod
+--- @return word.Mod
 ---
 ---
 --- @alias OperatingSystem

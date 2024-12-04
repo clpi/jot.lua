@@ -1,4 +1,4 @@
-local M = Mod.create("lsp.action")
+local M = Mod.create("lsp.document.action")
 
 function M.setup()
   return {
@@ -9,7 +9,10 @@ function M.setup()
   }
 end
 
----@class lsp.action
+---@class lsp.document.action.Config
+M.config.public = { enable = true }
+
+---@class lsp.document.action.Data
 M.data = {
 
   ---@type lsp.CodeActionRegistrationOptions

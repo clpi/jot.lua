@@ -9,6 +9,7 @@ function C.setup()
   }
 end
 
+---@class lsp.command.Config
 C.config.public = {
 }
 

@@ -1,4 +1,11 @@
-local M = Mod.create("lsp.signature")
+local mod = require "word.mod"
+
+local M = mod.create("lsp.completion.signature")
+
+---@class lsp.completion.signature.Config
+M.config.public = {
+  enable = true,
+}
 
 function M.setup()
   return {
@@ -9,7 +16,7 @@ function M.setup()
   }
 end
 
----@class lsp.signature
+---@class lsp.completion.signature.Data
 M.data = {
   ---@param param lsp.SignatureHelpParams
   ---@param callback fun(sh: lsp.SignatureHelp)

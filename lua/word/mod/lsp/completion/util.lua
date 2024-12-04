@@ -1,3 +1,4 @@
+---@class lsp.completion.Util
 local C = {}
 
 ---@type lsp.CompletionItem[]

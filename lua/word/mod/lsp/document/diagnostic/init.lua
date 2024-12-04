@@ -6,6 +6,11 @@ M.setup = function()
   }
 end
 
+---@class lsp.document.diagnostic.Config
+M.config.public = {
+
+}
+
 ---@enum lsp.diagnostic.mode
 M.data.mode = {
   "enabled",
@@ -15,7 +20,7 @@ M.data.mode = {
 
 M.load = function() end
 
----@class lsp.document.diagnostic
+---@class lsp.document.diagnostic.Data
 M.data = {
   ---@type lsp.DiagnosticRegistrationOptions
   registration = {

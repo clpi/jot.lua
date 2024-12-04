@@ -1,7 +1,9 @@
 local M = require("word.mod").create("data", {
   "log",
   "mod",
+  "sync",
   "dirs",
+  "tag",
   "clipboard",
   "template",
   "metadata",
@@ -10,6 +12,7 @@ local M = require("word.mod").create("data", {
 })
 
 M.setup = function()
+  ---@type word.mod.Setup
   return {
     loaded = true,
     requires = {
@@ -78,15 +81,11 @@ M.data = {
   --- Grabs the data present on disk and overwrites it with the data present in memory
   sync = function()
     local file = io.open(M.config.public.path, "r")
-
     if not file then
       return
     end
-
     local content = file:read("*a")
-
     io.close(file)
-
     local c = vim.mpack.decode(content)
     M.data.data.data = vim.mpack.decode and vim.mpack.decode(content)
   end,

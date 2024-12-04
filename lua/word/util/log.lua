@@ -1,14 +1,3 @@
--- local table = require("table")
--- local vim = require("vim")
--- log.lua
---
--- Inspired by rxi/log.lua
--- Modified by tjdevries and can be found at github.com/tjdevries/vlog.nvim
--- Modified again by Vhyrro for use with word :)
---
--- This library is free software; you can redistribute it and/or modify it
--- under the terms of the MIT license. See LICENSE for details.
-
 --- @alias LogLevel
 --- | "trace"
 --- | "debug"
@@ -17,7 +6,7 @@
 --- | "error"
 --- | "fatal"
 
---- @class (exact) word.log.config
+--- @class (exact) word.log.Config
 --- @field plugin string                                           Name of the plugin. Prepended to log messages.
 --- @field use_console boolean                                     Whether to print the output to Neovim while running.
 --- @field highlights boolean                                      Whether highlighting should be used in console (using `:echohl`).
@@ -29,7 +18,7 @@
 local vl, a, lvl, ext = vim.log, vim.api, vim.log.levels, vim.tbl_deep_extend
 
 --- User config section
---- @type word.log.config
+--- @type word.log.Config
 local default_config = {
   plugin = "word",
 
@@ -42,12 +31,12 @@ local default_config = {
   level = "warn",
 
   modes = {
-    { name = "trace", hl = "Comment", level = lvl.TRACE },
-    { name = "debug", hl = "Comment", level = lvl.DEBUG },
-    { name = "info", hl = "None", level = lvl.INFO },
-    { name = "warn", hl = "WarningMsg", level = lvl.WARN },
-    { name = "error", hl = "ErrorMsg", level = lvl.ERROR },
-    { name = "fatal", hl = "ErrorMsg", level = 5 },
+    { name = "trace", hl = "Comment",    level = lvl.TRACE },
+    { name = "debug", hl = "Comment",    level = lvl.DEBUG },
+    { name = "info",  hl = "None",       level = lvl.INFO },
+    { name = "warn",  hl = "WarningMsg", level = lvl.WARN },
+    { name = "error", hl = "ErrorMsg",   level = lvl.ERROR },
+    { name = "fatal", hl = "ErrorMsg",   level = 5 },
   },
 
   float_precision = 0.01,
@@ -138,7 +127,7 @@ Log.new = function(config, standalone)
     -- Output to console
     if config.use_console then
       local v =
-        string.format("(%s)\n%s\n%s", os.date("%H:%M:%S"), lineinfo, msg)
+          string.format("(%s)\n%s\n%s", os.date("%H:%M:%S"), lineinfo, msg)
 
       if config.highlights and level_config.hl then
         (vim.schedule_wrap(function()
@@ -165,7 +154,7 @@ Log.new = function(config, standalone)
     if config.use_file then
       local fp = assert(io.open(outfile, "a"))
       local str =
-        string.format("[%-6s%s] %s: %s\n", nameupper, os.date(), lineinfo, msg)
+          string.format("[%-6s%s] %s: %s\n", nameupper, os.date(), lineinfo, msg)
       fp:write(str)
       fp:close()
     end

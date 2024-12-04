@@ -1,4 +1,4 @@
-local M = Mod.create("lsp.hover")
+local M = Mod.create("lsp.document.hover")
 
 function M.setup()
   return {
@@ -9,7 +9,7 @@ function M.setup()
   }
 end
 
----@class lsp.hover
+---@class lsp.document.hover.Data
 M.data = {
 
   ---@type lsp.HoverOptions

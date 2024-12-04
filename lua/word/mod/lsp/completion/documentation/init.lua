@@ -6,4 +6,8 @@ D.setup = function()
   }
 end
 
+---@class lsp.completion.documentation.Data
+D.data = {
+}
+
 return D

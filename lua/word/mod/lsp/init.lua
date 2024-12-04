@@ -1,31 +1,27 @@
 local Path = require("pathlib")
-local log = require("word.util.log")
+local mod, log = require("word.mod"), require("word.util.log")
 local tsu = require("nvim-treesitter.ts_utils")
-local tq = vim.treesitter.query
+local tq, vl = vim.treesitter.query, vim.lsp
+local ll, lu, lb = vl.log, vl.util, vl.buf
 
-local M = Mod.create("lsp", {
+local M = mod.create("lsp", {
   "notebook",
   "reference",
   "window",
   "refactor",
-  "signature",
   "definition",
   "reference",
   "command",
   "implementation",
   "type",
-  "semantic",
-  "action",
-  "file",
-  "hover",
   "command",
   "moniker",
-  "hint",
   "workspace",
   "document",
   "declaration",
   "completion",
 })
+
 M.opts = function() end
 M.maps = function()
   local bufnr = require("word.util.buf").buf()
@@ -99,14 +95,15 @@ M.setup = function()
       "lsp.document.lens",
       "lsp.document",
       "lsp.workspace.fileops",
-      "lsp.semantic",
+      "lsp.document.semantic",
       "lsp.refactor",
-      "lsp.action",
+      "lsp.document.action",
       "lsp.moniker",
-      "lsp.file",
-      "lsp.hint",
-      "lsp.hover",
-      "lsp.signature",
+      "lsp.document.hint",
+      "lsp.document.hover",
+      "lsp.completion.documentation",
+      "lsp.completion.inline",
+      "lsp.completion.signature",
       "lsp.workspace",
       "lsp.window",
       "lsp.completion",
@@ -128,18 +125,18 @@ M.data = {
   doc_fold = Mod.get_mod("lsp.document.fold"),
   ---@type lsp.notebook
   notebook = Mod.get_mod("lsp.notebook"),
-  ---@type lsp.signature
-  signature = Mod.get_mod("lsp.signature"),
-  ---@type lsp.completion
+  ---@type lsp.completion.signature.Data
+  signature = Mod.get_mod("lsp.completion.signature"),
+  ---@type lsp.completion.Data
   completion = Mod.get_mod("lsp.completion"),
   ---@type lsp.workspace.lens
   ws_lens = Mod.get_mod("lsp.workspace.lens"),
   ---@type lsp.document.lens
   doc_lens = Mod.get_mod("lsp.document.lens"),
   ---@type lsp.hint
-  hint = Mod.get_mod("lsp.hint"),
+  hint = Mod.get_mod("lsp.document.hint"),
   ---@type lsp.hover
-  hover = Mod.get_mod("lsp.hover"),
+  hover = Mod.get_mod("lsp.document.hover"),
   ---@type lsp.refactor
   refactor = Mod.get_mod("lsp.refactor"),
   ---@type lsp.workspace.fileops
@@ -160,10 +157,10 @@ M.data = {
   doc_highlight = Mod.get_mod("lsp.document.highlight"),
   ---@type lsp.document.link
   doc_link = Mod.get_mod("lsp.document.link"),
-  ---@type lsp.action
-  action = Mod.get_mod("lsp.action"),
+  ---@type lsp.document.action.Data
+  action = Mod.get_mod("lsp.document.action"),
   ---@type lsp.semantic
-  semantic = Mod.get_mod("lsp.semantic"),
+  semantic = Mod.get_mod("lsp.document.semantic"),
   ---@type lsp.workspace.config
   ws_config = Mod.get_mod("lsp.workspace.config"),
   ---@type lsp.workspace.folders
@@ -183,9 +180,7 @@ M.config.public = {
   semantic = {
     enable = true,
   },
-  signature = {
-    enable = true,
-  },
+  signature = mod.get_mod_config("lsp.completion.signature"),
   completion = {
     -- Enable or disable the completion provider
     enable = true,
@@ -195,7 +190,7 @@ M.config.public = {
   },
 }
 
-local workspace ---@type lsp.workspace
+local workspace ---@type lsp.workspace.Data
 local wcfg ---@type lsp.workspace.config
 local doc ---@type lsp.document
 local wsd ---@type lsp.workspace.diagnostic
@@ -203,14 +198,14 @@ local dod ---@type lsp.document.diagnostic
 local fmt ---@type lsp.document.format
 local len ---@type lsp.document.lens
 local refactor ---@type lsp.refactor
-local format ---@type lsp.format
+local format ---@type lsp.document.format.Data
 local ts ---@type treesitter
 local cmp ---@type lsp.completion
-local semantic ---@type lsp.semantic
-local sig ---@type lsp.signature
-local act ---@type lsp.action
-local hov ---@type lsp.hover
-local hint ---@type lsp.hint
+local semantic ---@type lsp.document.semantic.Data
+local sig ---@type lsp.completion.signature.Data
+local act ---@type lsp.document.action
+local hov ---@type lsp.document.hover
+local hint ---@type lsp.document.hint
 
 M.load = function()
   -- M.maps()
@@ -328,15 +323,15 @@ M.data.ts = Mod.get_mod("integration.treesitter")
 M.data.workspace_fileops = Mod.get_mod("lsp.workspace.fileops")
 M.data.workspace = Mod.get_mod("workspace")
 M.data.lsp_ws = Mod.get_mod("lsp.workspace")
-M.data.lsp_doc = Mod.get_mod("lsp.workspace")
+M.data.lsp_doc = Mod.get_mod("lsp.document")
 M.data.refactor = Mod.get_mod("lsp.refactor")
-M.data.format = Mod.get_mod("lsp.format")
+M.data.format = Mod.get_mod("lsp.document.format")
 M.data.cmp = Mod.get_mod("lsp.completion")
-M.data.semantic = Mod.get_mod("lsp.semantic")
-M.data.sig = Mod.get_mod("lsp.signature")
-M.data.hov = Mod.get_mod("lsp.hover")
+M.data.semantic = Mod.get_mod("lsp.document.semantic")
+M.data.sig = Mod.get_mod("lsp.completion.signature")
+M.data.hov = Mod.get_mod("lsp.document.hover")
 M.data.hint = Mod.get_mod("lsp.hint")
-M.data.act = Mod.get_mod("lsp.actions")
+M.data.act = Mod.get_mod("lsp.document.actions")
 
 ---@type lsp._anonym1.serverInfo
 M.data.serverInfo = {
@@ -380,7 +375,7 @@ M.data.capabilities = {
     workspaceFolders = Mod.get_mod("lsp.workspace.folders").server.capabilities,
     -- workspaceSymbolProvider = Mod.get_mod("lsp.workspace.symbol").opts,
   },
-  signatureHelpProvider = Mod.get_mod("lsp.signature").opts,
+  signatureHelpProvider = Mod.get_mod("lsp.completion.signature").opts,
   renameProvider = Mod.get_mod("lsp.refactor").rename.opts,
   referencesProvider = {
     workDoneProgress = true,
@@ -394,17 +389,17 @@ M.data.capabilities = {
   -- documentSymbolProvider = Mod.get_mod("lsp.document.symbol").opts,
   documentLinkProvider = Mod.get_mod("lsp.document.link").opts,
   documentColorProvider = Mod.get_mod("lsp.document.color").opts,
-  hoverProvider = Mod.get_mod("lsp.hover").opts,
+  hoverProvider = Mod.get_mod("lsp.document.hover").opts,
   inlineCompletionProvider = Mod.get_mod("lsp.completion.inline").opts,
   executeCommandProvider = Mod.get_mod("lsp.command").opts,
-  inlayHintProvider = Mod.get_mod("lsp.hint").opts,
+  inlayHintProvider = Mod.get_mod("lsp.document.hint").opts,
   -- monikerProvider = Mod.get_mod("lsp.moniker").opts,
   -- notebookDocumentSync = Mod.get_mod("lsp.notebook").sync.opts,
   -- semanticTokensProvider = Mod.get_mod("lsp.semantic").opts,
   -- inlineValueProvider = Mod.get_mod("lsp.completion.inline.value").opts,
   -- textDocument = Mod.get_mod("lsp.document").opts,
   -- textDocumentSync = Mod.get_mod("lsp.document").sync.opts,
-  codeActionProvider = Mod.get_mod("lsp.action").opts,
+  codeActionProvider = Mod.get_mod("lsp.document.action").opts,
   codeLensProvider = Mod.get_mod("lsp.workspace.lens").opts,
   -- documentFormattingProvider = Mod.get_mod("lsp.document.format").opts,
   -- documentHighlightProvider = Mod.get_mod("lsp.document.hl").opts,
@@ -426,17 +421,14 @@ M.data.capabilities = {
   typeDefinitionProvider = true,
   typeHierarchyProvider = true,
   ---@type lsp.InlayHintOptions
-  inlayHintsProvider = Mod.get_mod("lsp.hint").opts,
+  inlayHintsProvider = Mod.get_mod("lsp.document.hint").opts,
   completionProvider = Mod.get_mod("lsp.completion").opts,
 }
 
 ---@type lsp.InitializeResult
 M.data.initializeResult = {
 
-  serverInfo = {
-    name = "word",
-    version = "0.0.1",
-  },
+  serverInfo = M.data.serverInfo,
   capabilities = M.data.capabilities,
 }
 
@@ -447,6 +439,24 @@ M.data.handlers = {
   ---@param callback fun(err: any, result: lsp.InitializeResult):nil
   ---@param notify_reply_callback fun(err: any, result: lsp.InitializeResult):nil
   ["exit"] = function(params, callback, notify_reply_callback) end,
+  ---@param params lsp.InitializeParams: params
+  ---@param callback fun(err: any, result: lsp.InitializeResult):nil
+  ---@param notify_reply_callback fun(err: any, result: lsp.InitializeResult):nil
+  ["window/showMessageRequest"] = function(
+      params,
+      callback,
+      notify_reply_callback
+  )
+  end,
+  ---@param params lsp.InitializeParams: params
+  ---@param callback fun(err: any, result: lsp.InitializeResult):nil
+  ---@param notify_reply_callback fun(err: any, result: lsp.InitializeResult):nil
+  ["workspace/diagnostic/refresh"] = function(
+      params,
+      callback,
+      notify_reply_callback
+  )
+  end,
   ---@param params lsp.InitializeParams: params
   ---@param callback fun(err: any, result: lsp.InitializeResult):nil
   ---@param notify_reply_callback fun(err: any, result: lsp.InitializeResult):nil
@@ -1084,14 +1094,14 @@ M.events.subscribed = {
     ["lsp.workspace"] = true,
     ["lsp.workspace.folders"] = true,
     ["lsp.workspace.config"] = true,
-    ["lsp.actions"] = true,
+    ["lsp.document.actions"] = true,
     ["lsp.references"] = true,
     ["lsp.implementation"] = true,
-    ["lsp.semantic"] = true,
-    ["lsp.typeDefinition"] = true,
+    ["lsp.document.semantic"] = true,
+    ["lsp.type"] = true,
     ["lsp.declaration"] = true,
     ["lsp.definition"] = true,
-    ["lsp.lens"] = true,
+    ["lsp.document.lens"] = true,
     ["lsp.command"] = true,
     ["lsp.hint"] = true,
     ["lsp.diagnostic"] = true,
@@ -1155,6 +1165,9 @@ end
 M.data["lsp.command"] = function(event)
   vim.ui.select({})
 end
+M.data["lsp.msg"] = function(e)
+  vim.lsp.log.info(e.content[1])
+end
 M.data["lsp.semantic"] = function(event) end
 M.data["lsp.implementation"] = function(event) end
 M.data["lsp.declaration"] = function(event) end
@@ -1163,16 +1176,16 @@ M.data["lsp.definition"] = function(event) end
 M.data["lsp.workspace"] = function(event)
   M.data["lsp.workspace.lens"] = function(event) end
   M.data["lsp.document.lens"] = function(event) end
-  vim.lsp.util.open_floating_preview({})
+  vim.lsp.util.open_floating_preview({}, "markdown", {})
 end
 M.data["lsp.workspace.config"] = function(event)
-  vim.lsp.util.open_floating_preview({})
+  vim.lsp.util.open_floating_preview({}, "markdown", {})
 end
 M.data["lsp.workspace.folders"] = function(event)
-  vim.lsp.util.open_floating_preview({})
+  vim.lsp.util.open_floating_preview({}, "markdown", {})
 end
-M.data["lsp.action"] = function(event)
-  vim.lsp.util.open_floating_preview({})
+M.data["lsp.document.action"] = function(event)
+  vim.lsp.util.open_floating_preview({}, "markdown", {})
 end
 M.data["rename.heading"] = function(event)
   local line_number = event.cursor_position[1]

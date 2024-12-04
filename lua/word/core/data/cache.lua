@@ -1,22 +1,26 @@
+---@class word.core.data.cache.Cache
+---@field public head any
+---@field public tail any
+---@field public len integer
+---@field public cache table<any, any>
+---@field public cap integer
 local Cache = {}
 
 Cache.__index = Cache
 
 function Cache.newcache() end
 
-function Cache:new(cap)
-  return setmetatable({
-    cap = cap,
-    cache = setmetatable({
-      __index = self,
-      __newindex = function(k, v)
-        self[k] = v
-      end,
-    }, self.cache),
+function Cache.new(cap)
+  local c = {
     head = nil,
     tail = nil,
     len = 0,
-  }, Cache)
+    cap = cap,
+    cache = { }
+  }
+  return setmetatable({
+    __index = c,
+  }, c)
 end
 
 Cache.__len = function()
