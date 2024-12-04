@@ -1,4 +1,6 @@
-local M = Mod.create("data.metadata")
+local mod = require("word.mod")
+
+local M = mod.create("data.metadata")
 
 M.setup = function()
   return {
@@ -10,12 +12,13 @@ M.setup = function()
   }
 end
 
+---@class word.data.metadata.Config
 M.config.public = {
   fields = {},
 }
 
 M.load = function()
-  Mod.await("cmd", function(cmd)
+  mod.await("cmd", function(cmd)
     cmd.add_commands_from_table({
       meta = {
         subcommands = {
@@ -38,10 +41,7 @@ M.load = function()
   end)
 end
 
-M.config.public = {}
-
-M.data.data = {}
-
+---@class word.data.metadata.Data
 M.data = {
   buf_inject_frontmatter = function()
     local id = ""
@@ -68,6 +68,6 @@ M.events.subscribed = {
   },
 }
 
-M.on_event = function(e) end
+M.on_event = function() end
 
 return M

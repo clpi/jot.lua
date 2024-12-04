@@ -22,6 +22,7 @@
 - [ ] (easy) Remove all lingering instances of `[module].data.data` and merge into `[module].data`
   - [ ] (easy) Consider another separation of tables and functions of a module
 - [ ] (easy) Fix `ui.calendar` for `note` module
+- [ ] (easy) Fix mod popup window buffer close error
 
 ## Low priority
 

@@ -1,29 +1,23 @@
-local word = require("word")
+local mod, map = require("word.mod"), require("word.util.maps")
 
-local M = Mod.create("data.todo")
+local M = mod.create("data.todo")
 
 M.maps = function()
-  Map.nmap(",wt", "<CMD>Telescope word todo<CR>")
+  map.nmap(",wt", "<CMD>Telescope word todo<CR>")
 end
 
+---@class word.data.todo.Data
 M.data = {
-  data = {
-    namespace = vim.api.nvim_create_namespace("word/todo"),
+  namespace = vim.api.nvim_create_namespace("word.data.todo"),
 
-    --- List of active buffers
-    buffers = {},
-  },
+  --- List of active buffers
+  buffers = {},
 }
----@class base.todo
+---@class word.data.todo.Config
 M.config.public = {
 
-  -- Highlight group to display introspector in.
-  --
-  -- base to "Normal".
   highlight_group = "Normal",
 
-  --
-  -- base to the following: `done`, `pending`, `undone`, `urgent`.
   counted_statuses = {
     "done",
     "pending",
@@ -31,29 +25,17 @@ M.config.public = {
     "urgent",
   },
 
-  -- Which status should count towards the completed count (should be a subset of counted_statuses).
-  --
-  -- base to the following: `done`.
   completed_statuses = {
     "done",
   },
 
-  -- Callback to format introspector. Takes in two parameters:
-  -- * `completed`: number of completed tasks
-  -- * `total`: number of total counted tasks
-  --
-  -- Should return a string with the format you want to display the introspector in.
-  --
-  -- base to "[completed/total] (progress%)"
   format = function(completed, total)
-    -- stylua: ignore start
     return string.format(
       "[%d/%d] (%d%%)",
       completed,
       total,
       (total ~= 0 and math.floor((completed / total) * 100) or 0)
     )
-    -- stylua: ignore end
   end,
 }
 
@@ -71,11 +53,11 @@ M.load = function()
     callback = function(ev)
       local buf = ev.buf
 
-      if M.data.data.buffers[buf] then
+      if M.data.buffers[buf] then
         return
       end
 
-      M.data.data.buffers[buf] = true
+      M.data.buffers[buf] = true
       -- M.public.attach_introspector(buf) -- TODO
     end,
   })
@@ -86,8 +68,8 @@ end
 ---@param buffer number #The buffer ID to attach to.
 function M.data.attach_introspector(buffer)
   if
-      not vim.api.nvim_buf_is_valid(buffer)
-      or vim.bo[buffer].filetype ~= "markdown"
+    not vim.api.nvim_buf_is_valid(buffer)
+    or vim.bo[buffer].filetype ~= "markdown"
   then
     error(
       string.format(
@@ -122,7 +104,7 @@ function M.data.attach_introspector(buffer)
 
       ---@type TSNode?
       local node =
-          M.required["integration.treesitter"].get_first_node_on_line(buf, first)
+        M.required["integration.treesitter"].get_first_node_on_line(buf, first)
 
       if not node then
         return
@@ -130,7 +112,7 @@ function M.data.attach_introspector(buffer)
 
       vim.api.nvim_buf_clear_namespace(
         buffer,
-        M.data.data.namespace,
+        M.data.namespace,
         first + 1,
         first + 1
       )
@@ -153,16 +135,16 @@ function M.data.attach_introspector(buffer)
       introspect(node)
 
       local node_above =
-          M.required["integration.treesitter"].get_first_node_on_line(
-            buf,
-            first - 1
-          )
+        M.required["integration.treesitter"].get_first_node_on_line(
+          buf,
+          first - 1
+        )
 
       do
         local todo_status = node_above:named_child(1)
 
         if
-            todo_status and todo_status:type() == "detached_modifier_extension"
+          todo_status and todo_status:type() == "detached_modifier_extension"
         then
           introspect(node_above)
         end
@@ -170,8 +152,8 @@ function M.data.attach_introspector(buffer)
     end),
 
     on_detach = function()
-      vim.api.nvim_buf_clear_namespace(buffer, M.data.data.namespace, 0, -1)
-      M.data.data.buffers[buffer] = nil
+      vim.api.nvim_buf_clear_namespace(buffer, M.data.namespace, 0, -1)
+      M.data.buffers[buffer] = nil
     end,
   })
 end
@@ -191,8 +173,8 @@ function M.data.calculate_items(node)
   -- Go through all the children of the current todo item node and count the amount of "done" children
   for child in node:iter_children() do
     if
-        child:named_child(1)
-        and child:named_child(1):type() == "detached_modifier_extension"
+      child:named_child(1)
+      and child:named_child(1):type() == "detached_modifier_extension"
     then
       for status in child:named_child(1):iter_children() do
         if status:type():match("^todo_item_") then
@@ -227,18 +209,13 @@ function M.data.perform_introspection(buffer, node)
 
   local line, col = node:start()
 
-  vim.api.nvim_buf_clear_namespace(
-    buffer,
-    M.data.data.namespace,
-    line,
-    line + 1
-  )
+  vim.api.nvim_buf_clear_namespace(buffer, M.data.namespace, line, line + 1)
 
   if total == 0 then
     return
   end
 
-  vim.api.nvim_buf_set_extmark(buffer, M.data.data.namespace, line, col, {
+  vim.api.nvim_buf_set_extmark(buffer, M.data.namespace, line, col, {
     virt_text = {
       {
         M.config.public.format(completed, total),
@@ -249,4 +226,4 @@ function M.data.perform_introspection(buffer, node)
   })
 end
 
-return init
+return M

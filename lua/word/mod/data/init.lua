@@ -1,3 +1,7 @@
+---brief TODO: refactor mod/schema of modules so submodules can
+---            load on `data` load also require the data module
+---            for generic function, maybe implement in separate
+---            util.lua file that is required for submodules
 local M = require("word.mod").create("data", {
   "log",
   "mod",
@@ -8,6 +12,7 @@ local M = require("word.mod").create("data", {
   "media",
   "template",
   "metadata",
+  "todo",
   "save",
   -- "code",
 })
@@ -23,7 +28,6 @@ M.setup = function()
 end
 
 M.config.public = {
-  -- Full path to store data (saved in mpack data format)
   path = vim.fn.stdpath("data") .. "/word.mpack",
 }
 
