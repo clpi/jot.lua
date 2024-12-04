@@ -1,28 +1,32 @@
----@generic N
+---@generic N : any
 ---@type word.core.graph.Node<N>
-local node = require("word.core.graph.node")
----@generic E
+local _node = require("word.core.graph.node")
+---@generic E : any
 ---@type word.core.graph.Edge<E>
-local edge = require("word.core.graph.edge")
+local _edge = require("word.core.graph.edge")
 
----@generic N
----@generic E
----@class word.core.graph.Graph<N, E>
----@field public nodes word.core.graph.edge.Node<any>[]
+---@class word.core.graph.Graph<any, any>
+---@field public nodes word.core.graph.node.Node<any>[]
 ---@field public edges word.core.graph.edge.Edge<any>[]
 ---@field public directed? boolean: directed
+---@field public weighted? boolean: directed
+---@field public N any
+---@field public E any
 local G = {
+  N = nil,
+  E = nil,
   edges = {},
   nodes = {},
   directed = false,
+  weighted = false,
 }
 
----@generic N
----@generic E
+---@generic N : table | nil
+---@generic E : table | nil
 ---@class word.core.graph.GraphInit<N, E> : word.core.graph.Graph<N, E>
 
----@generic N
----@generic E
+---@generic N : table | nil
+---@generic E : table | nil
 ---@return word.core.graph.Graph<N, E>
 function G.new()
   ---@generic N
@@ -39,6 +43,5 @@ function G.new()
     end,
   })
 end
-
 
 return G

@@ -1,5 +1,3 @@
-# Modules
-
 ## Example custom module
 
 ```lua
@@ -59,5 +57,7 @@ M.load = function()
 end
 
 return M
-
 ```
+- See [example.lua](../../lua/module/example.lua)
+
+

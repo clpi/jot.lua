@@ -7,9 +7,11 @@
 ---@brief   neovim note-taking plugin with the
 ---@brief   comfort of mmarkdown and the power of org
 ---
+--- @todo TODO: make variety of commands on autocmd load markdown only
+---
 ---@diagnostic enable
 ---@class word.word
----@field cfg word.config
+---@field cfg word.Config
 local W = {
   cfg = require("word.config").config,
   mod = require("word.mod"),

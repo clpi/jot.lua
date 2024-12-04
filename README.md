@@ -1,4 +1,4 @@
-# word - the _familiar_, organized future for neovim
+# word.lua - the _familiar_, organized future for neovim
 
 <a href="https://neovim.io"> ![Neovim](https://img.shields.io/badge/Neovim%200.10+-brightgreen?style=for-the-badge) </a>
 <a href="/LICENSE"> ![License](https://img.shields.io/badge/license-GPL%20v3-brightgreen?style=for-the-badge)</a>
@@ -245,6 +245,7 @@ use {
 -- and make it default
 require("word").setup({ ---@type word.mod.Config
   mod = {
+    config = {},
     workspace = {
       config = {
         default = 'home',
@@ -269,27 +270,6 @@ require("word").setup({ ---@type word.mod.Config
 - `config` - configuration settings
 
 ### Default Modules
-
-- `workspace` for managing workspaces
-- `notes` for managing notes
-- `data` for managing data
-  - `data.tag` for managing tags
-  - `data.meta` for managing metadata
-  - `data.sync` for managing sync
-  - `data.log` for managing logs
-  - `data.dirs` for managing directories
-  - `data.snippets` for snippets
-- `ui` for ui actions
-  - `ui.popup` for popup windows
-  - `ui.chat` for chat services
-  - `ui.win` for window creation
-- `lsp` for lsp services
-  - `lsp.completion` for completion
-  - `lsp.format` for formatting
-  - `lsp.actions` for codeactions
-  - `lsp.lens` for codelens
-- `links` for managing links
--
 
 `...`
 

@@ -1,5 +1,6 @@
 local C = {}
 
+
 ---@type word.core.parse.Parse
 C.parse = require("word.core.parse")
 

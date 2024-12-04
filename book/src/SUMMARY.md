@@ -5,14 +5,14 @@ Welcome -- to the `word.lua` book. I hope this helps!
 - [Intro](./intro.md)
 - [Philosophy](./philosophy.md)
 - [Setup](./setup.md)
-- [About](./about.md)
+- [About](./about/index.md)
 
   - [Options](./about/options.md)
   - [Commands](./about/commands.md)
   - [Autocommands](./about/autocommands.md)
   - [Compare](./about/compare.md)
 
-- [Configuring](./config.md)
+- [Configuring](./index/config.md)
 
   - [Setting up](./config/setting-up.md)
   - [Keymaps](./config/keymaps.md)
@@ -26,9 +26,10 @@ Welcome -- to the `word.lua` book. I hope this helps!
   - [Keymaps](./extend/keymaps.md)
   - [Autocmds](./extend/autocmd.md)
 
-- [Modules](./modules.md)
+- [Modules](./modules/index.md)
 
   - [Introduction](./modules/intro.md)
+  - [Quickstart](./modules/quickstart.md)
 
 - [Customizing](./customizing.md)
 
@@ -37,8 +38,13 @@ Welcome -- to the `word.lua` book. I hope this helps!
 
 - [Export](./export.md)
 
-  - [Frameworks](./publish/frameworks.md)
-  - [org](./export/org.md)
+  - [Pandoc](./public/pandoc.md)
+  - [Frameworks](./export/frameworks/index.md)
+    - [HTML](./export/frameworks/html.md)
+    - [PDF](./export/frameworks/pdf.md)
+    - [DOC/DOCX](./export/frameworks/doc.md)
+    - [org](./export/org.md)
+  - [Styling](./export/styling.md)
 
 - [Publishing](./publish.md)
 

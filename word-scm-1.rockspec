@@ -1,10 +1,10 @@
-local MODREV, SPECREV = "scm", "-1"
-maintainer = "clpi"
+MODREV, SPECREV = "scm", "-1"
+maintainer_user = "clpi"
 license = "MIT"
 detailed = [[
   Extensibility of org, comfort of markdown, for everyone
 ]]
-description = [[
+desc = [[
   Extensibility of org, comfort of markdown, for everyone
 ]]
 labels = {
@@ -26,29 +26,31 @@ rockspec_format = "3.0"
 version = MODREV .. SPECREV
 branch = "master"
 tag = "v0.1.1-alpha"
-local package_name = "word.lua"
-local github_url = "https://github.com/"
-  .. maintainer
-  .. "/"
-  .. package_name
-  .. ".git"
-local github_wiki_url = "https://github.com/"
-  .. maintainer
-  .. "/"
-  .. package_name
-  .. "/wiki"
-local github_issues_url = "https://github.com/"
-  .. maintainer
-  .. "/"
-  .. package_name
-  .. "/issues"
-local github_git_url = "git://github.com/"
-  .. maintainer
-  .. "/"
-  .. package_name
-  .. ".git"
-local maintainer_url = "https://github.com/" .. maintainer
+package_name = "word.lua"
+github_url = "https://github.com/"
+    .. maintainer
+    .. "/"
+    .. package_name
+    .. ".git"
+github_wiki_url = "https://github.com/"
+    .. maintainer
+    .. "/"
+    .. package_name
+    .. "/wiki"
+github_issues_url = "https://github.com/"
+    .. maintainer
+    .. "/"
+    .. package_name
+    .. "/issues"
+github_git_url = "git://github.com/"
+    .. maintainer
+    .. "/"
+    .. package_name
+    .. ".git"
+maintainer_url = "https://github.com/" .. maintainer_user
+maintainer_email = "clp@clp.is"
 homepage = "https://word.cli.st"
+maintainer = "Chris Pecunies <" .. maintainer_email .. ">"
 
 source = {
   url = github_url,
@@ -64,11 +66,11 @@ description = {
   issues_url = github_issues_url,
   version = version,
   detailed = detailed,
-  description = description,
+  description = desc,
   summary = summary,
   url = github_url,
   labels = labels,
-  maintainer = maintainer_url,
+  maintainer = maintainer,
 }
 
 if MODREV == "scm" then

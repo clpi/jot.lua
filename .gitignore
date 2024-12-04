@@ -1,4 +1,3 @@
-index.md
 **.after/
 **.vscode/
 ./lib/
@@ -22,6 +21,8 @@ index.md
 **ext/v
 **ext/oc
 **ext/helix
+**ext/zed
+**ext/lsp
 **ext/rust-lsp
 **ext/nim
 **.book/

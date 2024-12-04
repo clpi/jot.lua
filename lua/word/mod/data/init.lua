@@ -5,6 +5,7 @@ local M = require("word.mod").create("data", {
   "dirs",
   "tag",
   "clipboard",
+  "media",
   "template",
   "metadata",
   "save",

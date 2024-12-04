@@ -2,7 +2,7 @@ local C = {}
 local osi = require("word.util").get_os_info()
 local f = vim.fn
 
---- @type word.mod.Config
+--- @type word.Config
 C.config = {
   ---@type word.config.User
   user = {

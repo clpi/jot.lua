@@ -1,8 +1,8 @@
 ---@meta
 ---
---- @alias word.Mod.Data { [any]: any }
+--- @alias word.mod.Data { [any]: any }
 
---- @class (exact) word.config.Mods
+--- @class (exact) word.mod.Mods
 --- @field ['lsp.document']? lsp.document.Data
 --- @field ['lsp.workspace']? lsp.workspace.Data
 --- @field ['lsp.completion']? lsp.completion.Data
@@ -59,24 +59,24 @@
 
 --- Defines both a public and private config for a word init.
 --- Public configs may be tweaked by the user from the `word.setup()` function,  whereas private configs are for internal use only.
---- @class (exact) word.Mod.Config
+--- @class (exact) word.mod.Config
 --- @field public public? table  config variables that may be tweaked by the user.
 --- @field public private? table  config variables that may be tweaked by the user.
 --- @field public custom? table  config variables that may be tweaked by the user.
 
---- @class (exact) word.Mod.Events
+--- @class (exact) word.mod.Events
 --- @field defined? { [string]: word.Event }              Lists all events defined by this init.
 --- @field subscribed? { [string]: { [string]: boolean } } Lists the events that the init is subscribed to.
 
---- @alias word.Mod.Setup { loaded: boolean, requires?: string[], replaces?: string, merge?: boolean, wants?: string[] }
+--- @alias word.mod.Setup { loaded: boolean, requires?: string[], replaces?: string, merge?: boolean, wants?: string[] }
 
 --- Defines a init.
 --- A init is an object that contains a set of hooks which are invoked by word whenever something in the
 --- environment occurs. This can be an event, a simple act of the init being loaded or anything else.
 --- @class (exact) word.Mod
 --- @field hook? fun(manual: boolean, arguments?: string)    A user-defined function that is invoked whenever word starts up. May be used to e.g. set custom keybindings.
---- @field config? word.Mod.Config The config for the init.
---- @field events? word.Mod.Events Describes all information related to events for this init.
+--- @field config? word.mod.Config The config for the init.
+--- @field events? word.mod.Events Describes all information related to events for this init.
 --- @field import? table<string, word.Mod> Imported submod of the given init. Contrary to `required`, which only exposes the public API of a init, imported mod can be accessed in their entirety.
 --- @field cmds? fun() Function that adds all the commands for the init.
 --- @field opts? fun() Function that adds all the options for the init.
@@ -88,13 +88,12 @@
 --- @field namespace string The name of the init.
 --- @field post_load? fun() Function that is invoked after all mod are loaded. Useful if you want the word environment to be fully set up before performing some task.
 --- @field path string The full path to the init (a more verbose version of `name`). Moday be used in lua's `require()` statements.
---- @field public data? word.Mod.Data Every init can expose any set of information it sees fit through this field. All functions and variables declared in this table will be to any other init loaded.
---- @field required? word.Mod.Mods Contains the public tables of all mod that were required via the `requires` array provided in the `setup()` function of this init.
---- @field setup? fun(): word.Mod.Setup? Function that is invoked before any other loading occurs. Should perform preliminary startup tasks.
+--- @field public data? word.mod.Data Every init can expose any set of information it sees fit through this field. All functions and variables declared in this table will be to any other init loaded.
+--- @field required? word.mod.Mods Contains the public tables of all mod that were required via the `requires` array provided in the `setup()` function of this init.
+--- @field setup? fun(): word.mod.Setup? Function that is invoked before any other loading occurs. Should perform preliminary startup tasks.
 --- @field replaced? boolean If `true`, this means the init is a replacement for a base init. This flag is set automatically whenever `setup().replaces` is set to a value.
 --- @field on_event fun(event: word.Event) A callback that is invoked any time an event the init has subscribed to has fired.
 --- Returns a new word init, exposing all the necessary function and variables.
---- @param name string The name of the new init. Modake sure this is unique. The recommended naming convention is `category.mod_name` or `category.subcategory.mod_name`.
 --- @return word.Mod
 ---
 ---
@@ -105,32 +104,29 @@
 --- | "mac"
 --- | "linux"
 --- | "bsd"
---- @alias word.config.init { config?: table }
+--- TODO: make word.config.UserMod? table
+--- @alias word.config.UserMod { config?: table }
 
---- @class (exact) word.config.ft
+--- @class (exact) word.config.Ft
 --- @field md boolean
 --- @field mdx boolean
 --- @field markdown boolean
 --- @field word boolean
 
---- @class (exact) word.config.user
---- @field lazy? boolean                             Whether to defer loading the word base until after the user has entered a `.word` file.
---- @field logger? word.log.config                   A config table for the logger.
-
---- @class (exact) word.config
+--- @class (exact) word.Config
 --- @field args table<string, string>                   A list of arguments provided to the `:wordStart` function in the form of `key=value` pairs. Only applicable when `user_config.lazy_loading` is `true`.
 --- @field manual boolean?                                   Used if word was manually loaded via `:wordStart`. Only applicable when `user_config.lazy_loading` is `true`.
---- @field mod table<string, word.config.init> Acts as a copy of the user's config that may be modified at runtime.
+--- @field mod table<string, word.Mod> Acts as a copy of the user's config that may be modified at runtime.
 --- @field os OperatingSystem                           The operating system that word is currently running under.
 --- @field pathsep "\\"|"/"                                  The operating system that word is currently running under.
 --- @field started boolean                                   Set to `true` when word is fully initialized.
---- @field user word.config.user              Stores the config provided by the user.
+--- @field user word.config.User              Stores the config provided by the user.
 --- @field version string                                    The version of word that is currently active. Automatically updated by CI on every release.
 
 --- Stores the config for the entirety of word.
 --- This includes not only the user config (passed to `setup()`), but also internal
 --- variables that describe something specific about the user's hardware.
---- @see word.setup
+--- @see word.Setup
 ---
 ---
 --- @alias Mode
@@ -190,10 +186,6 @@
 ---
 --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
 ---
---- @brief word.core
---- @see word.core
+--- @brief word
+--- @see word
 ---
--- --- @class (exact) word.core.node.Node
----
---- @class (exact) word.core.Graph
---- @field public nodes { [string]: word.core.node.Node

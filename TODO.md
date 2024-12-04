@@ -1,5 +1,30 @@
 # TODO
 
+## High priority
+
+- [ ] Fix the calendar UI element when pulled up with notes or "calendar" command
+- [ ] Fix and conform types across the board
+- [ ] Remove `wordinc` and `worddec` commands
+- [ ] Make word autocmd markdown load only when in recognized workspace
+- [ ] Make the following commands only load on word workspace markdown autocmd:
+  - [ ] `link`
+  - [ ] `sync`
+  - [ ] `rename`
+  - [ ] `meta`
+  - [ ] `lsp`
+  - [ ] `toc`
+  - [ ] `tag`
+- [ ] Consider not having `config` be a quasi-necessary default loader for all other builtin modules, instead load them by default and allow some way for this behavior to not be invoked.
+- [ ] (easy) Change schema of modules so config is under module's schema itself,
+      instead of having it under `[module].config` - [ ] If necessary, then make inter-module config accessibility under `[module].config` instead of `module.config.public`
+- [ ] (easy) Change config to be under
+- [ ] (easy) Consider removing `[module].load` `[module].maps` `[module].opts` `[module].cmds` and merge all into `[module].setup` due to redundancy
+- [ ] (easy) Remove all lingering instances of `[module].data.data` and merge into `[module].data`
+  - [ ] (easy) Consider another separation of tables and functions of a module
+- [ ] (easy) Fix `ui.calendar` for `note` module
+
+## Low priority
+
 - [x] Get heading indentation to work
 - [ ] **prepare for official org initial release**
 - [ ] Bring at least a few scaffolded modules to functionality
@@ -39,7 +64,7 @@
 - [ ] `timestamp` insertion, add autoinsert/conceal timestamp functionality `?`
 - [ ] natural language date parsing for todos
 
-- - -
+---
 
 ## Todo specifications
 
