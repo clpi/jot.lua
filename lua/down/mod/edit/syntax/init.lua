@@ -684,7 +684,7 @@ M.on = function(event)
   end
 end
 
-M.events.subscribed = {
+M.subscribed = {
   autocommands = {
     bufenter = true,
     colorscheme = true,

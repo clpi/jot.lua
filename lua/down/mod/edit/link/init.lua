@@ -506,7 +506,7 @@ M.data.pathType = function(path, anchor)
     return "nb_page"
   end
 end
-M.events.subscribed = {
+M.subscribed = {
   cmd = {
     ["link.new"] = true,
     ["link.backlinks"] = true,

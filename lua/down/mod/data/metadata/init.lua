@@ -58,7 +58,7 @@ M.data = {
   end,
 }
 
-M.events.subscribed = {
+M.subscribed = {
   cmd = {
     ["data.metadata.insert"] = true,
     ["data.metadata.update"] = true,

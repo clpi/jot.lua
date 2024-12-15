@@ -2,7 +2,7 @@
 local Spinner = require("down.mod").create("ui.progress")
 --> from fidget.nvim
 local list =
-  { "⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏" }
+{ "⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏" }
 
 Spinner.setup = function()
   return {
@@ -10,9 +10,13 @@ Spinner.setup = function()
   }
 end
 
+---@class down.ui.progress.Config
 Spinner.config = {}
 
-function Spinner.start(s, ns)
+---@class down.ui.progress.Config
+Spinner.data = {}
+
+function Spinner.data.start(s, ns)
   local block = s.code_block
   local r, c = block["start"].row, block["start"].column
   local t = vim.loop.new_timer()
@@ -48,7 +52,7 @@ function Spinner.start(s, ns)
   }
 end
 
-function Spinner.shut(s, ns)
+function Spinner.data.shut(s, ns)
   -- local s = Spinner.state
   vim.api.nvim_buf_del_extmark(s.buf, ns, s.id)
   s.t:stop()

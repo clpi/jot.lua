@@ -463,7 +463,7 @@ M.on = function(event)
   end
 end
 
-M.events.subscribed = {
+M.subscribed = {
   cmd = {
     ["data.template.index"] = true,
     ["data.template.month"] = true,

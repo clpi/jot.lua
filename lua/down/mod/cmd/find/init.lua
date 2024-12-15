@@ -1,9 +1,9 @@
 local M = require("down.mod").create("cmd.find")
 
----@class down.find.Config
+---@class down.cmd.find.Config
 M.config = {}
 
----@class down.find.Data
+---@class down.cmd.find.Data
 M.data = {}
 
 M.setup = function()

@@ -25,7 +25,7 @@ M.setup = function()
 end
 
 
----@class base.ui
+---@class down.ui.Data
 M.data = {
   namespace = vim.api.nvim_create_namespace("down.ui"),
   --- Returns a table in the form of { width, height } containing the width and height of the current window

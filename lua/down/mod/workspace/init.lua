@@ -1,5 +1,5 @@
 local Path = require("pathlib")
-
+local u = require "down.mod.workspace.util"
 local down = require("down")
 local log, mod, utils = down.log, require("down.mod"), down.utils
 
@@ -83,13 +83,11 @@ M.config = {
 
 ---@class workspace
 M.data = {
+  ---@type { [1]: string, [2]: PathlibPath }
+  current_workspace = { "default", Path.cwd() },
   create_missing_file = function(path) end,
-  data = {
-    ---@type { [1]: string, [2]: PathlibPath }
-    current_workspace = { "default", Path.cwd() },
-  },
   current = function()
-    return M.data.data.current_workspace
+    return M.data.current_workspace
   end,
   files = function(ws)
     local res = {}
@@ -132,7 +130,7 @@ M.data = {
       -- If the user has given an empty workspace name (i.e. `$/myfile`)
       if custom_wspath:len() == 0 then
         filepath = ws.get_current_workspace()[2]
-          / filepath:relative_to(Path("$"))
+            / filepath:relative_to(Path("$"))
       else -- If the user provided a workspace name (i.e. `$my-workspace/myfile`)
         local workspace = ws.get_workspace(custom_wspath)
         if not workspace then
@@ -152,8 +150,8 @@ M.data = {
     -- requested to expand down file
     if not raw_path then
       if
-        type(path) == "string"
-        and (path:sub(#path) == "/" or path:sub(#path) == "\\")
+          type(path) == "string"
+          and (path:sub(#path) == "/" or path:sub(#path) == "\\")
       then
         -- if path ends with `/`, it is an invalid request!
         log.error(table.concat({
@@ -208,7 +206,7 @@ M.data = {
   end,
   --- Returns a table in the format { "wsname", "path" }
   get_current_workspace = function()
-    return M.data.data.current_workspace
+    return M.data.current_workspace
   end,
   --- Sets the workspace to the one specified (if it exists) and broadcasts the wschanged event
   ---@param ws_name string #The name of a valid namespace we want to switch to
@@ -223,8 +221,8 @@ M.data = {
     if not workspace then
       log.warn(
         "Unable to set workspace to"
-          .. workspace
-          .. "- that workspace does not exist"
+        .. workspace
+        .. "- that workspace does not exist"
       )
       return false
     end
@@ -233,10 +231,10 @@ M.data = {
     workspace:mkdir(Path.const.o755, true)
 
     -- Cache the current workspace
-    local current_ws = vim.deepcopy(M.data.data.current_workspace)
+    local current_ws = vim.deepcopy(M.data.current_workspace)
 
     -- Set the current workspace to the new workspace object we constructed
-    M.data.data.current_workspace = new_workspace
+    M.data.current_workspace = new_workspace
 
     if ws_name ~= "default" then
       M.required["data"].store("last_workspace", ws_name)
@@ -366,12 +364,12 @@ M.data = {
 
     -- Generate parents just in case
     destination
-      :parent_assert()
-      :mkdir(Path.const.o755 + 4 * math.pow(8, 4), true) -- 40755(oct)
+        :parent_assert()
+        :mkdir(Path.const.o755 + 4 * math.pow(8, 4), true) -- 40755(oct)
 
     -- Create or overwrite the file
     local fd =
-      destination:fs_open(opts.force and "w" or "a", Path.const.o644, false)
+        destination:fs_open(opts.force and "w" or "a", Path.const.o644, false)
     if fd then
       vim.loop.fs_close(fd)
     end
@@ -420,23 +418,23 @@ M.data = {
 
     local last_workspace = data.retrieve("last_workspace")
     last_workspace = type(last_workspace) == "string" and last_workspace
-      or M.config.default
-      or ""
+        or M.config.default
+        or ""
 
     local wspath = M.data.get_workspace(last_workspace)
 
     if not wspath then
       log.trace(
         "Unable to switch to workspace '"
-          .. last_workspace
-          .. "'. The workspace does not exist."
+        .. last_workspace
+        .. "'. The workspace does not exist."
       )
       return
     end
 
     -- If we were successful in switching to that workspace then begin editing that workspace's index file
     if M.data.set_workspace(last_workspace) then
-      vim.cmd("e " .. (wspath / M.data.get_index()):cmd_string())
+      vim.cmd("e " .. (wspath / M.data.index()):cmd_string())
 
       utils.notify("Last workspace -> " .. wspath)
     end
@@ -547,13 +545,13 @@ M.data = {
 
     -- If we're switching to a workspace that isn't the default workspace then enter the index file
     if workspace ~= "default" then
-      vim.cmd("e " .. (ws_match / M.data.get_index()):cmd_string())
+      vim.cmd("e " .. (ws_match / M.data.index()):cmd_string())
     end
   end,
   --- Touches a file in workspace
   ---@param path string|PathlibPath
   ---@param workspace string
-  touch_file = function(path, workspace)
+  touch = function(path, workspace)
     vim.validate({
       path = { path, "string", "table" },
       workspace = { workspace, "string" },
@@ -567,7 +565,7 @@ M.data = {
 
     return (ws_match / path):touch(Path.const.o644, true)
   end,
-  get_index = function()
+  index = function()
     return M.config.index
   end,
   new_note = function()
@@ -629,7 +627,7 @@ M.on = function(event)
   if event.type == "cmd.events.workspace.index" then
     local current_ws = M.data.get_current_workspace()
 
-    local index_path = current_ws[2] / M.data.get_index()
+    local index_path = current_ws[2] / M.data.index()
 
     if vim.fn.filereadable(index_path:tostring("/")) == 0 then
       -- if current_ws[1] == "default" then
@@ -643,7 +641,7 @@ M.on = function(event)
         utils.notify(
           table.concat({
             "Unable to create '",
-            M.data.get_index(),
+            M.data.index(),
             "' in the current workspace - are your filesystem permissions set correctly?",
           }),
           vim.log.levels.WARN
@@ -657,14 +655,14 @@ M.on = function(event)
   end
 end
 
-M.events.defined = {
+M.events = {
   wschanged = mod.define_event(M, "wschanged"),
   wsadded = mod.define_event(M, "wsadded"),
   wscache_empty = mod.define_event(M, "wscache_empty"),
   file_created = mod.define_event(M, "file_created"),
 }
 
-M.events.subscribed = {
+M.subscribed = {
   workspace = {
     wsadded = true,
 

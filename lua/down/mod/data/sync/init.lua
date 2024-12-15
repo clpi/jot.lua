@@ -35,7 +35,7 @@ M.data = {}
 ---@class down.data.sync.Config
 M.config = {}
 
-M.events.subscribed = {
+M.subscribed = {
   cmd = {
     ["sync.insert"] = true,
     ["sync.update"] = true,

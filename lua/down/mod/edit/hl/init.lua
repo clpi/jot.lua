@@ -616,6 +616,6 @@ M.data = {
   -- END of shamelessly ripped off akinsho code
 }
 
-M.events.subscribed = {}
+M.subscribed = {}
 
 return M

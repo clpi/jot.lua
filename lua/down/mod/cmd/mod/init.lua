@@ -3,6 +3,7 @@ local mod = down.mod
 
 local M = mod.create("cmd.mod")
 
+---@class down.cmd.mod.Data
 M.data = {
 
   -- The table containing all the functions. This can get a tad complex so I recommend you read the wiki entry
@@ -72,7 +73,7 @@ M.on = function(event)
     local lines = {}
 
     for name, _ in pairs(down.mod.loaded_mod) do
-      table.insert(lines, "- `"..name.."`")
+      table.insert(lines, "- `" .. name .. "`")
     end
 
     vim.api.nvim_buf_set_lines(mods_popup.bufnr, 0, -1, true, lines)
@@ -82,7 +83,7 @@ M.on = function(event)
     mods_popup:mount()
   end
 end
-M.events.subscribed = {
+M.subscribed = {
   cmd = {
     -- ["mod.new"] = true,
     ["mod.setup"] = true,

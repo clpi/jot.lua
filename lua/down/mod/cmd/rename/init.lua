@@ -1,22 +1,14 @@
---[[
-    file: cmd-rename
-    title: Provides the `:down rename` Command
-    summary: rename to last location before entering down.
-    internal: true
-    ---
-When executed (`:down rename`), all currently open `.down` files are deleted from
-the buffer list, and the current workspace is set to "config".
---]]
 local down = require("down")
 local mod = down.mod
 
-local init = mod.create("cmd.rename")
+local M = mod.create("cmd.rename")
 
-init.setup = function()
+M.setup = function()
   return { loaded = true, requires = { "cmd" } }
 end
 
-init.data = {
+---@class down.cmd.rename.Data
+M.data = {
   commands = {
     rename = {
       args = 0,
@@ -25,7 +17,7 @@ init.data = {
   },
 }
 
-init.on = function(event)
+M.on = function(event)
   if event.type == "cmd.events.rename" then
     -- Get all the buffers
     local buffers = vim.api.nvim_list_bufs()
@@ -49,9 +41,9 @@ init.on = function(event)
   end
 end
 
-init.events.subscribed = {
+M.subscribed = {
   cmd = {
     rename = true,
   },
 }
-return init
+return M

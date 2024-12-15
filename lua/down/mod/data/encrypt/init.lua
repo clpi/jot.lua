@@ -37,7 +37,7 @@ E.data = {}
 
 E.on = function(e) end
 
-E.events.subscribed = {
+E.subscribed = {
   cmd = {
     ["data.encrypt.insert"] = true,
     ["data.encrypt.update"] = true,

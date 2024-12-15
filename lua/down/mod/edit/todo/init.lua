@@ -391,7 +391,7 @@ M.data = {
       ---@param type_list table[] #A list of { "type", "char" } items
       ---@param item_type string #The `type` field from the `type_list` array
       ---@return number? #An index into the next item of `type_list`
-      local function get_index(type_list, item_type)
+      local function index(type_list, item_type)
         for i, element in ipairs(type_list) do
           if element[1] == item_type then
             if i >= #type_list then
@@ -413,13 +413,13 @@ M.data = {
         return
       end
 
-      local index = get_index(types, todo_type)
+      local index = index(types, todo_type)
 
       local next = types[index] or types[1]
 
       for child in todo_at_cursor:iter_children() do
         if M.data.data.get_todo_type(child) then
-          next = alternative_types[get_index(alternative_types, todo_type)]
+          next = alternative_types[index(alternative_types, todo_type)]
               or alternative_types[1]
           break
         end

@@ -47,7 +47,7 @@ M.data.pickers = function()
   end
   return r
 end
-M.events.subscribed = {
+M.subscribed = {
   cmd = {
     ["integration.telescope.find.files"] = true,
     ["integration.telescope.find.workspace"] = true,

@@ -35,7 +35,7 @@ M.data = {}
 ---@class down.data.tag.Config
 M.config = {}
 
-M.events.subscribed = {
+M.subscribed = {
   cmd = {
     ["data.tag.delete"] = true,
     ["data.tag.new"] = true,

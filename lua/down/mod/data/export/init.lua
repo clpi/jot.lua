@@ -37,7 +37,7 @@ E.data = {}
 
 E.on = function(e) end
 
-E.events.subscribed = {
+E.subscribed = {
   cmd = {
     ["data.export.insert"] = true,
     ["data.export.update"] = true,

@@ -1523,7 +1523,7 @@ M.load = function()
   })
 end
 
-M.events.subscribed = {
+M.subscribed = {
   cmd = {
     ["icon.toggle"] = true,
   },

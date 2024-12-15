@@ -538,7 +538,7 @@ function Mod.split_event_type(type)
   return split_event_type
 end
 
---- Returns an event template defined in `init.events.defined`.
+--- Returns an event template defined in `init.events`.
 --- @param m down.Mod A reference to the init invoking the function
 --- @param type string A full path to a valid event type (e.g. `init.events.some_event`)
 --- @return down.Event?
@@ -561,7 +561,7 @@ function Mod.get_event_template(m, type)
   log.trace("Returning" .. split_type[2] .. "for init" .. split_type[1])
 
   -- Return the defined event from the specific init
-  return Mod.loaded_mod[m.name].events.defined[split_type[2]]
+  return Mod.loaded_mod[m.name].events[split_type[2]]
 end
 
 --- Creates a deep copy of the `mod.base_event` event and returns it with a custom type and referrer.
@@ -606,7 +606,7 @@ function Mod.create_event(m, type, content, ev)
   -- Get the init that contains the event
   local modn = Mod.split_event_type(type)[1]
 
-  -- Retrieve the template from init.events.defined
+  -- Retrieve the template from init.events
   local event_template =
       Mod.get_event_template(Mod.loaded_mod[modn] or { name = "" }, type)
 
@@ -661,8 +661,8 @@ function Mod.broadcast(event, callback)
   cb.handle(event)
 
   for _, cm in pairs(Mod.loaded_mod) do
-    if cm.events.subscribed and cm.events.subscribed[event.split_type[1]] then
-      local evt = cm.events.subscribed[event.split_type[1]][event.split_type[2]]
+    if cm.subscribed and cm.subscribed[event.split_type[1]] then
+      local evt = cm.subscribed[event.split_type[1]][event.split_type[2]]
       if evt ~= nil and evt == true then
         cm.on(event)
       end
@@ -687,8 +687,8 @@ function Mod.send_event(recv, ev)
   ev.broadcast = false
   cb.handle(ev)
   local modl = Mod.loaded_mod[recv]
-  if modl.events.subscribed and modl.events.subscribed[ev.split_type[1]] then
-    local evt = modl.events.subscribed[ev.split_type[1]][ev.split_type[2]]
+  if modl.subscribed and modl.subscribed[ev.split_type[1]] then
+    local evt = modl.subscribed[ev.split_type[1]][ev.split_type[2]]
     if evt ~= nil and evt == true then
       modl.on(ev)
     end

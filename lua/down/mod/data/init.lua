@@ -140,6 +140,6 @@ M.data = {
   end,
 }
 
-M.events.subscribed = {}
+M.subscribed = {}
 
 return M

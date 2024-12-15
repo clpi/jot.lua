@@ -415,7 +415,7 @@ M.on = function(event)
   end
 end
 
-M.events.subscribed = {
+M.subscribed = {
   cmd = {
     ["code.current-file"] = true,
     ["code.directory"] = true,

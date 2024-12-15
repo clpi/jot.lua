@@ -31,7 +31,7 @@ M.config = {}
 ---@class down.data.code.snippet.Data
 M.data = {}
 
-M.events.subscribed = {
+M.subscribed = {
   cmd = {
     ["data.snippet.insert"] = true,
     ["data.snippet.update"] = true,

@@ -1086,7 +1086,7 @@ M.data.start_lsp = function()
   -- })
 end
 
-M.events.subscribed = {
+M.subscribed = {
   cmd = {
     ["lsp.start"] = true,
     ["lsp.restart"] = true,

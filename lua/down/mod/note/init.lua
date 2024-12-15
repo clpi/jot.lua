@@ -845,7 +845,7 @@ M.setup = function()
   }
 end
 
-M.events.subscribed = {
+M.subscribed = {
   cmd = {
     ["note.index"] = true,
     ["note.month"] = true,

@@ -485,7 +485,7 @@ M.on = function(event)
   end
 end
 
-M.events.subscribed = {
+M.subscribed = {
   cmd = {
     ["log.index"] = true,
     ["log.month"] = true,

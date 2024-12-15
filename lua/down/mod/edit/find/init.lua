@@ -39,7 +39,7 @@ M.data = {}
 M.config = {}
 M.events = {}
 
-M.events.subscribed = {
+M.subscribed = {
   cmd = {
     ["edit.find.insert"] = true,
     ["edit.find.update"] = true,

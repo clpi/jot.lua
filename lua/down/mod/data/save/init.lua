@@ -34,7 +34,7 @@ M.config = {}
 ---@class down.data.save.Data
 M.data = {}
 
-M.events.subscribed = {
+M.subscribed = {
   cmd = {
     ["data.save.current"] = true,
     ["data.save.new"] = true,

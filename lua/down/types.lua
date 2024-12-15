@@ -67,7 +67,7 @@
 --- @alias down.mod.Config table
 
 --- @class (exact) down.mod.Events
---- @field defined? { [string]: down.Event }              Lists all events defined by this init.
+--- @field defined? { [string]: down.Event }              Lists all events by this init.
 --- @field subscribed? { [string]: { [string]: boolean } } Lists the events that the init is subscribed to.
 
 --- @alias down.mod.Setup { loaded: boolean, requires?: string[], replaces?: string, merge?: boolean, wants?: string[] }

@@ -1041,7 +1041,7 @@ M.on = function(event)
   end
 end
 
-M.events.subscribed = {
+M.subscribed = {
   cmd = {
     ['integration.treesitter'] = true,
   },

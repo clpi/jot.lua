@@ -677,7 +677,7 @@ M.on = function(event)
   end
 end
 
-M.events.subscribed = {
+M.subscribed = {
   ["core.downcmd"] = {
     [M.name] = true,
   },
