@@ -64,11 +64,7 @@ Mod.default = function(name)
       --TODO: remove
       data = {},
     },
-    config = {
-      private = {},
-      custom = {},
-      public = {},
-    },
+    config = {},
     events = {
       subscribed = { -- The events that the init is subscribed to
       },

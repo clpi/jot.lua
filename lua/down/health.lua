@@ -1,15 +1,15 @@
 local H = {}
 
 local h = vim.health
-local ok,err,warn=h.ok,h.error,h.warn
+local ok, err, warn = h.ok, h.error, h.warn
 
 H.check = function()
   h.start "checking config"
-  local c = require "down.mod.config".config
-  if c == nil then
-    err "config is nil"
+  local c = require "down.config".config
+  if c ~= nil then
+    ok("config is not nil" .. #c.user.mod .. #c.mod)
   else
-    ok "config not nil"
+    err("config is nil" .. "")
   end
 end
 

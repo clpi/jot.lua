@@ -1,6 +1,19 @@
 {
   "$schema": "https://raw.githubusercontent.com/sumneko/vscode-lua/master/setting/schema.json",
   "workspace.checkThirdParty": false,
+  "semantic.annotation": true,
+  "semantic.keyword": true,
+  "semantic.variable": true,
+  "hover.previewFields": 10,
+  "language.completeAnnotation": true,
+  "completion.autoRequire": true,
+  "completion.postfix": "@",
+  "signatureHelp": {
+    "enable": true
+  },
+  "addonManager": {
+    "enable": true
+  },
   "hover.enable": true,
   "addonManager.enable": true,
   "type.inferTableSize": 10,
@@ -25,8 +38,15 @@
   },
   "workspace.maxPreload": 1600,
   "workspace.preloadFileSize": 1000,
-  "diagnostics.unusedLocalExclude": ["_*"],
-  "diagnostics.globals": ["vim", "coroutine", "require", "bit"],
+  "diagnostics.unusedLocalExclude": [
+    "_*"
+  ],
+  "diagnostics.globals": [
+    "vim",
+    "coroutine",
+    "require",
+    "bit"
+  ],
   "diagnostics.disable": [
     "close-non-object",
     "deprecated",

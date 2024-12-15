@@ -4,8 +4,9 @@ local f = vim.fn
 
 --- @type down.Config
 C.config = {
-  ---@type down.config.UserMod
+  ---@class down.config.User
   user = {
+    ---@class down.config.UserMod
     mod = {
       config = {},
     },

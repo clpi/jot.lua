@@ -50,12 +50,15 @@ Welcome -- to the `down.lua` book. I hope this helps!
 
   - [Frameworks](./publish/frameworks.md)
   - [Blog](./publish/blog.md)
+  - [Wiki](./publish/wiki.md)
   - [Digital garden](./publish/digital_garden.md)
 
 - [Plans](./plans/index.md)
 
-  - [Near](./plans/near.md)
-  - [Far](./plans/far.md)
+  - [Short-term](./plans/near.md)
+  - [Long-term](./plans/far.md)
+  - [General](./plans/general.md)
+  - [Todo](./plans/todo.md)
 
 - [Support](./support.md)
 

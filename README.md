@@ -1,14 +1,16 @@
-# down.lua - the _familiar_, organized future for neovim
+# down.lua 
+
+### the _familiar_, organized future for neovim
 
 <a href="https://neovim.io"> ![Neovim](https://img.shields.io/badge/Neovim%200.10+-brightgreen?style=for-the-badge) </a>
-<a href="/LICENSE"> ![License](https://img.shields.io/badge/license-GPL%20v3-brightgreen?style=for-the-badge)</a>
+<a href="./LICENSE"> ![License](https://img.shields.io/badge/license-GPL%20v3-brightgreen?style=for-the-badge)</a>
 ![LuaRocks](https://img.shields.io/luarocks/v/clpi/down.lua)
 
 ---
 
-> [!Important]
+> [!Caution]
 >
-> `down.lua` is **BEGINNING DEVELOPMENT**
+> `down.lua` is currently in **early** *ongoing* development.
 
 <!--toc:start-->
 
@@ -43,36 +45,39 @@
 
 <details open>
   <summary>
-<a href="#">lazy.nvim</a>
+<a href="https://github.com/folke/lazy.nvim">lazy.nvim</a>
   </summary>
 
 ```lua
+-- Place in lazy.nvim spec
 {
     "clpi/down.lua",
-    lazy    = false,
-    version = "*"
-    branch  = "master",
-    config = function(_, opts)
-      require("down").setup({
+    version      = "*",
+    lazy         = false,
+    branch       = "master",
+    config       = function()
+      require "down".setup {
         mod = {
-          config = {},
           workspace = {
             config = {
+              default = "notes",
               workspaces = {
                 default = "~/down",
-                notes = "~/notes"
+                notes = "~/notes",
+                personal = "~/home"
               }
             }
           }
         }
-      })
+      }
     end,
     dependencies = {
+      "nvim-treesitter/nvim-treesitter",
       "nvim-lua/plenary.nvim",
       "MunifTanjim/nui.nvim",
       "pysan3/pathlib.nvim",
       "nvim-telescope/telescope.nvim", -- optional
-    }
+    },
 }
 ```
 
@@ -83,7 +88,7 @@
 <details>
 
   <summary>
-<a href="#">plug.vim</a>
+<a href="https://github.com/junegunn/vim-plug">plug.vim</a>
   </summary>
 
 > [!Caution]
@@ -100,11 +105,11 @@ Plug "clpi/down.lua", {
     \ "branch" : "master",
     \ "do"     : ':lua require([[down]]).setup({
     \   mod = {
-    \     config = {},
     \     workspace = {
     \       config = {
     \         workspaces = {
-    \           default = [[~/wiki]],
+    \           wiki = [[~/wiki]],
+    \           default = [[~/down]],
     \           notes = [[~/notes]]
     \         }
     \       }
@@ -119,7 +124,7 @@ Plug "clpi/down.lua", {
 ---
 
 <details>
-<summary><a href="#">Vundle</a></summary>
+<summary><a href="https://github.com/VundleVim/Vundle.vim">Vundle</a></summary>
 
 > [!Caution]
 >
@@ -140,7 +145,7 @@ Plugin 'clpi/down.lua'
 <details>
 
   <summary>
-<a href="#">dein.vim</a>
+<a href="https://github.com/Shougo/dein.vim">dein.vim</a>
   </summary>
 
 > [!Caution]
@@ -162,7 +167,7 @@ call dein#add('clpi/down.lua')
 <details>
 
   <summary>
-<a href="#">packer.nvim</a>
+<a href="https://github.com/wbthomason/packer.nvim">packer.nvim</a>
   </summary>
 
 > [!Caution]
@@ -183,10 +188,11 @@ use {
   config = function()
       require("down").setup({
         mod = {
-          config = {},
           workspace = {
             config = {
               workspaces = {
+                default = "~/down",
+                home = "~/notes",
                 notes = "~/notes"
               }
             }
@@ -204,7 +210,7 @@ use {
 <details>
 
   <summary>
-<a href="#">mini.deps</a>
+<a href="https://github.com/echasnovski/mini.deps">mini.deps</a>
   </summary>
 
 > [!Caution]
@@ -245,13 +251,13 @@ use {
 -- and make it default
 require("down").setup({ ---@type down.mod.Config
   mod = {
-    config = {},
     workspace = {
       config = {
         default = 'home',
         workspaces = {
-          notes = "~/notes",
-          home = "~/notes"
+          default = "~/down",
+          home = "~/notes",
+          notes = "~/notes"
         }
       }
     }

@@ -111,9 +111,9 @@ build = {
   modules = {},
   install = {
     bin = {
-      downls = "scripts/bin/downls",
-      down_lsp = "scripts/bin/down-lsp",
-      down = "scripts/bin/down",
+      downls = "./scripts/bin/down-lsp.sh",
+      down_lsp = "./scripts/bin/down-lsp",
+      down = "./scripts/bin/down",
     },
   },
   copy_directories = {
