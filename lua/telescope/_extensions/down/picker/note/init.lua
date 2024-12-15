@@ -1,17 +1,17 @@
-local mod = require("word.mod")
+local mod = require("down.mod")
 local pickers = require("telescope.pickers")
 local finders = require("telescope.finders")
 local conf = require("telescope.config").values -- allows us to use the values from the users config
 local make_entry = require("telescope.make_entry")
-local wordld, word = pcall(require, 'word')
+local downld, down = pcall(require, 'down')
 
-assert(wordld, "word is not loaded - load it before telescope")
+assert(downld, "down is not loaded - load it before telescope")
 
 local function get_md_files()
   local ws = Mod.get_mod("workspace") ---@type mod.workspace
   if not ws then return nil end
   local cw = ws.get_current_workspace()
-  local mdf = ws.get_word_files(cw[1])
+  local mdf = ws.get_down_files(cw[1])
   return {
     cw[2]:tostring(), vim.tbl_map(tostring, mdf)
   }
@@ -24,7 +24,7 @@ return function(opt)
   if not (f and f[2]) then return end
   opt.entry_maker = make_entry.gen_from_file(opt)
   pickers.new(opt, {
-    prompt_title = "Find word Files",
+    prompt_title = "Find down Files",
     previewer = conf.file_previewer(opt),
     sorter = conf.file_sorter(opt),
     cwd = f[1],
