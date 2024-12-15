@@ -1,16 +1,19 @@
-cache = true
-codes = true
+cache        = true
+codes        = true
+self         = false
 
 read_globals = {
   "vim",
 }
 -- Global objects
-globals = {
+globals      = {
   "_",
+  "word",
   "vim",
+  "log",
 }
 
-ignore = {
+ignore       = {
   "631", -- max_line_length
   "212",
   "122",

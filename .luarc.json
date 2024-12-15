@@ -43,6 +43,8 @@
   ],
   "diagnostics.globals": [
     "vim",
+    "Mod",
+    "Map",
     "coroutine",
     "require",
     "bit"

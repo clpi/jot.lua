@@ -33,13 +33,13 @@
 --+  |                                                    |  +--
 --+  +----------------------------------------------------+  +--
 
-local w_ok, down = pcall(require, "down")
-local u_ok, util = pcall(require, "down.util")
-local m_ok, mod = pcall(require, "down.mod")
-local c_ok, conf = pcall(require, "down.config")
-local l_ok, lsp = pcall(require, "down.mod.lsp")
-local ws_ok, ws = pcall(require, "down.mod.workspace")
-local wts_ok, wts = pcall(require, "down.mod.integration.treesitter")
+local w_ok, down                     = pcall(require, "down")
+local u_ok, util                     = pcall(require, "down.util")
+local m_ok, mod                      = pcall(require, "down.mod")
+local c_ok, conf                     = pcall(require, "down.config")
+local l_ok, lsp                      = pcall(require, "down.mod.lsp")
+local ws_ok, ws                      = pcall(require, "down.mod.workspace")
+local wts_ok, wts                    = pcall(require, "down.mod.integration.treesitter")
 
 --+  +---------------------+ extern +---------------------+  +--
 --+  |                                                    |  +--
@@ -47,10 +47,10 @@ local wts_ok, wts = pcall(require, "down.mod.integration.treesitter")
 --+  |                                                    |  +--
 --+  +----------------------------------------------------+  +--
 
-local lp_ok, lp = pcall(require, "lpeg")
-local vt_ok, vts = pcall(require, "vim.treesitter")
-local ts_ok, nts = pcall(require, "nvim-treesitter")
-local tsu_ok, tsu = pcall(require, "nvim-treesitter.ts_utils")
+local lp_ok, lp                      = pcall(require, "lpeg")
+local vt_ok, vts                     = pcall(require, "vim.treesitter")
+local ts_ok, nts                     = pcall(require, "nvim-treesitter")
+local tsu_ok, tsu                    = pcall(require, "nvim-treesitter.ts_utils")
 
 --+  +----------------------+ util +----------------------+  +--
 --+  |                                                    |  +--
@@ -58,39 +58,39 @@ local tsu_ok, tsu = pcall(require, "nvim-treesitter.ts_utils")
 --+  |                                                    |  +--
 --+  +----------------------------------------------------+  +--
 
--- local lb, rb, gb, yb, s, mb, cb, wb    = "\x1b[40m", "\x1b[41m", "\x1b[42m", "\x1b[43m", "\x1b[44m", "\x1b[45m",
---     "\x1b[46m",
---     "\x1b[47m"
-local x, i, s, e, u, cr =
-  "\x1b[0m", "\x1b[7m", "\x1b[1m", "\x1b[3m", "\x1b[4m", "\x1b[9m"
+local lb, rb, gb, yb, s, mb, cb, wb  = "\x1b[40m", "\x1b[41m", "\x1b[42m", "\x1b[43m", "\x1b[44m", "\x1b[45m",
+    "\x1b[46m",
+    "\x1b[47m"
+local x, i, s, e, u, cr              =
+    "\x1b[0m", "\x1b[7m", "\x1b[1m", "\x1b[3m", "\x1b[4m", "\x1b[9m"
 local ll, lr, lg, ly, lb, lm, lc, lw =
-  "\x1b[90m",
-  "\x1b[91m",
-  "\x1b[92m",
-  "\x1b[93m",
-  "\x1b[94m",
-  "\x1b[95m",
-  "\x1b[96m",
-  "\x1b[97m"
-local l, r, g, y, b, m, c, w =
-  "\x1b[30m",
-  "\x1b[31m",
-  "\x1b[32m",
-  "\x1b[33m",
-  "\x1b[34m",
-  "\x1b[35m",
-  "\x1b[36m",
-  "\x1b[37m"
-local bi = function(inp)
+    "\x1b[90m",
+    "\x1b[91m",
+    "\x1b[92m",
+    "\x1b[93m",
+    "\x1b[94m",
+    "\x1b[95m",
+    "\x1b[96m",
+    "\x1b[97m"
+local l, r, g, y, b, m, c, w         =
+    "\x1b[30m",
+    "\x1b[31m",
+    "\x1b[32m",
+    "\x1b[33m",
+    "\x1b[34m",
+    "\x1b[35m",
+    "\x1b[36m",
+    "\x1b[37m"
+local bi                             = function(inp)
   return inp .. i
 end
-local si = function(inp)
+local si                             = function(inp)
   return inp .. s .. i
 end
-local br, bg, by, bb, bm, bc, bw =
-  bi(r), bi(g), bi(y), bi(b), bi(m), bi(c), bi(w)
-local sr, sg, sy, sb, sm, sc, sw =
-  si(r), si(g), si(y), si(b), si(m), si(c), si(w)
+local br, bg, by, bb, bm, bc, bw     =
+    bi(r), bi(g), bi(y), bi(b), bi(m), bi(c), bi(w)
+local sr, sg, sy, sb, sm, sc, sw     =
+    si(r), si(g), si(y), si(b), si(m), si(c), si(w)
 
 --+  +----------------------+ vars +----------------------+  +--
 --+  |                                                    |  +--
@@ -98,7 +98,7 @@ local sr, sg, sy, sb, sm, sc, sw =
 --+  |                                                    |  +--
 --+  +----------------------------------------------------+  +--
 
-local down = {
+local down                           = {
   pre = {
     i = function(c, a)
       return c .. "" .. a
@@ -142,8 +142,8 @@ local down = {
   color = true,
   debug = false,
 }
-down.styles = {}
-down.bits = {
+down.styles                          = {}
+down.bits                            = {
   vers = ll .. "v" .. x .. w .. "0.1.1" .. ll .. "-" .. x .. w .. "alpha",
   lambda = ll .. s .. "󰘧 " .. x,
   downi = ll .. s .. "󰘧 " .. x .. y .. "down" .. x,
@@ -191,35 +191,35 @@ down.bits = {
   args = ll .. "[" .. r .. "󰆧 " .. ll .. "" .. r .. "args" .. ll .. "]" .. x,
   author = "Chris Pecunies " .. g .. "<clp@clp.is>",
 }
-down.bits.version = down.bits.vers
-  .. ll
-  .. " ("
-  .. ll
-  .. "updated "
-  .. g
-  .. down.updated
-  .. ll
-  .. ")"
-down.bits.usage = ""
-  .. down.bits.downi
-  .. " "
-  .. down.bits.command
-  .. down.bits.opts
-  .. down.bits.flags
-  .. down.bits.args
-  .. down.bits.brk.l
-  .. down.bits.ellipses
-  .. down.bits.brk.r
-down.bits.desc = down.bits.downlua
-  .. x
-  .. w
-  .. " is a dev-focused, familiar"
-  .. down.bits.markdown
-  .. "\n  "
-  .. w
-  .. "environment, focused on providing familiarity \n  "
-  .. w
-  .. "and extensibility for developers, in development."
+down.bits.version                    = down.bits.vers
+    .. ll
+    .. " ("
+    .. ll
+    .. "updated "
+    .. g
+    .. down.updated
+    .. ll
+    .. ")"
+down.bits.usage                      = ""
+    .. down.bits.downi
+    .. " "
+    .. down.bits.command
+    .. down.bits.opts
+    .. down.bits.flags
+    .. down.bits.args
+    .. down.bits.brk.l
+    .. down.bits.ellipses
+    .. down.bits.brk.r
+down.bits.desc                       = down.bits.downlua
+    .. x
+    .. w
+    .. " is a dev-focused, familiar"
+    .. down.bits.markdown
+    .. "\n  "
+    .. w
+    .. "environment, focused on providing familiarity \n  "
+    .. w
+    .. "and extensibility for developers, in development."
 
 --+  +----------------------+ kind +----------------------+  +--
 --+  |                                                    |  +--
@@ -227,7 +227,7 @@ down.bits.desc = down.bits.downlua
 --+  |                                                    |  +--
 --+  +----------------------------------------------------+  +--
 
-local Kind = {
+local Kind                           = {
   opt = {
     param = "param",
     flag = "flag",
@@ -242,7 +242,7 @@ local Kind = {
 --+  |                                                    |  +--
 --+  +----------------------------------------------------+  +--
 
-local Arg = {
+local Arg                            = {
   long = nil,
   index = -1,
   pos = 1,
@@ -254,7 +254,7 @@ local Arg = {
   help = "",
 }
 
-Arg.Kind = {
+Arg.Kind                             = {
   -- like --... or -... or --...=... or -...=...
   opt = {
     -- like --...=... or -...=...
@@ -354,72 +354,72 @@ function Arg.Kind.unknown(a, k)
   if k == Arg.Kind.opt.flag.long.long then
     print(
       r
-        .. "unknown"
-        .. x
-        .. b
-        .. " long "
-        .. l
-        .. "(long)"
-        .. x
-        .. " flag: "
-        .. down.bits.hy2
-        .. a
+      .. "unknown"
+      .. x
+      .. b
+      .. " long "
+      .. l
+      .. "(long)"
+      .. x
+      .. " flag: "
+      .. down.bits.hy2
+      .. a
     )
   elseif k == Arg.Kind.opt.flag.long.short then
     print(
       r
-        .. "unknown"
-        .. x
-        .. b
-        .. " long "
-        .. l
-        .. "(short)"
-        .. x
-        .. " flag: "
-        .. down.bits.hy2
-        .. a
+      .. "unknown"
+      .. x
+      .. b
+      .. " long "
+      .. l
+      .. "(short)"
+      .. x
+      .. " flag: "
+      .. down.bits.hy2
+      .. a
     )
   elseif k == Arg.Kind.opt.flag.short.long then
     print(
       r
-        .. "unknown"
-        .. x
-        .. g
-        .. " short "
-        .. l
-        .. "(long)"
-        .. x
-        .. " flag: "
-        .. down.bits.hy
-        .. a
+      .. "unknown"
+      .. x
+      .. g
+      .. " short "
+      .. l
+      .. "(long)"
+      .. x
+      .. " flag: "
+      .. down.bits.hy
+      .. a
     )
   elseif k == Arg.Kind.opt.flag.short.short then
     print(
       r
-        .. "unknown"
-        .. x
-        .. g
-        .. " short "
-        .. l
-        .. "(short)"
-        .. x
-        .. " flag: "
-        .. down.bits.hy
-        .. a
+      .. "unknown"
+      .. x
+      .. g
+      .. " short "
+      .. l
+      .. "(short)"
+      .. x
+      .. " flag: "
+      .. down.bits.hy
+      .. a
     )
   elseif k == Arg.Kind.cmd.short then
     print(
       r
-        .. "unknown"
-        .. x
-        .. g
-        .. " short "
-        .. y
-        .. "cmd"
-        .. ll
-        .. ": "
-        .. x
-        .. a
+      .. "unknown"
+      .. x
+      .. g
+      .. " short "
+      .. y
+      .. "cmd"
+      .. ll
+      .. ": "
+      .. x
+      .. a
     )
   elseif k == Arg.Kind.cmd.long then
     print(
@@ -461,35 +461,35 @@ end
 function Arg:help(h)
   if self.kind == Kind.cmd then
     return ""
-      .. g
-      .. self.short
-      .. ""
-      .. x
-      .. " "
-      .. down.bits.pipe
-      .. " "
-      .. g
-      .. self.long:sub(1, 1)
-      .. x
-      .. self.long:sub(2)
-      .. "\t  "
-      .. self.desc
+        .. g
+        .. self.short
+        .. ""
+        .. x
+        .. " "
+        .. down.bits.pipe
+        .. " "
+        .. g
+        .. self.long:sub(1, 1)
+        .. x
+        .. self.long:sub(2)
+        .. "\t  "
+        .. self.desc
   elseif self.kind == Kind.opt.flag then
     return ""
-      .. down.bits.hy
-      .. b
-      .. self.short
-      .. x
-      .. " "
-      .. down.bits.pipe
-      .. " "
-      .. down.bits.hy2
-      .. b
-      .. self.long:sub(1, 1)
-      .. x
-      .. self.long:sub(2)
-      .. "\t  "
-      .. self.desc
+        .. down.bits.hy
+        .. b
+        .. self.short
+        .. x
+        .. " "
+        .. down.bits.pipe
+        .. " "
+        .. down.bits.hy2
+        .. b
+        .. self.long:sub(1, 1)
+        .. x
+        .. self.long:sub(2)
+        .. "\t  "
+        .. self.desc
   else
     print(self.long, self.short)
   end
