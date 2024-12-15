@@ -1,8 +1,8 @@
-# word.lua
+# down.lua
 
 ## Intro
 
-`word.lua` is a simple ORM for Lua. It is designed to be simple to use and
+`down.lua` is a simple ORM for Lua. It is designed to be simple to use and
 
 ## Is it for you?
 
@@ -14,7 +14,7 @@
 
 ## Other resources
 
-- [GitHub](https://github.com/clpi/word.lua)
-- [Sourcehut](https://git.sr.ht/~clpi/word.lua)
-- [Luarocks](https://luarocks.org/modules/clpi/word.lua)
-- [Dotfyle](https://dotfyle.com/plugins/clpi/word.lua)
+- [GitHub](https://github.com/clpi/down.lua)
+- [Sourcehut](https://git.sr.ht/~clpi/down.lua)
+- [Luarocks](https://luarocks.org/modules/clpi/down.lua)
+- [Dotfyle](https://dotfyle.com/plugins/clpi/down.lua)

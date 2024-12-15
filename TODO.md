@@ -4,9 +4,9 @@
 
 - [ ] Fix the calendar UI element when pulled up with notes or "calendar" command
 - [ ] Fix and conform types across the board
-- [ ] Remove `wordinc` and `worddec` commands
-- [ ] Make word autocmd markdown load only when in recognized workspace
-- [ ] Make the following commands only load on word workspace markdown autocmd:
+- [ ] Remove `downinc` and `downdec` commands
+- [ ] Make down autocmd markdown load only when in recognized workspace
+- [ ] Make the following commands only load on down workspace markdown autocmd:
   - [ ] `link`
   - [ ] `sync`
   - [ ] `rename`
@@ -16,7 +16,7 @@
   - [ ] `tag`
 - [ ] Consider not having `config` be a quasi-necessary default loader for all other builtin modules, instead load them by default and allow some way for this behavior to not be invoked.
 - [ ] (easy) Change schema of modules so config is under module's schema itself,
-      instead of having it under `[module].config` - [ ] If necessary, then make inter-module config accessibility under `[module].config` instead of `module.config.public`
+      instead of having it under `[module].config` - [ ] If necessary, then make inter-module config accessibility under `[module].config` instead of `module.config`
 - [ ] (easy) Change config to be under
 - [ ] (easy) Consider removing `[module].load` `[module].maps` `[module].opts` `[module].cmds` and merge all into `[module].setup` due to redundancy
 - [ ] (easy) Remove all lingering instances of `[module].data.data` and merge into `[module].data`
@@ -181,4 +181,4 @@ require("nvim-treesitter.configs").setup({
 
 - [ ] `...`
 - [ ] Scope indentation?
-- [ ] `.wd` [word] syntax support/hl
+- [ ] `.wd` [down] syntax support/hl

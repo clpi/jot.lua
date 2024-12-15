@@ -2,20 +2,20 @@
 
 T = {}
 
---- Sets up word with a given module.
+--- Sets up down with a given module.
 ---@param module string The name of the module to load.
 ---@param config table? The configuration for the module.
 ---@return table
-T.word_setup = function(module, config)
-  local word = require("word")
-  word.setup({
+T.down_setup = function(module, config)
+  local down = require("down")
+  down.setup({
     load = {
       base = {},
       [module] = { config = config },
     },
   })
 
-  return word
+  return down
 end
 
 --- Runs a callback in the context of a given file.

@@ -1,6 +1,6 @@
 # Summary
 
-Welcome -- to the `word.lua` book. I hope this helps!
+Welcome -- to the `down.lua` book. I hope this helps!
 
 - [Intro](./intro.md)
 - [Philosophy](./philosophy.md)

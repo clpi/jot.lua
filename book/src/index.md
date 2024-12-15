@@ -1,4 +1,4 @@
-# `word.lua` Book Index
+# `down.lua` Book Index
 
 ## About
 

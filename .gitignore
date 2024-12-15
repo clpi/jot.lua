@@ -12,7 +12,6 @@
 **ext/ext
 **.ropeproject/
 **notes/
-**note/
 /luarocks
 /lua_modules
 /.luarocks

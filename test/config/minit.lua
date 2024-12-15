@@ -15,9 +15,9 @@ vim.api.nvim_create_autocmd("FileType", {
   pattern = "markdown",
   callback = function(args)
     vim.lsp.start({
-      name = "word-lsp",
+      name = "down-lsp",
       root_dir = vim.fs.root(args.buf, ".git"),
-      cmd = { "/Users/clp/word/scripts/bin/word-lsp" },
+      cmd = { "/Users/clp/down/scripts/bin/down-lsp" },
     })
   end,
 })
@@ -39,7 +39,7 @@ vim.opt.expandtab = true
 vim.opt.smartindent = true
 vim.o.swapfile = false
 vim.opt.conceallevel = 2
-vim.opt.winbar = [[word.lua]]
+vim.opt.winbar = [[down.lua]]
 vim.opt.signcolumn = [[yes:2]]
 vim.bo.swapfile = false
 vim.opt.hlsearch = true
@@ -84,7 +84,7 @@ vim.opt.showmode = true
 vim.opt.number = true
 vim.opt.conceallevel = 2
 vim.opt.concealcursor = [[nv]]
-vim.opt.winbar = "word.lua"
+vim.opt.winbar = "down.lua"
 vim.opt.signcolumn = "yes:2"
 vim.cmd([[
 nno L <CMD>bn<CR>
@@ -127,7 +127,7 @@ require("lazy").setup({
   { "nvim-lua/plenary.nvim" },
   "JoosepAlviste/nvim-ts-context-commentstring",
   {
-    "clpi/word.lua",
+    "clpi/down.lua",
     lazy = false,
     version = false,
 
@@ -163,7 +163,7 @@ require("lazy").setup({
       { "pysan3/pathlib.nvim" },
     },
     config = function()
-      require("word").setup({
+      require("down").setup({
         mod = {
           config = {},
           workspace = {
@@ -220,7 +220,7 @@ require("lazy").setup({
         --         return cmp.select_next()
         --       elseif cmp.is_in_snippet() then
         --         return cmp.snippet_forward()
-        --       elseif has_words_before() then
+        --       elseif has_downs_before() then
         --         return cmp.show()
         --       end
         --     end,
@@ -260,7 +260,7 @@ require("lazy").setup({
             transform_items = nil, -- function to transform the items before they're returned
             should_show_items = true, -- whether or not to show the items
             max_items = nil, -- maximum number of items to return
-            min_keyword_length = 0, -- minimum number of characters to trigger the provider
+            min_keydown_length = 0, -- minimum number of characters to trigger the provider
             fallback_for = {}, -- if any of these providers return 0 items, it will fallback to this provider
             score_offset = 0, -- boost/penalize the score of the items
             override = nil, -- override the source's functions

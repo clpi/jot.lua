@@ -3,9 +3,9 @@
 ## Example custom module
 
 ```lua
-local word = require("word")
+local down = require("down")
 
-local mod, config, util = word.mod, word.config, word.util
+local mod, config, util = down.mod, down.config, down.util
 
 local M = mod.create("user.example", {
   --- @brief submodules
@@ -35,7 +35,7 @@ M.setup = function()
 end
 
 ---@class (exact) example.Config
-M.config.public = {
+M.config = {
   --- @brief module config
   ---          the public facing config for this module that can be
   ---          set by the user from its default values here.

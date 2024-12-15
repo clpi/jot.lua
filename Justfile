@@ -3,19 +3,19 @@
 # nvimf="--headless -u ./test/config/minit.lua --noplugin -c ''"
 
 w:
-	./scripts/bin/word
+	./scripts/bin/down
 wl:
-	./scripts/bin/wordls
+	./scripts/bin/downls
 
 lnw:
-  ln -s ./scripts/bin/word ./word
+  ln -s ./scripts/bin/down ./down
 lnwl:
-  ln -s ./scripts/bin/word-lsp ./word-lsp
+  ln -s ./scripts/bin/down-lsp ./down-lsp
 
 iw: lnw
-	cp -r ./scripts/bin/word ${HOME}/.local/bin/
+	cp -r ./scripts/bin/down ${HOME}/.local/bin/
 iwl: lnwl
-	cp -r ./scripts/bin/word-lsp ${HOME}/.local/bin/
+	cp -r ./scripts/bin/down-lsp ${HOME}/.local/bin/
 
 i: iw iwl
 
