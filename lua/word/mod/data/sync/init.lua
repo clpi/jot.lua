@@ -29,11 +29,11 @@ M.setup = function()
   }
 end
 
+---@class word.data.sync.Data
 M.data = {}
 
+---@class word.data.sync.Config
 M.config.public = {}
-M.data.data = {}
-M.events = {}
 
 M.events.subscribed = {
   cmd = {

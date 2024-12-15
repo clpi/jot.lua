@@ -436,7 +436,7 @@ M.on = function(event)
           return
         end
 
-        calendar.select_date({
+        calendar.select({
           callback = vim.schedule_wrap(function(osdate)
             M.data.data.open_template(
               nil,

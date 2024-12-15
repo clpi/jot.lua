@@ -6,23 +6,6 @@ local path = require("plenary.path")
 local stdp = vim.fn.stdpath
 local uv = vim.uv or vim.loop
 
-D.data.data = {
-  get_mkfile = function(file)
-    local f = path:new(file)
-    if not f:exists() or f:is_dir() then
-      file:touch()
-    end
-    return file
-  end,
-  get_mkdir = function(dir)
-    local d = path:new(dir)
-    if not d:exists() or d:is_file() then
-      dir:mkdir()
-    end
-    return dir
-  end,
-}
-
 D.setup = function()
   return {
     requires = {
@@ -32,8 +15,7 @@ D.setup = function()
   }
 end
 
-D.load = function() end
-
+---@class word.data.dirs.Config
 D.config.public = {
   vim = {
     data = vim.fn.stdpath("data"),
@@ -45,6 +27,7 @@ D.config.public = {
   },
 }
 
+---@class word.data.dirs.Data
 D.data = {
   user = {},
   word = {
@@ -65,6 +48,20 @@ D.data = {
     run = vim.fn.stdpath("run"),
     log = vim.fn.stdpath("log"),
   },
+  get_mkfile = function(file)
+    local f = path:new(file)
+    if not f:exists() or f:is_dir() then
+      file:touch()
+    end
+    return file
+  end,
+  get_mkdir = function(dir)
+    local d = path:new(dir)
+    if not d:exists() or d:is_file() then
+      dir:mkdir()
+    end
+    return dir
+  end,
 }
 
 D.on = function(e) end

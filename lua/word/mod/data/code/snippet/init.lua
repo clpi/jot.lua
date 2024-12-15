@@ -25,8 +25,10 @@ M.setup = function()
   }
 end
 
+---@class word.data.code.snippet.Config
 M.config.public = {}
 
+---@class word.data.code.snippet.Data
 M.data = {}
 
 M.events.subscribed = {

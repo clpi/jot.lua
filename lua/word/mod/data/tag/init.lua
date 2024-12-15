@@ -29,13 +29,13 @@ M.setup = function()
   }
 end
 
-M.config.public = {}
-
+---@class word.data.tag.Data
 M.data = {}
 
-M.events = {}
+---@class word.data.tag.Config
+M.config.public = {}
 
-M.events.subcribed = {
+M.events.subscribed = {
   cmd = {
     ["data.tag.delete"] = true,
     ["data.tag.new"] = true,

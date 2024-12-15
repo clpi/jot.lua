@@ -19,11 +19,9 @@ M.maps = function()
 end
 
 M.load = function()
-  for name, workspace_location in pairs(M.config.public.workspaces) do
-    -- M.config.workspaces[name] = vim.fn.expand(vim.fn.fnameescape(workspace_location)) ---@diagnostic disable-line -- TODO: type error workaround <pysan3>
-    -- print(name, workspace_location)
-    M.config.public.workspaces[name] =
-      Path(workspace_location):resolve():to_absolute()
+  for name, wsloc in pairs(M.config.public.workspaces) do
+    -- M.config.workspaces[name] = vim.fn.expand(vim.fn.fnameescape(wsloc)) ---@diagnostic disable-line -- TODO: type error workaround <pysan3>
+    M.config.public.workspaces[name] = Path(wsloc):resolve():to_absolute()
   end
   vim.api.nvim_create_autocmd("BufEnter", {
     -- pattern = "markdown",
@@ -62,22 +60,19 @@ end
 
 M.config.public = {
   -- The list of active word workspaces.
-  --
-  -- There is always an inbuilt workspace called `default`, whose location is
+  -- There is always an inbuilt workspace called `default`, whose loc is
   -- set to the Neovim current working directory on boot.
   ---@type table<string, PathlibPath>
   workspaces = {
     default = Path.cwd(),
   },
   -- The name for the index file.
-  --
   -- The index file is the "entry point" for all of your notes.
   index = "index.md",
   -- The default workspace to set whenever Neovim starts.
   default = nil,
   -- Whether to open the last workspace's index file when `nvim` is executed
   -- without arguments.
-  --
   -- May also be set to the string `"default"`, due to which word will always
   -- open up the index file for the workspace defined in `default_workspace`.
   open_last_workspace = false,
@@ -123,8 +118,8 @@ M.data = {
       host_file = vim.fn.expand("%:p")
     end
     local filepath = Path(path)
-    local custom_workspace_path = filepath:match("^%$([^/\\]*)[/\\]")
-    if custom_workspace_path then
+    local custom_wspath = filepath:match("^%$([^/\\]*)[/\\]")
+    if custom_wspath then
       ---@type mod.workspace
       local ws = mod.get_mod("workspace")
       if not ws then
@@ -135,17 +130,17 @@ M.data = {
         return
       end
       -- If the user has given an empty workspace name (i.e. `$/myfile`)
-      if custom_workspace_path:len() == 0 then
+      if custom_wspath:len() == 0 then
         filepath = ws.get_current_workspace()[2]
           / filepath:relative_to(Path("$"))
       else -- If the user provided a workspace name (i.e. `$my-workspace/myfile`)
-        local workspace = ws.get_workspace(custom_workspace_path)
+        local workspace = ws.get_workspace(custom_wspath)
         if not workspace then
           local msg = "Unable to expand path: workspace '%s' does not exist"
-          log.warn(string.format(msg, custom_workspace_path))
+          log.warn(string.format(msg, custom_wspath))
           return
         end
-        filepath = ws / filepath:relative_to(Path("$" .. custom_workspace_path))
+        filepath = ws / filepath:relative_to(Path("$" .. custom_wspath))
       end
     elseif filepath:is_relative() then
       relative = true
@@ -162,7 +157,7 @@ M.data = {
       then
         -- if path ends with `/`, it is an invalid request!
         log.error(table.concat({
-          "md file location cannot point to a directory.",
+          "md file loc cannot point to a directory.",
           string.format("Current link points to '%s'", path),
           "which ends with a `/`.",
         }, " "))
@@ -203,7 +198,7 @@ M.data = {
     return M.config.public.workspaces
   end,
   ---@return string[]
-  get_workspace_names = function()
+  get_wsnames = function()
     return vim.tbl_keys(M.config.public.workspaces)
   end,
   --- If present retrieve a workspace's path by its name, else returns nil
@@ -211,15 +206,15 @@ M.data = {
   get_workspace = function(name)
     return M.config.public.workspaces[name]
   end,
-  --- Returns a table in the format { "workspace_name", "path" }
+  --- Returns a table in the format { "wsname", "path" }
   get_current_workspace = function()
     return M.data.data.current_workspace
   end,
-  --- Sets the workspace to the one specified (if it exists) and broadcasts the workspace_changed event
+  --- Sets the workspace to the one specified (if it exists) and broadcasts the wschanged event
   ---@param ws_name string #The name of a valid namespace we want to switch to
   ---@return boolean #True if the workspace is set correctly, false otherwise
   set_workspace = function(ws_name)
-    -- Grab the workspace location
+    -- Grab the workspace loc
     local workspace = M.config.public.workspaces[ws_name]
     -- Create a new object describing our new workspace
     local new_workspace = { ws_name, workspace }
@@ -247,12 +242,12 @@ M.data = {
       M.required["data"].store("last_workspace", ws_name)
     end
 
-    -- Broadcast the workspace_changed event with all the necessary information
+    -- Broadcast the wschanged event with all the necessary information
     mod.broadcast(
       assert(
         mod.create_event(
           M,
-          "workspace.events.workspace_changed",
+          "workspace.events.wschanged",
           { old = current_ws, new = new_workspace }
         )
       )
@@ -260,27 +255,23 @@ M.data = {
 
     return true
   end,
-  --- Dynamically defines a new workspace if the name isn't already occupied and broadcasts the workspace_added event
+  --- Dynamically defines a new workspace if the name isn't already occupied and broadcasts the wsadded event
   ---@return boolean True if the workspace is added successfully, false otherwise
-  ---@param workspace_name string #The unique name of the new workspace
-  ---@param workspace_path string|PathlibPath #A full path to the workspace root
-  add_workspace = function(workspace_name, workspace_path)
+  ---@param wsname string #The unique name of the new workspace
+  ---@param wspath string|PathlibPath #A full path to the workspace root
+  add_workspace = function(wsname, wspath)
     -- If the M already exists then bail
-    if M.config.public.workspaces[workspace_name] then
+    if M.config.public.workspaces[wsname] then
       return false
     end
 
-    workspace_path = Path(workspace_path):resolve():to_absolute()
+    wspath = Path(wspath):resolve():to_absolute()
     -- Set the new workspace and its path accordingly
-    M.config.public.workspaces[workspace_name] = workspace_path
-    -- Broadcast the workspace_added event with the newly added workspace as the content
+    M.config.public.workspaces[wsname] = wspath
+    -- Broadcast the wsadded event with the newly added workspace as the content
     mod.broadcast(
       assert(
-        mod.create_event(
-          M,
-          "workspace.events.workspace_added",
-          { workspace_name, workspace_path }
-        )
+        mod.create_event(M, "workspace.events.wsadded", { wsname, wspath })
       )
     )
 
@@ -290,7 +281,7 @@ M.data = {
     return true
   end,
   --- If the file we opened is within a workspace directory, returns the name of the workspace, else returns nil
-  get_workspace_match = function()
+  get_wsmatch = function()
     -- Cache the current working directory
     M.config.public.workspaces.default = Path.cwd()
 
@@ -303,24 +294,22 @@ M.data = {
     local longest_match = 0
 
     -- Find a matching workspace
-    for workspace, location in pairs(M.config.public.workspaces) do
+    for workspace, loc in pairs(M.config.public.workspaces) do
       if workspace ~= "default" then
-        if
-          file:is_relative_to(location) and location:depth() > longest_match
-        then
+        if file:is_relative_to(loc) and loc:depth() > longest_match then
           ws_name = workspace
-          longest_match = location:depth()
+          longest_match = loc:depth()
         end
       end
     end
 
     return ws_name
   end,
-  --- Uses the `get_workspace_match()` function to determine the root of the workspace defaultd on the
+  --- Uses the `get_wsmatch()` function to determine the root of the workspace defaultd on the
   --- current working directory, then changes into that workspace
-  set_closest_workspace_match = function()
+  set_closest_wsmatch = function()
     -- Get the closest workspace match
-    local ws_match = M.data.get_workspace_match()
+    local ws_match = M.data.get_wsmatch()
 
     -- If that match exists then set the workspace to it!
     if ws_match then
@@ -333,7 +322,7 @@ M.data = {
   --- Updates completions for the :word command
   sync = function()
     -- Get all the workspace names
-    local workspace_names = M.data.get_workspace_names()
+    local wsnames = M.data.get_wsnames()
 
     -- Add the command to default.cmd so it can be used by the user!
     mod.await("cmd", function(cmd)
@@ -341,7 +330,7 @@ M.data = {
         workspace = {
           max_args = 1,
           name = "workspace.workspace",
-          complete = { workspace_names },
+          complete = { wsnames },
         },
       })
     end)
@@ -406,10 +395,10 @@ M.data = {
   end,
 
   --- Takes in a workspace name and a path for a file and opens it
-  ---@param workspace_name string #The name of the workspace to use
+  ---@param wsname string #The name of the workspace to use
   ---@param path string|PathlibPath #A path to open the file (e.g directory/filename.word)
-  open_file = function(workspace_name, path)
-    local workspace = M.data.get_workspace(workspace_name)
+  open_file = function(wsname, path)
+    local workspace = M.data.get_workspace(wsname)
 
     if workspace == nil then
       return
@@ -434,9 +423,9 @@ M.data = {
       or M.config.public.default
       or ""
 
-    local workspace_path = M.data.get_workspace(last_workspace)
+    local wspath = M.data.get_workspace(last_workspace)
 
-    if not workspace_path then
+    if not wspath then
       log.trace(
         "Unable to switch to workspace '"
           .. last_workspace
@@ -447,9 +436,9 @@ M.data = {
 
     -- If we were successful in switching to that workspace then begin editing that workspace's index file
     if M.data.set_workspace(last_workspace) then
-      vim.cmd("e " .. (workspace_path / M.data.get_index()):cmd_string())
+      vim.cmd("e " .. (wspath / M.data.get_index()):cmd_string())
 
-      utils.notify("Last workspace -> " .. workspace_path)
+      utils.notify("Last workspace -> " .. wspath)
     end
   end,
   --- Checks for file existence by supplying a full path in `filepath`
@@ -465,11 +454,11 @@ M.data = {
       return vim.uri_to_bufnr(uri)
     end
   end,
-  --- Returns a list of all files relative path from a `workspace_name`
-  ---@param workspace_name string
+  --- Returns a list of all files relative path from a `wsname`
+  ---@param wsname string
   ---@return PathlibPath[]|nil
-  get_note_files = function(workspace_name)
-    local workspace = M.data.get_workspace(workspace_name)
+  get_note_files = function(wsname)
+    local workspace = M.data.get_workspace(wsname)
     if not workspace then
       return
     end
@@ -483,12 +472,12 @@ M.data = {
     end
     return res
   end,
-  --- Returns a list of all files relative path from a `workspace_name`
-  ---@param workspace_name string
+  --- Returns a list of all files relative path from a `wsname`
+  ---@param wsname string
   ---@return PathlibPath[]|nil
-  get_dirs = function(workspace_name)
+  get_dirs = function(wsname)
     local res = {}
-    local workspace = M.data.get_workspace(workspace_name)
+    local workspace = M.data.get_workspace(wsname)
     if not workspace then
       return
     end
@@ -501,12 +490,12 @@ M.data = {
 
     return res
   end,
-  --- Returns a list of all files relative path from a `workspace_name`
-  ---@param workspace_name string
+  --- Returns a list of all files relative path from a `wsname`
+  ---@param wsname string
   ---@return PathlibPath[]|nil
-  get_files = function(workspace_name)
+  get_files = function(wsname)
     local res = {}
-    local workspace = M.data.get_workspace(workspace_name)
+    local workspace = M.data.get_workspace(wsname)
 
     if not workspace then
       return
@@ -520,12 +509,12 @@ M.data = {
 
     return res
   end,
-  --- Returns a list of all files relative path from a `workspace_name`
-  ---@param workspace_name string
+  --- Returns a list of all files relative path from a `wsname`
+  ---@param wsname string
   ---@return PathlibPath[]|nil
-  get_word_files = function(workspace_name)
+  get_word_files = function(wsname)
     local res = {}
-    local workspace = M.data.get_workspace(workspace_name)
+    local workspace = M.data.get_workspace(wsname)
 
     if not workspace then
       return
@@ -669,17 +658,17 @@ M.on = function(event)
 end
 
 M.events.defined = {
-  workspace_changed = mod.define_event(M, "workspace_changed"),
-  workspace_added = mod.define_event(M, "workspace_added"),
-  workspace_cache_empty = mod.define_event(M, "workspace_cache_empty"),
+  wschanged = mod.define_event(M, "wschanged"),
+  wsadded = mod.define_event(M, "wsadded"),
+  wscache_empty = mod.define_event(M, "wscache_empty"),
   file_created = mod.define_event(M, "file_created"),
 }
 
 M.events.subscribed = {
   workspace = {
-    workspace_added = true,
+    wsadded = true,
 
-    workspace_changed = true,
+    wschanged = true,
   },
   cmd = {
     ["workspace.workspace"] = true,

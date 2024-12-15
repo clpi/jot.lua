@@ -1,20 +1,8 @@
+local mod = require("word.mod")
 local E = Mod.create("data.export")
 
 E.setup = function()
-  return {
-    loaded = true,
-    requires = {
-      "integration.treesitter",
-      "cmd",
-      "workspace",
-    },
-  }
-end
-
-E.config.public = {}
-
-E.load = function()
-  Mod.await("cmd", function(cmd)
+  mod.await("cmd", function(cmd)
     cmd.add_commands_from_table({
       export = {
         subcommands = {
@@ -31,10 +19,20 @@ E.load = function()
       },
     })
   end)
+  return {
+    loaded = true,
+    requires = {
+      "integration.treesitter",
+      "cmd",
+      "workspace",
+    },
+  }
 end
 
-E.data.data = {}
+---@class word.data.export.Config
+E.config.public = {}
 
+---@class word.data.export.Data
 E.data = {}
 
 E.on = function(e) end

@@ -11,6 +11,7 @@ end
 
 ---@class word.ui.nav.Data
 M.data = {}
+
 ---@class word.ui.nav.Config
 M.config.public = {}
 

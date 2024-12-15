@@ -5,16 +5,6 @@ local M = Mod.create("data.code", { "run", "snippet" })
 local Path = require("pathlib")
 
 M.setup = function()
-  return {
-    requires = {
-      "integration.treesitter",
-      "data",
-      "cmd",
-    },
-  }
-end
-
-M.load = function()
   mod.await("cmd", function(cmd)
     cmd.add_commands_from_table({
       code = {
@@ -35,7 +25,7 @@ M.load = function()
     })
   end)
 
-  if M.config.code_on_write then
+  if M.config.public.code_on_write then
     local augroup =
       vim.api.nvim_create_augroup("word_auto_code", { clear = true })
     vim.api.nvim_create_autocmd("BufWritePost", {
@@ -45,6 +35,13 @@ M.load = function()
       command = "word code current-file",
     })
   end
+  return {
+    requires = {
+      "integration.treesitter",
+      "data",
+      "cmd",
+    },
+  }
 end
 
 local function get_comment_string(language)
@@ -58,7 +55,7 @@ local function get_comment_string(language)
   return commentstring
 end
 
----@class base.code
+---@class word.data.code.Data
 M.data = {
   code = function(buffer)
     ---@type base.treesitter
@@ -125,7 +122,7 @@ M.data = {
       if capture == "tag" then
         local ok, parsed_tag = pcall(treesitter.get_tag_info, node, true)
         if not ok then
-          if M.config.indent_errors == "print" then
+          if M.config.public.public.indent_errors == "print" then
             -- print(parsed_tag)
           else
             log.error(parsed_tag)
@@ -303,8 +300,6 @@ M.data = {
 
     return codes
   end,
-}
-M.data = {
   cursorInCodeBlock = function(cursor_row, reverse)
     if reverse == nil or reverse == false then
       reverse = false
@@ -325,6 +320,7 @@ M.data = {
     return true
   end,
 }
+---@class word.data.code.Config
 M.config.public = {
   -- Notify when there is nothing to code (INFO) or when the content is empty (WARN).
   report_on_empty = true,
@@ -345,7 +341,7 @@ M.on = function(event)
     local codes = M.data.code(event.buffer)
 
     if not codes or vim.tbl_isempty(codes) then
-      if M.config.report_on_empty then
+      if M.config.public.report_on_empty then
         utils.notify("Nothing to code!", vim.log.levels.INFO)
       end
       return
@@ -379,7 +375,7 @@ M.on = function(event)
           )
 
           local write_content = table.concat(content, "\n")
-          if M.config.report_on_empty and write_content:len() == 0 then
+          if M.config.public.report_on_empty and write_content:len() == 0 then
             vim.schedule(function()
               utils.notify(
                 string.format("coded content for %s is empty.", file),
@@ -420,7 +416,7 @@ M.on = function(event)
 end
 
 M.events.subscribed = {
-  ["cmd"] = {
+  cmd = {
     ["code.current-file"] = true,
     ["code.directory"] = true,
   },

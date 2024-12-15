@@ -13,12 +13,12 @@ G.setup = function()
   }
 end
 
----@class ui.calendar.Data
+---@class word.ui.calendar.Data
 ---@field select_date fun(options:table)
 G.data = {
 
   modes = {},
-  views = {},
+  view = {},
 
   get_mode = function(name, callback)
     if G.data.modes[name] ~= nil then
@@ -29,106 +29,107 @@ G.data = {
 
     print("Error: mode not set or not available")
   end,
+}
 
-  get_view = function(name)
-    if G.data.views[name] ~= nil then
-      return G.data.views[name]
-    end
+G.data.get_view = function(name)
+  local n = name or "month"
+  if G.data.view[n] ~= nil then
+    return G.data.view[name]
+  end
 
-    print("Error: view not set or not available")
-  end,
+  print("Error: view not set or not available")
+end
 
-  extract_ui_info = function(buffer, window)
-    local width = vim.api.nvim_win_get_width(window)
-    local height = vim.api.nvim_win_get_height(window)
+G.data.extract_ui_info = function(buffer, window)
+  local width = vim.api.nvim_win_get_width(window)
+  local height = vim.api.nvim_win_get_height(window)
 
-    local half_width = math.floor(width / 2)
-    local half_height = math.floor(height / 2)
+  local half_width = math.floor(width / 2)
+  local half_height = math.floor(height / 2)
 
-    return {
-      window = window,
-      buffer = buffer,
-      width = width,
-      height = height,
-      half_width = half_width,
-      half_height = half_height,
-    }
-  end,
+  return {
+    window = window,
+    buffer = buffer,
+    width = width,
+    height = height,
+    half_width = half_width,
+    half_height = half_height,
+  }
+end
 
-  open_window = function(options)
-    local MIN_HEIGHT = 14
+G.data.open_window = function(options)
+  local MIN_HEIGHT = 14
 
-    local buffer, window = G.required["ui"].create_split(
-      "ui.calendar-" .. tostring(os.clock()):gsub("%.", "-"),
-      {},
-      options.height or MIN_HEIGHT + (options.padding or 0)
-    )
+  local buffer, window = G.required["ui"].create_split(
+    "ui.calendar-" .. tostring(os.clock()):gsub("%.", "-"),
+    {},
+    options.height or MIN_HEIGHT + (options.padding or 0)
+  )
 
-    vim.api.nvim_create_autocmd({ "WinClosed", "BufDelete" }, {
-      buffer = buffer,
+  vim.api.nvim_create_autocmd({ "WinClosed", "BufDelete" }, {
+    buffer = buffer,
 
-      callback = function()
-        pcall(vim.api.nvim_win_close, window, true)
-        pcall(vim.api.nvim_buf_delete, buffer, { force = true })
-      end,
-    })
-
-    return buffer, window
-  end,
-  add_mode = function(name, factory)
-    G.data.modes[name] = factory
-  end,
-
-  add_view = function(name, details)
-    G.data.views[name] = details
-  end,
-
-  create_calendar = function(buffer, window, options)
-    local callback_and_close = function(result)
-      if options.callback ~= nil then
-        options.callback(result)
-      end
-
+    callback = function()
       pcall(vim.api.nvim_win_close, window, true)
       pcall(vim.api.nvim_buf_delete, buffer, { force = true })
+    end,
+  })
+
+  return buffer, window
+end
+G.data.add_mode = function(name, factory)
+  G.data.modes[name] = factory
+end
+
+G.data.add_view = function(name, details)
+  G.data.view[name] = details
+end
+
+G.data.create_calendar = function(buffer, window, options)
+  local callback_and_close = function(result)
+    if options.callback ~= nil then
+      options.callback(result)
     end
 
-    local mode = G.data.get_mode(options.mode, callback_and_close)
-    if mode == nil then
-      return
-    end
+    pcall(vim.api.nvim_win_close, window, true)
+    pcall(vim.api.nvim_buf_delete, buffer, { force = true })
+  end
 
-    local ui_info = G.data.extract_ui_info(buffer, window)
+  local mode = G.data.get_mode(options.mode, callback_and_close)
+  if mode == nil then
+    return
+  end
 
-    local view = G.data.get_view(options.view or "month")
+  local ui_info = G.data.extract_ui_info(buffer, window)
 
-    view.setup(ui_info, mode, options.date or os.date("*t"), options)
-  end,
+  local v = G.data.get_view(options.view or "month")
 
-  open = function(options)
-    local buffer, window = G.data.open_window(options)
+  v.setup(ui_info, mode, options.date or os.date("*t"), options)
+end
 
-    options.mode = "standalone"
+G.data.open = function(options)
+  local buffer, window = G.data.open_window(options)
 
-    return G.data.create_calendar(buffer, window, options)
-  end,
+  options.mode = "standalone"
 
-  select_date = function(options)
-    local buffer, window = G.data.open_window(options)
+  return G.data.create_calendar(buffer, window, options)
+end
 
-    options.mode = "select_date"
+G.data.select_date = function(options)
+  local buffer, window = G.data.open_window(options)
 
-    return G.data.create_calendar(buffer, window, options)
-  end,
+  options.mode = "select_date"
 
-  select_date_range = function(options)
-    local buffer, window = G.data.open_window(options)
+  return G.data.create_calendar(buffer, window, options)
+end
 
-    options.mode = "select_range"
+G.data.select_date_range = function(options)
+  local buffer, window = G.data.open_window(options)
 
-    return G.data.create_calendar(buffer, window, options)
-  end,
-}
+  options.mode = "select_range"
+
+  return G.data.create_calendar(buffer, window, options)
+end
 
 G.load = function()
   -- Add base calendar modes

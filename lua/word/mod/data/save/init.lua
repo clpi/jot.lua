@@ -28,10 +28,10 @@ M.setup = function()
   }
 end
 
+---@class word.data.save.Config
 M.config.public = {}
 
-M.data.data = {}
-
+---@class word.data.save.Data
 M.data = {}
 
 M.events.subscribed = {

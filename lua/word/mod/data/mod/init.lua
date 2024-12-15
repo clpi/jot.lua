@@ -1,4 +1,4 @@
----@type word.mod
+---@type word.Mod
 local M = require("word.mod").create("data.mod")
 
 M.setup = function()
@@ -7,12 +7,10 @@ M.setup = function()
   }
 end
 
+---@class word.data.mod.Config
 M.config.public = {}
 
----@class module
-M.data = {
-
-  data = {},
-}
+---@class word.data.mod.Data
+M.data = {}
 
 return M

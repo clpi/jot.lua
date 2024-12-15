@@ -1,5 +1,6 @@
 local d = require("word")
 local lib, Mod, utils = d.lib, d.mod, d.utils
+local u = require("word.mod.data.time.util")
 
 local M = Mod.create("data.time")
 
@@ -7,206 +8,28 @@ local M = Mod.create("data.time")
 local _, time_regex =
   pcall(vim.re.compile, [[{%d%d?} ":" {%d%d} ("." {%d%d?})?]])
 
-local timezone_list = {
-  "ACDT",
-  "ACST",
-  "ACT",
-  "ACWST",
-  "ADT",
-  "AEDT",
-  "AEST",
-  "AET",
-  "AFT",
-  "AKDT",
-  "AKST",
-  "ALMT",
-  "AMST",
-  "AMT",
-  "ANAT",
-  "AQTT",
-  "ART",
-  "AST",
-  "AWST",
-  "AZOST",
-  "AZOT",
-  "AZT",
-  "BNT",
-  "BIOT",
-  "BIT",
-  "BOT",
-  "BRST",
-  "BRT",
-  "BST",
-  "BTT",
-  "CAT",
-  "CCT",
-  "CDT",
-  "CEST",
-  "CET",
-  "CHADT",
-  "CHAST",
-  "CHOT",
-  "CHOST",
-  "CHST",
-  "CHUT",
-  "CIST",
-  "CKT",
-  "CLST",
-  "CLT",
-  "COST",
-  "COT",
-  "CST",
-  "CT",
-  "CVT",
-  "CWST",
-  "CXT",
-  "DAVT",
-  "DDUT",
-  "DFT",
-  "EASST",
-  "EAST",
-  "EAT",
-  "ECT",
-  "EDT",
-  "EEST",
-  "EET",
-  "EGST",
-  "EGT",
-  "EST",
-  "ET",
-  "FET",
-  "FJT",
-  "FKST",
-  "FKT",
-  "FNT",
-  "GALT",
-  "GAMT",
-  "GET",
-  "GFT",
-  "GILT",
-  "GIT",
-  "GMT",
-  "GST",
-  "GYT",
-  "HDT",
-  "HAEC",
-  "HST",
-  "HKT",
-  "HMT",
-  "HOVST",
-  "HOVT",
-  "ICT",
-  "IDLW",
-  "IDT",
-  "IOT",
-  "IRDT",
-  "IRKT",
-  "IRST",
-  "IST",
-  "JST",
-  "KALT",
-  "KGT",
-  "KOST",
-  "KRAT",
-  "KST",
-  "LHST",
-  "LINT",
-  "MAGT",
-  "MART",
-  "MAWT",
-  "MDT",
-  "MET",
-  "MEST",
-  "MHT",
-  "MIST",
-  "MIT",
-  "MMT",
-  "MSK",
-  "MST",
-  "MUT",
-  "MVT",
-  "MYT",
-  "NCT",
-  "NDT",
-  "NFT",
-  "NOVT",
-  "NPT",
-  "NST",
-  "NT",
-  "NUT",
-  "NZDT",
-  "NZST",
-  "OMST",
-  "ORAT",
-  "PDT",
-  "PET",
-  "PETT",
-  "PGT",
-  "PHOT",
-  "PHT",
-  "PHST",
-  "PKT",
-  "PMDT",
-  "PMST",
-  "PONT",
-  "PST",
-  "PWT",
-  "PYST",
-  "PYT",
-  "RET",
-  "ROTT",
-  "SAKT",
-  "SAMT",
-  "SAST",
-  "SBT",
-  "SCT",
-  "SDT",
-  "SGT",
-  "SLST",
-  "SRET",
-  "SRT",
-  "SST",
-  "SYOT",
-  "TAHT",
-  "THA",
-  "TFT",
-  "TJT",
-  "TKT",
-  "TLT",
-  "TMT",
-  "TRT",
-  "TOT",
-  "TVT",
-  "ULAST",
-  "ULAT",
-  "UTC",
-  "UYST",
-  "UYT",
-  "UZT",
-  "VET",
-  "VLAT",
-  "VOLT",
-  "VOST",
-  "VUT",
-  "WAKT",
-  "WAST",
-  "WAT",
-  "WEST",
-  "WET",
-  "WIB",
-  "WIT",
-  "WITA",
-  "WGST",
-  "WGT",
-  "WST",
-  "YAKT",
-  "YEKT",
-}
-
 ---@alias Date {weekday: {name: string, number: number}?, day: number?, month: {name: string, number: number}?, year: number?, timezone: string?, time: {hour: number, minute: number, second: number?}?}
 
----@class time
+---@class word.data.time.Data
 M.data = {
+  tostringable_date = function(date_table)
+    return setmetatable(date_table, {
+      __tostring = function()
+        local function d(str)
+          return str and (tostring(str) .. " ") or ""
+        end
+
+        return vim.trim(
+          d(date_table.weekday and date_table.weekday.name)
+            .. d(date_table.day)
+            .. d(date_table.month and date_table.month.name)
+            .. d(date_table.year and string.format("%04d", date_table.year))
+            .. d(date_table.time and tostring(date_table.time))
+            .. d(date_table.timezone)
+        )
+      end,
+    })
+  end,
   --- Converts a parsed date with `parse_date` to a lua date.
   ---@param parsed_date Date #The date to convert
   ---@return osdate #A Lua date
@@ -249,7 +72,7 @@ M.data = {
     -- converted to Monday as 1
     local converted_weekday = lib.number_wrap(osdate.wday - 1, 1, 7)
 
-    return M.data.data.tostringable_date({
+    return M.data.tostringable_date({
       weekday = osdate.wday and {
         number = converted_weekday,
         name = lib.title(weekdays[converted_weekday]),
@@ -310,7 +133,7 @@ M.data = {
         output.year = tonumber(word)
       elseif word:match("^%d+%w*$") then
         output.day = tonumber(word:match("%d+"))
-      elseif vim.list_contains(timezone_list, word:upper()) then
+      elseif vim.list_contains(u.tz, word:upper()) then
         output.timezone = word:upper()
       else
         do
@@ -394,7 +217,7 @@ M.data = {
       ::continue::
     end
 
-    return M.data.data.tostringable_date(output)
+    return M.data.tostringable_date(output)
   end,
 
   insert_date = function(insert_mode)
@@ -434,7 +257,7 @@ M.data = {
     if Mod.is_mod_loaded("ui.calendar") then
       vim.cmd.stopinsert()
       Mod.get_mod("ui.calendar")
-        .select_date({ callback = vim.schedule_wrap(callback) })
+        .select({ callback = vim.schedule_wrap(callback) })
     else
       vim.ui.input({
         prompt = "Date: ",
@@ -443,28 +266,7 @@ M.data = {
   end,
 }
 
-M.data.data = {
-  tostringable_date = function(date_table)
-    return setmetatable(date_table, {
-      __tostring = function()
-        local function d(str)
-          return str and (tostring(str) .. " ") or ""
-        end
-
-        return vim.trim(
-          d(date_table.weekday and date_table.weekday.name)
-            .. d(date_table.day)
-            .. d(date_table.month and date_table.month.name)
-            .. d(date_table.year and string.format("%04d", date_table.year))
-            .. d(date_table.time and tostring(date_table.time))
-            .. d(date_table.timezone)
-        )
-      end,
-    })
-  end,
-}
-
-M.load = function()
+M.maps = function()
   vim.keymap.set(
     "",
     "<Plug>(word.time.insert-date)",

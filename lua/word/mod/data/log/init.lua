@@ -436,8 +436,6 @@ M.data = {
   end,
 }
 
-M.load = function() end
-
 M.on = function(event)
   if event.split_type[1] == "cmd" then
     if event.split_type[2] == "log.index" then
@@ -460,7 +458,7 @@ M.on = function(event)
           return
         end
 
-        M.required["calendar"].select_date({
+        M.required["calendar"].select({
           callback = vim.schedule_wrap(function(osdate)
             M.data.open_log(
               nil,

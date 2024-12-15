@@ -18,6 +18,13 @@ local M = require("word.mod").create("data", {
 })
 
 M.setup = function()
+  vim.api.nvim_create_autocmd("VimLeavePre", {
+    callback = function()
+      M.data.flush()
+    end,
+  })
+
+  M.data.sync()
   ---@type word.mod.Setup
   return {
     loaded = true,
@@ -27,11 +34,12 @@ M.setup = function()
   }
 end
 
+---@class word.data.Config
 M.config.public = {
   path = vim.fn.stdpath("data") .. "/word.mpack",
 }
 
----@class data
+---@class word.data.Data
 M.data = {
   data = {
     data = {},
@@ -115,7 +123,7 @@ M.data = {
     return M.data.data.data[key] or {}
   end,
 
-  --- Flushes the contents in memory to the location specified in the `path` configuration option.
+  --- Flushes the contents in memory to the location specified
   flush = function()
     local file = io.open(M.config.public.path, "w")
 
@@ -131,16 +139,6 @@ M.data = {
     io.close(file)
   end,
 }
-
-M.load = function()
-  vim.api.nvim_create_autocmd("VimLeavePre", {
-    callback = function()
-      M.data.flush()
-    end,
-  })
-
-  M.data.sync()
-end
 
 M.events.subscribed = {}
 

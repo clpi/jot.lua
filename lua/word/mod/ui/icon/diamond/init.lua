@@ -1,24 +1,30 @@
 local word = require("word")
 local mod = word.mod
 
-local module = mod.create("ui.icon.diamond")
+local M = mod.create("ui.icon.diamond")
 
-module.config.icon_diamond = {
-  heading = {
-    icons = { "◈", "◇", "◆", "⋄", "❖", "⟡" },
-  },
+---@class word.ui.icon.diamond.Config
+M.config.public = {
+  icon_diamond = {
+    heading = {
+      icons = { "◈", "◇", "◆", "⋄", "❖", "⟡" },
+    },
 
-  footnote = {
-    single = {
-      icon = "†",
-    },
-    multi_prefix = {
-      icon = "‡ ",
-    },
-    multi_suffix = {
-      icon = "‡ ",
+    footnote = {
+      single = {
+        icon = "†",
+      },
+      multi_prefix = {
+        icon = "‡ ",
+      },
+      multi_suffix = {
+        icon = "‡ ",
+      },
     },
   },
 }
 
-return module
+---@class word.ui.icon.diamond.Data
+M.data = {}
+
+return M

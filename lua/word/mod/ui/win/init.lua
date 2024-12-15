@@ -15,6 +15,7 @@ function M.data.win:close()
   a.nvim_buf_delete(self.buf, { force = true })
   c.redraw()
 end
+
 M.setup = function()
   return {
     loaded = true,
@@ -23,8 +24,10 @@ M.setup = function()
     },
   }
 end
+---@class word.ui.win.Config
 M.config.public = {}
 
+---@class word.ui.win.Data
 M.data = {
 
   sel = function()

@@ -1,3 +1,3 @@
-local D = Mod.create("ui.calendar.day")
+local D = require("word.mod").create("ui.calendar.day")
 
 return D

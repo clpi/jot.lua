@@ -1,3 +1,3 @@
-local Y = Mod.create("ui.calendar.year")
+local Y = require("word.mod").create("ui.calendar.year")
 
 return Y
