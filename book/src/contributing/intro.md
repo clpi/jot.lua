@@ -1,1 +1,1 @@
-# Contributing
+# Introduction to Contributing

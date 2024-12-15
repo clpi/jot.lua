@@ -8,8 +8,10 @@ wl:
 	./scripts/bin/downls
 
 lnw:
+  rm -rf ./down
   ln -s ./scripts/bin/down ./down
 lnwl:
+  rm -rf ./down-lsp
   ln -s ./scripts/bin/down-lsp ./down-lsp
 
 iw: lnw

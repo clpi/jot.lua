@@ -1,6 +1,6 @@
 # down.lua 
 
-### the _familiar_, organized future for neovim
+the _familiar_, organized future for neovim and beyond!
 
 <a href="https://neovim.io"> ![Neovim](https://img.shields.io/badge/Neovim%200.10+-brightgreen?style=for-the-badge) </a>
 <a href="./LICENSE"> ![License](https://img.shields.io/badge/license-GPL%20v3-brightgreen?style=for-the-badge)</a>
@@ -267,10 +267,6 @@ require("down").setup({ ---@type down.mod.Config
 
 ## Usage
 
-> [!Note]
->
-> Still early on in development!
-
 ### Modules
 
 - `config` - configuration settings
@@ -285,11 +281,11 @@ require("down").setup({ ---@type down.mod.Config
 >
 > Check out [TODO.md](./TODO.md) for a more detailed list of tasks
 
-## Support
+## Contributing
 
-> [!Note]
+> [!Tip]
 >
-> Still early on in development!
+> Check out [CONTRIBUTING.md](./CONTRIBUTING.md) for a more detailed overview of how to contribute
 
 ## Credits
 
@@ -311,7 +307,3 @@ thank you and keep updated!
 
 <!-- </div> -->
 
-```lua
----@type down.mod.Config
-
-```

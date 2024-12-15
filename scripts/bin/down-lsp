@@ -1,37 +1,37 @@
 #!/usr/bin/env lua
 
---+  +----------------------+ down +----------------------+  +--
---|  |                                                    |  |--
---|  |    down-lsp       v0.1.1-alpha                     |  |--
---|  |                                                    |  |--
---|  |    ABOUT                                           |  |--
---|  |      down (down.lua) is a dev-focused note-taking  |  |--
---|  |      environment for markdown, in development.     |  |--
---|  |                                                    |  |--
---|  |    USAGE                                           |  |--
---|  |       down  [options]  <args>  [file]              |  |--
---|  |                                                    |  |--
---|  |    OPTIONS                                         |  |--
---|  |      -h, --help         Show help and exit         |  |--
---|  |      -v, --version      Show version and exit      |  |--
---|  |      -i, --interactive  Run in interactive mode    |  |--
---|  |      -e, --execute      Run in execute mode        |  |--
---|  |      -c, --config       Specify a config file      |  |--
---|  |                                                    |  |--
---|  |    ARGS                                            |  |--
---|  |      serve             Run the server              |  |--
---|  |      init              Initialize the server       |  |--
---|  |      shell             Run the shell               |  |--
---|  |      update            Update the server           |  |--
---|  |      install           Install the server          |  |--
---|  |      uninstall         Uninstall the server        |  |--
---|  |      config            Configure the server        |  |--
---|  |      status            Show the server status      |  |--
---|  |      start             Start the server            |  |--
---|  |      stop              Stop the server             |  |--
---|  |      restart           Restart the server          |  |--
---|  |                                                    |  |--
---+  +----------------------------------------------------+  +--
+--+----------------------+ down +----------------------+--
+--|                                                    |--
+--|    down-lsp       v0.1.1-alpha                     |--
+--|                                                    |--
+--|    ABOUT                                           |--
+--|      down (down-lsp) is a dev-focused note-taking  |--
+--|      environment for markdown, in development.     |--
+--|                                                    |--
+--|    USAGE                                           |--
+--|       down  [options]  <args>  [file]              |--
+--|                                                    |--
+--|    OPTIONS                                         |--
+--|      -h, --help         Show help and exit         |--
+--|      -v, --version      Show version and exit      |--
+--|      -i, --interactive  Run in interactive mode    |--
+--|      -e, --execute      Run in execute mode        |--
+--|      -c, --config       Specify a config file      |--
+--|                                                    |--
+--|    ARGS                                            |--
+--|      serve             Run the server              |--
+--|      init              Initialize the server       |--
+--|      shell             Run the shell               |--
+--|      update            Update the server           |--
+--|      install           Install the server          |--
+--|      uninstall         Uninstall the server        |--
+--|      config            Configure the server        |--
+--|      status            Show the server status      |--
+--|      start             Start the server            |--
+--|      stop              Stop the server             |--
+--|      restart           Restart the server          |--
+--|                                                    |--
+--+----------------------------------------------------+--
 
 local w_ok, down = pcall(require, "down")
 local u_ok, util = pcall(require, "down.util")
@@ -41,43 +41,43 @@ local l_ok, lsp = pcall(require, "down.mod.lsp")
 local ws_ok, ws = pcall(require, "down.mod.workspace")
 local wts_ok, wts = pcall(require, "down.mod.integration.treesitter")
 
---+  +---------------------+ extern +---------------------+  +--
---+  |                                                    |  +--
---+  |  import the down lua dependencies.                 |  +--
---+  |                                                    |  +--
---+  +----------------------------------------------------+  +--
+--+---------------------+ extern +---------------------+--
+--|                                                    |--
+--|  import the down-lsp dependencies.                 |--
+--|                                                    |--
+--+----------------------------------------------------+--
 
 local lp_ok, lp = pcall(require, "lpeg")
 local vt_ok, vts = pcall(require, "vim.treesitter")
 local ts_ok, nts = pcall(require, "nvim-treesitter")
 local tsu_ok, tsu = pcall(require, "nvim-treesitter.ts_utils")
 
---+  +----------------------+ util +----------------------+  +--
---+  |                                                    |  +--
---+  |  define utility functions.                         |  +--
---+  |                                                    |  +--
---+  +----------------------------------------------------+  +--
+--+----------------------+ util +----------------------+--
+--|                                                    |--
+--|  define utility functions.                         |--
+--|                                                    |--
+--+----------------------------------------------------+--
 
 local x, i, s, e, u, cr =
-  "\x1b[0m", "\x1b[7m", "\x1b[1m", "\x1b[3m", "\x1b[4m", "\x1b[9m"
+    "\x1b[0m", "\x1b[7m", "\x1b[1m", "\x1b[3m", "\x1b[4m", "\x1b[9m"
 local lb, rb, gb, yb, bb, mb, cb, wb =
-  "\x1b[40m",
-  "\x1b[41m",
-  "\x1b[42m",
-  "\x1b[43m",
-  "\x1b[44m",
-  "\x1b[45m",
-  "\x1b[46m",
-  "\x1b[47m"
+    "\x1b[40m",
+    "\x1b[41m",
+    "\x1b[42m",
+    "\x1b[43m",
+    "\x1b[44m",
+    "\x1b[45m",
+    "\x1b[46m",
+    "\x1b[47m"
 local l, r, g, y, b, m, c, w =
-  "\x1b[90m",
-  "\x1b[31m",
-  "\x1b[32m",
-  "\x1b[33m",
-  "\x1b[34m",
-  "\x1b[35m",
-  "\x1b[36m",
-  "\x1b[37m"
+    "\x1b[90m",
+    "\x1b[31m",
+    "\x1b[32m",
+    "\x1b[33m",
+    "\x1b[34m",
+    "\x1b[35m",
+    "\x1b[36m",
+    "\x1b[37m"
 local bi = function(inp)
   return inp .. i
 end
@@ -85,15 +85,15 @@ local si = function(inp)
   return inp .. s .. i
 end
 local br, bg, by, bb, bm, bc, bw =
-  bi(r), bi(g), bi(y), bi(b), bi(m), bi(c), bi(w)
+    bi(r), bi(g), bi(y), bi(b), bi(m), bi(c), bi(w)
 local bbr, bbg, bby, bbb, bbm, bbc, bbw =
-  si(r), si(g), si(y), si(b), si(m), si(c), si(w)
+    si(r), si(g), si(y), si(b), si(m), si(c), si(w)
 
---+  +----------------------+ vars +----------------------+  +--
---+  |                                                    |  +--
---+  |  define necessary variables.                       |  +--
---+  |                                                    |  +--
---+  +----------------------------------------------------+  +--
+--+----------------------+ vars +----------------------+--
+--|                                                    |--
+--|  define necessary variables.                       |--
+--|                                                    |--
+--+----------------------------------------------------+--
 
 local down = {
   pre = {
@@ -143,7 +143,7 @@ down.styles = {}
 down.bits = {
   vers = l .. "v" .. x .. w .. "0.1.1" .. l .. "-" .. x .. w .. "alpha",
   lambda = l .. s .. "󰘧 " .. x,
-  downi = l .. s .. "󰘧 " .. x .. y .. "down" .. x,
+  downi = l .. s .. "󰘧 " .. x .. b .. "down-lsp" .. x,
   brk = {
     l = l .. "[" .. x,
     r = l .. "]" .. x,
@@ -178,66 +178,59 @@ down.bits = {
   hy = l .. "-" .. x,
   hy2 = l .. "--" .. x,
   eq = l .. "=" .. x,
-  down = y .. "down" .. x,
+  down = b .. "down-lsp" .. x,
   markdown = g .. " 󰍔 Markdown" .. x,
-  downluai = x .. y .. lb .. l .. "󰘧" .. y .. " down" .. "." .. "lua",
-  downlua = x .. y .. lb .. "down.lua",
+  downlspi = x .. b .. lb .. l .. "󰘧" .. b .. " down" .. "-" .. "lsp",
+  downlsp = x .. b .. lb .. "down" .. "-" .. b .. "lsp",
   command = l
-    .. "["
-    .. g
-    .. "󰆧 "
-    .. l
-    .. ""
-    .. g
-    .. "command"
-    .. l
-    .. "]"
-    .. x,
+      .. "["
+      .. g
+      .. "󰆧 "
+      .. l
+      .. ""
+      .. g
+      .. "command"
+      .. l
+      .. "]"
+      .. x,
   opts = l .. "[" .. b .. "󰆧 " .. l .. "" .. b .. "opts" .. l .. "]" .. x,
   flags = l .. "[" .. m .. "󰆧 " .. l .. "" .. m .. "flags" .. l .. "]" .. x,
   args = l .. "[" .. r .. "󰆧 " .. l .. "" .. r .. "args" .. l .. "]" .. x,
   author = "Chris Pecunies " .. g .. "<clp@clp.is>",
 }
 down.bits.version = down.bits.vers
-  .. l
-  .. " ("
-  .. l
-  .. "updated"
-  .. g
-  .. " "
-  .. down.updated
-  .. l
-  .. ")"
+    .. l
+    .. " ("
+    .. l
+    .. "updated"
+    .. g
+    .. " "
+    .. down.updated
+    .. l
+    .. ")"
 down.bits.usage = ""
-  .. down.bits.downi
-  .. " "
-  .. down.bits.command
-  .. ""
-  .. down.bits.opts
-  .. ""
-  .. down.bits.flags
-  .. ""
-  .. ""
-  .. down.bits.args
-  .. ""
-  .. down.bits.brk.l
-  .. ""
-  .. down.bits.ellipses
-  .. ""
-  .. down.bits.brk.r
-down.bits.desc = down.bits.downlua
-  .. x
-  .. " is a dev-focused, familiar"
-  .. down.bits.markdown
-  .. "\n  "
-  .. "environment, focused on providing familiarity \n  "
-  .. "and extensibility for developers, in development."
+    .. down.bits.downi
+    .. " "
+    .. " " .. down.bits.command
+    .. " " .. down.bits.opts
+    .. " " .. down.bits.flags
+    .. " " .. down.bits.args
+    .. " " .. down.bits.brk.l
+    .. "" .. down.bits.ellipses
+    .. " " .. down.bits.brk.r
+down.bits.desc = down.bits.downlsp
+    .. x
+    .. " is a dev-focused, familiar"
+    .. down.bits.markdown
+    .. "\n  "
+    .. "environment, focused on providing familiarity \n  "
+    .. "and extensibility for developers, in development."
 
---+  +----------------------+ kind +----------------------+  +--
---+  |                                                    |  +--
---+  |  define kind type.                                 |  +--
---+  |                                                    |  +--
---+  +----------------------------------------------------+  +--
+--+----------------------+ kind +----------------------+--
+--|                                                    |--
+--|  define kind type.                                 |--
+--|                                                    |--
+--+----------------------------------------------------+--
 
 local Kind = {
   opt = {
@@ -248,11 +241,11 @@ local Kind = {
   cmd = "cmd",
 }
 
---+  +----------------------+ args +----------------------+  +--
---+  |                                                    |  +--
---+  |  define arg type.                                  |  +--
---+  |                                                    |  +--
---+  +----------------------------------------------------+  +--
+--+----------------------+ args +----------------------+--
+--|                                                    |--
+--|  define arg type.                                  |--
+--|                                                    |--
+--+----------------------------------------------------+--
 
 local Arg = {
   long = nil,
@@ -364,66 +357,66 @@ function Arg.Kind.unknown(a, k)
   if k == Arg.Kind.opt.flag.long.long then
     print(
       r
-        .. "unknown"
-        .. x
-        .. b
-        .. " long "
-        .. l
-        .. "(long)"
-        .. x
-        .. " flag: "
-        .. down.bits.hy2
-        .. a
+      .. "unknown"
+      .. x
+      .. b
+      .. " long "
+      .. l
+      .. "(long)"
+      .. x
+      .. " flag: "
+      .. down.bits.hy2
+      .. a
     )
   elseif k == Arg.Kind.opt.flag.long.short then
     print(
       r
-        .. "unknown"
-        .. x
-        .. b
-        .. " long "
-        .. l
-        .. "(short)"
-        .. x
-        .. " flag: "
-        .. down.bits.hy2
-        .. a
+      .. "unknown"
+      .. x
+      .. b
+      .. " long "
+      .. l
+      .. "(short)"
+      .. x
+      .. " flag: "
+      .. down.bits.hy2
+      .. a
     )
   elseif k == Arg.Kind.opt.flag.short.long then
     print(
       r
-        .. "unknown"
-        .. x
-        .. g
-        .. " short "
-        .. l
-        .. "(long)"
-        .. x
-        .. " flag: "
-        .. down.bits.hy
-        .. a
+      .. "unknown"
+      .. x
+      .. g
+      .. " short "
+      .. l
+      .. "(long)"
+      .. x
+      .. " flag: "
+      .. down.bits.hy
+      .. a
     )
   elseif k == Arg.Kind.opt.flag.short.short then
     print(
       r
-        .. "unknown"
-        .. x
-        .. g
-        .. " short "
-        .. l
-        .. "(short)"
-        .. x
-        .. " flag: "
-        .. down.bits.hy
-        .. a
+      .. "unknown"
+      .. x
+      .. g
+      .. " short "
+      .. l
+      .. "(short)"
+      .. x
+      .. " flag: "
+      .. down.bits.hy
+      .. a
     )
   elseif k == Arg.Kind.cmd.short then
     print(
-      r .. "unknown" .. x .. g .. " short " .. y .. "cmd" .. l .. ": " .. x .. a
+      r .. "unknown" .. x .. g .. " short " .. b .. "cmd" .. l .. ": " .. x .. a
     )
   elseif k == Arg.Kind.cmd.long then
     print(
-      r .. "unknown" .. x .. b .. " long " .. y .. "cmd" .. l .. ": " .. x .. a
+      r .. "unknown" .. x .. b .. " long " .. b .. "cmd" .. l .. ": " .. x .. a
     )
   else
     print(r .. "unknown" .. x .. " arg" .. l .. ": " .. x .. a)
@@ -459,35 +452,35 @@ end
 function Arg:help(h)
   if self.kind == Kind.cmd then
     return ""
-      .. g
-      .. self.short
-      .. ""
-      .. x
-      .. " "
-      .. down.bits.pipe
-      .. " "
-      .. g
-      .. self.long:sub(1, 1)
-      .. x
-      .. self.long:sub(2)
-      .. "\t  "
-      .. self.desc
+        .. m
+        .. self.short
+        .. ""
+        .. x
+        .. " "
+        .. down.bits.pipe
+        .. " "
+        .. m
+        .. self.long:sub(1, 1)
+        .. x
+        .. self.long:sub(2)
+        .. "\t  "
+        .. self.desc
   elseif self.kind == Kind.opt.flag then
     return ""
-      .. down.bits.hy
-      .. b
-      .. self.short
-      .. x
-      .. " "
-      .. down.bits.pipe
-      .. " "
-      .. down.bits.hy2
-      .. b
-      .. self.long:sub(1, 1)
-      .. x
-      .. self.long:sub(2)
-      .. "\t  "
-      .. self.desc
+        .. down.bits.hy
+        .. r
+        .. self.short
+        .. x
+        .. " "
+        .. down.bits.pipe
+        .. " "
+        .. down.bits.hy2
+        .. r
+        .. self.long:sub(1, 1)
+        .. x
+        .. self.long:sub(2)
+        .. "\t  "
+        .. self.desc
   else
     print(self.long, self.short)
   end
@@ -516,11 +509,11 @@ function Arg:handle(a, k)
   end
 end
 
---+  +--------------------+ handlers +--------------------+  +--
---+  |                                                    |  +--
---+  |  define handler functions.                         |  +--
---+  |                                                    |  +--
---+  +----------------------------------------------------+  +--
+--+--------------------+ handlers +--------------------+--
+--|                                                    |--
+--|  define handler functions.                         |--
+--|                                                    |--
+--+----------------------------------------------------+--
 
 local function test(...)
   print("test")
@@ -530,11 +523,11 @@ local function conf(...)
   print("conf")
 end
 
---+  +----------------------+ func +----------------------+  +--
---+  |                                                    |  +--
---+  |  define core functions.                            |  +--
---+  |                                                    |  +--
---+  +----------------------------------------------------+  +--
+--+----------------------+ func +----------------------+--
+--|                                                    |--
+--|  define core functions.                            |--
+--|                                                    |--
+--+----------------------------------------------------+--
 
 down.opts = {}
 down.args = {}
@@ -558,23 +551,23 @@ down.help = {
     -- print(b .. "  home " .. x .. "     " .. down.home)
   end,
   info = function()
-    down.help.header.print(bby, down.help.header.info)
+    down.help.header.print(bbg, down.help.header.info)
     print(bg .. "" .. x .. "  " .. down.bits.desc)
   end,
   usage = function()
-    down.help.header.print(bbg, down.help.header.usage)
-    print(bg .. "" .. x .. "  " .. down.bits.usage)
+    down.help.header.print(bbb, down.help.header.usage)
+    print(bb .. "" .. x .. "  " .. down.bits.usage)
   end,
   cmds = function()
-    down.help.header.print(bbg, down.help.header.cmds)
+    down.help.header.print(bbm, down.help.header.cmds)
     for _, v in pairs(down.cmds) do
-      print(bg .. "" .. x .. "  " .. Arg.help(v))
+      print(bm .. "" .. x .. "  " .. Arg.help(v))
     end
   end,
   flags = function()
-    down.help.header.print(bbb, down.help.header.flag)
+    down.help.header.print(bbr, down.help.header.flag)
     for _, v in pairs(down.flags) do
-      print(bg .. "" .. x .. " " .. Arg.help(v))
+      print(br .. "" .. x .. " " .. Arg.help(v))
     end
   end,
   opts = function()
@@ -589,7 +582,7 @@ down.help = {
 down.help.print = function()
   down.help.down()
   down.help.info()
-  -- down.help.usage()
+  down.help.usage()
   down.help.cmds()
   down.help.flags()
   -- down.help.opts()
@@ -624,19 +617,16 @@ down.cmds = {
   run = Arg.cmd("run", "Run the lsp", function(...)
     print("run")
   end),
-  lsp = Arg.cmd("lsp", "Serve the lsp", function(...)
-    print("serve")
-  end),
   -- version = Arg.cmd("version", "Print version", down.flags.version.desc, down.flags.version.handler),
   config = Arg.cmd("config", "Set config values", down.flags.config.handler),
   help = Arg.cmd("help", "Print help", down.flags.help.handler),
 }
 
---+  +---------------------+ parse +---------------------+  +--
---+  |                                                    |  +--
---+  |  define parse functions.                           |  +--
---+  |                                                    |  +--
---+  +----------------------------------------------------+  +--
+--+---------------------+ parse +---------------------+--
+--|                                                   |--
+--|  define parse functions.                          |--
+--|                                                   |--
+--+---------------------------------------------------+--
 
 ---  @param a string arg
 function down:pflag(a, k)
@@ -689,11 +679,11 @@ function down:parse()
   end
 end
 
---+  +----------------------+ main +----------------------+  +--
---+  |                                                    |  +--
---+  |  define and call main function.                    |  +--
---+  |                                                    |  +--
---+  +----------------------------------------------------+  +--
+--+----------------------+ main +----------------------+--
+--|                                                    |--
+--|  define and call main function.                    |--
+--|                                                    |--
+--+----------------------------------------------------+--
 
 function down:main()
   self:parse()
@@ -701,12 +691,12 @@ end
 
 down:main()
 
---+  +----------------------+ down +----------------------+  +--
---+  |                                                    |  +--
---+  |  version 0.1.0-alpha.                              |  +--
---+  |                                                    |  +--
---+  |  author: Chris Pecunies <clp@clp.is>               |  +--
---+  |                                                    |  +--
---+  +----------------------------------------------------+  +--
+--+----------------------+ down +----------------------+--
+--|                                                    |--
+--|  version 0.1.0-alpha.                              |--
+--|                                                    |--
+--|  author: Chris Pecunies <clp@clp.is>               |--
+--|                                                    |--
+--+----------------------------------------------------+--
 
 --vim:ft=lua,ts=2,sw=2,sts=2,et

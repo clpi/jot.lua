@@ -29,6 +29,7 @@ Welcome -- to the `down.lua` book. I hope this helps!
 - [Modules](./modules/index.md)
 
   - [Introduction](./modules/intro.md)
+  - [Examples](./modules/example.md)
   - [Quickstart](./modules/quickstart.md)
 
 - [Customizing](./customizing/index.md)
@@ -46,7 +47,7 @@ Welcome -- to the `down.lua` book. I hope this helps!
     - [org](./export/frameworks/org.md)
   - [Styling](./export/styling.md)
 
-- [Publishing](./publish.md)
+- [Publishing](./publish/index.md)
 
   - [Frameworks](./publish/frameworks.md)
   - [Blog](./publish/blog.md)
@@ -68,12 +69,15 @@ Welcome -- to the `down.lua` book. I hope this helps!
 
 - [Tools](./tools/index.md)
 
+  - [Neovim](./tools/neovim.md)
+  - [Visual Studio Code](./tools/vscode.md)
+  - [Vim](./tools/vim.md)
   - [Mobile](./tools/mobile.md)
   - [Desktop](./tools/desktop.md)
   - [Cli](./tools/cli.md)
+  - [Emacs](./tools/emacs.md)
 
 - [Contributing](./contributing/intro.md)
-- [Final thoughts](./final_thoughts.md)
 - [Roadmap](./roadmap.md)
 - [Credits](./credits.md)
 - [Map](./index.md)
