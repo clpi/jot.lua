@@ -4,6 +4,32 @@ local mod, utils, log = word.mod, word.utils, word.log
 local M = mod.create("edit.toc")
 
 M.setup = function()
+  -- mod.await("cmd", function(wordcmd)
+  --   wordcmd.add_commands_from_table({
+  --     toc = {
+  --       name = "toc",
+  --       max_args = 1,
+  --       condition = "markdown",
+  --       complete = {
+  --         { "left", "right", "qflist" },
+  --       },
+  --     },
+  --   })
+  -- end)
+  --
+  -- if M.config.public.auto_toc.open then
+  --   vim.api.nvim_create_autocmd("BufWinEnter", {
+  --     pattern = "*.md",
+  --     callback = function()
+  --       vim.schedule(function()
+  --         if vim.bo.filetype == "markdown" then
+  --           next_open_is_auto = true
+  --           vim.cmd([[Word toc]])
+  --         end
+  --       end)
+  --     end,
+  --   })
+  -- end
   return {
     requires = { "integration.treesitter", "ui", "cmd" },
   }
@@ -11,34 +37,6 @@ end
 
 ---Track if the next TOC open was automatic. Used to determine if we should enter the TOC or not.
 local next_open_is_auto = false
-M.load = function()
-  mod.await("cmd", function(wordcmd)
-    wordcmd.add_commands_from_table({
-      toc = {
-        name = "toc",
-        max_args = 1,
-        condition = "markdown",
-        complete = {
-          { "left", "right", "qflist" },
-        },
-      },
-    })
-  end)
-
-  if M.config.public.auto_toc.open then
-    vim.api.nvim_create_autocmd("BufWinEnter", {
-      pattern = "*.md",
-      callback = function()
-        vim.schedule(function()
-          if vim.bo.filetype == "markdown" then
-            next_open_is_auto = true
-            vim.cmd([[word edit toc]])
-          end
-        end)
-      end,
-    })
-  end
-end
 
 M.config.public = {
   -- close the Table of Contents after an entry in the table is picked

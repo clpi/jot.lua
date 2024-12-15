@@ -43,7 +43,7 @@ M.on = function(event)
   if event.type == "cmd.events.mod.list" then
     local Popup = require("nui.popup")
 
-    local mod_list_popup = Popup({
+    local mods_popup = Popup({
       position = "50%",
       size = { width = "50%", height = "80%" },
       enter = true,
@@ -58,16 +58,16 @@ M.on = function(event)
       },
     })
 
-    mod_list_popup:on("VimResized", function()
-      mod_list_popup:update_layout()
+    mods_popup:on("VimResized", function()
+      mods_popup:update_layout()
     end)
 
     local function close()
-      mod_list_popup:unmount()
+      mods_popup:unmount()
     end
 
-    mod_list_popup:map("n", "<Esc>", close, {})
-    mod_list_popup:map("n", "q", close, {})
+    mods_popup:map("n", "<Esc>", close, {})
+    mods_popup:map("n", "q", close, {})
 
     local lines = {}
 
@@ -75,11 +75,11 @@ M.on = function(event)
       table.insert(lines, "- `"..name.."`")
     end
 
-    vim.api.nvim_buf_set_lines(mod_list_popup.bufnr, 0, -1, true, lines)
+    vim.api.nvim_buf_set_lines(mods_popup.bufnr, 0, -1, true, lines)
 
-    vim.bo[mod_list_popup.bufnr].modifiable = false
+    vim.bo[mods_popup.bufnr].modifiable = false
 
-    mod_list_popup:mount()
+    mods_popup:mount()
   end
 end
 M.events.subscribed = {

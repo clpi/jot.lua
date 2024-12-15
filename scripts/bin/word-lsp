@@ -1,45 +1,45 @@
 #!/usr/bin/env lua
 
 --+  +----------------------+ word +----------------------+  +--
---+  |                                                    |  +--
---+  |    word       v0.1.0-alpha                         |  +--
---+  |                                                    |  +--
---+  |    ABOUT                                           |  +--
---+  |      word (word.lua) is a dev-focused note-taking  |  +--
---+  |      environment for markdown, in development.     |  +--
---+  |                                                    |  +--
---+  |    USAGE                                           |  +--
---+  |       word  [options]  <args>  [file]              |  +--
---+  |                                                    |  +--
---+  |    OPTIONS                                         |  +--
---+  |      -h, --help         Show help and exit         |  +--
---+  |      -v, --version      Show version and exit      |  +--
---+  |      -i, --interactive  Run in interactive mode    |  +--
---+  |      -e, --execute      Run in execute mode        |  +--
---+  |      -c, --config       Specify a config file      |  +--
---+  |                                                    |  +--
---+  |    ARGS                                            |  +--
---+  |      serve             Run the server              |  +--
---+  |      init              Initialize the server       |  +--
---+  |      shell             Run the shell               |  +--
---+  |      update            Update the server           |  +--
---+  |      install           Install the server          |  +--
---+  |      uninstall         Uninstall the server        |  +--
---+  |      config            Configure the server        |  +--
---+  |      status            Show the server status      |  +--
---+  |      start             Start the server            |  +--
---+  |      stop              Stop the server             |  +--
---+  |      restart           Restart the server          |  +--
---+  |                                                    |  +--
+--|  |                                                    |  |--
+--|  |    word-lsp       v0.1.1-alpha                     |  |--
+--|  |                                                    |  |--
+--|  |    ABOUT                                           |  |--
+--|  |      word (word.lua) is a dev-focused note-taking  |  |--
+--|  |      environment for markdown, in development.     |  |--
+--|  |                                                    |  |--
+--|  |    USAGE                                           |  |--
+--|  |       word  [options]  <args>  [file]              |  |--
+--|  |                                                    |  |--
+--|  |    OPTIONS                                         |  |--
+--|  |      -h, --help         Show help and exit         |  |--
+--|  |      -v, --version      Show version and exit      |  |--
+--|  |      -i, --interactive  Run in interactive mode    |  |--
+--|  |      -e, --execute      Run in execute mode        |  |--
+--|  |      -c, --config       Specify a config file      |  |--
+--|  |                                                    |  |--
+--|  |    ARGS                                            |  |--
+--|  |      serve             Run the server              |  |--
+--|  |      init              Initialize the server       |  |--
+--|  |      shell             Run the shell               |  |--
+--|  |      update            Update the server           |  |--
+--|  |      install           Install the server          |  |--
+--|  |      uninstall         Uninstall the server        |  |--
+--|  |      config            Configure the server        |  |--
+--|  |      status            Show the server status      |  |--
+--|  |      start             Start the server            |  |--
+--|  |      stop              Stop the server             |  |--
+--|  |      restart           Restart the server          |  |--
+--|  |                                                    |  |--
 --+  +----------------------------------------------------+  +--
 
-local w_ok, word                        = pcall(require, "word")
-local u_ok, util                        = pcall(require, "word.util")
-local m_ok, mod                         = pcall(require, "word.mod")
-local c_ok, conf                        = pcall(require, "word.config")
-local l_ok, lsp                         = pcall(require, "word.mod.lsp")
-local ws_ok, ws                         = pcall(require, "word.mod.workspace")
-local wts_ok, wts                       = pcall(require, "word.mod.integration.treesitter")
+local w_ok, word = pcall(require, "word")
+local u_ok, util = pcall(require, "word.util")
+local m_ok, mod = pcall(require, "word.mod")
+local c_ok, conf = pcall(require, "word.config")
+local l_ok, lsp = pcall(require, "word.mod.lsp")
+local ws_ok, ws = pcall(require, "word.mod.workspace")
+local wts_ok, wts = pcall(require, "word.mod.integration.treesitter")
 
 --+  +---------------------+ extern +---------------------+  +--
 --+  |                                                    |  +--
@@ -47,10 +47,10 @@ local wts_ok, wts                       = pcall(require, "word.mod.integration.t
 --+  |                                                    |  +--
 --+  +----------------------------------------------------+  +--
 
-local lp_ok, lp                         = pcall(require, "lpeg")
-local vt_ok, vts                        = pcall(require, "vim.treesitter")
-local ts_ok, nts                        = pcall(require, "nvim-treesitter")
-local tsu_ok, tsu                       = pcall(require, "nvim-treesitter.ts_utils")
+local lp_ok, lp = pcall(require, "lpeg")
+local vt_ok, vts = pcall(require, "vim.treesitter")
+local ts_ok, nts = pcall(require, "nvim-treesitter")
+local tsu_ok, tsu = pcall(require, "nvim-treesitter.ts_utils")
 
 --+  +----------------------+ util +----------------------+  +--
 --+  |                                                    |  +--
@@ -58,17 +58,36 @@ local tsu_ok, tsu                       = pcall(require, "nvim-treesitter.ts_uti
 --+  |                                                    |  +--
 --+  +----------------------------------------------------+  +--
 
-local x, i, s, e, u, cr                 = "\x1b[0m", "\x1b[7m", "\x1b[1m", "\x1b[3m", "\x1b[4m", "\x1b[9m"
-local lb, rb, gb, yb, bb, mb, cb, wb    = "\x1b[40m", "\x1b[41m", "\x1b[42m", "\x1b[43m", "\x1b[44m", "\x1b[45m",
-    "\x1b[46m",
-    "\x1b[47m"
-local l, r, g, y, b, m, c, w            = "\x1b[90m", "\x1b[31m", "\x1b[32m", "\x1b[33m", "\x1b[34m", "\x1b[35m",
-    "\x1b[36m",
-    "\x1b[37m"
-local bi                                = function(inp) return inp .. i end
-local si                                = function(inp) return inp .. s .. i end
-local br, bg, by, bb, bm, bc, bw        = bi(r), bi(g), bi(y), bi(b), bi(m), bi(c), bi(w)
-local bbr, bbg, bby, bbb, bbm, bbc, bbw = si(r), si(g), si(y), si(b), si(m), si(c), si(w)
+local x, i, s, e, u, cr =
+  "\x1b[0m", "\x1b[7m", "\x1b[1m", "\x1b[3m", "\x1b[4m", "\x1b[9m"
+local lb, rb, gb, yb, bb, mb, cb, wb =
+  "\x1b[40m",
+  "\x1b[41m",
+  "\x1b[42m",
+  "\x1b[43m",
+  "\x1b[44m",
+  "\x1b[45m",
+  "\x1b[46m",
+  "\x1b[47m"
+local l, r, g, y, b, m, c, w =
+  "\x1b[90m",
+  "\x1b[31m",
+  "\x1b[32m",
+  "\x1b[33m",
+  "\x1b[34m",
+  "\x1b[35m",
+  "\x1b[36m",
+  "\x1b[37m"
+local bi = function(inp)
+  return inp .. i
+end
+local si = function(inp)
+  return inp .. s .. i
+end
+local br, bg, by, bb, bm, bc, bw =
+  bi(r), bi(g), bi(y), bi(b), bi(m), bi(c), bi(w)
+local bbr, bbg, bby, bbb, bbm, bbc, bbw =
+  si(r), si(g), si(y), si(b), si(m), si(c), si(w)
 
 --+  +----------------------+ vars +----------------------+  +--
 --+  |                                                    |  +--
@@ -76,16 +95,32 @@ local bbr, bbg, bby, bbb, bbm, bbc, bbw = si(r), si(g), si(y), si(b), si(m), si(
 --+  |                                                    |  +--
 --+  +----------------------------------------------------+  +--
 
-local Word                              = {
+local Word = {
   pre = {
-    i = function(c, a) return c .. "" .. a end,
-    y = function(a) return bby .. "" .. a end,
-    c = function(a) return bbc .. "" .. a end,
-    m = function(a) return bbm .. "" .. a end,
-    r = function(a) return bbr .. "" .. a end,
-    w = function(a) return bbw .. "" .. a end,
-    g = function(a) return bbg .. "" .. a end,
-    b = function(a) return bbb .. "" .. a end,
+    i = function(c, a)
+      return c .. "" .. a
+    end,
+    y = function(a)
+      return bby .. "" .. a
+    end,
+    c = function(a)
+      return bbc .. "" .. a
+    end,
+    m = function(a)
+      return bbm .. "" .. a
+    end,
+    r = function(a)
+      return bbr .. "" .. a
+    end,
+    w = function(a)
+      return bbw .. "" .. a
+    end,
+    g = function(a)
+      return bbg .. "" .. a
+    end,
+    b = function(a)
+      return bbb .. "" .. a
+    end,
   },
   colors = {
     word = y,
@@ -94,7 +129,9 @@ local Word                              = {
     arg = w,
     flag = g,
   },
-  style = function(pre, h) return pre .. " " .. h .. " " end,
+  style = function(pre, h)
+    return pre .. " " .. h .. " "
+  end,
   version = "v0.1.0-alpha.2",
   repo = "github.com/clpi/word.lua",
   home = "word.cli.st",
@@ -102,10 +139,8 @@ local Word                              = {
   color = true,
   debug = false,
 }
-Word.styles                             = {
-
-}
-Word.bits                               = {
+Word.styles = {}
+Word.bits = {
   vers = l .. "v" .. x .. w .. "0.1.1" .. l .. "-" .. x .. w .. "alpha",
   lambda = l .. s .. "󰘧 " .. x,
   wordi = l .. s .. "󰘧 " .. x .. y .. "word" .. x,
@@ -147,25 +182,56 @@ Word.bits                               = {
   markdown = g .. " 󰍔 Markdown" .. x,
   wordluai = x .. y .. lb .. l .. "󰘧" .. y .. " word" .. "." .. "lua",
   wordlua = x .. y .. lb .. "word.lua",
-  command = l .. "[" .. g .. "󰆧 " .. l .. "" .. g .. "command" .. l .. "]" .. x,
+  command = l
+    .. "["
+    .. g
+    .. "󰆧 "
+    .. l
+    .. ""
+    .. g
+    .. "command"
+    .. l
+    .. "]"
+    .. x,
   opts = l .. "[" .. b .. "󰆧 " .. l .. "" .. b .. "opts" .. l .. "]" .. x,
   flags = l .. "[" .. m .. "󰆧 " .. l .. "" .. m .. "flags" .. l .. "]" .. x,
   args = l .. "[" .. r .. "󰆧 " .. l .. "" .. r .. "args" .. l .. "]" .. x,
   author = "Chris Pecunies " .. g .. "<clp@clp.is>",
 }
-Word.bits.version                       = Word.bits.vers ..
-    l .. " (" .. l .. "updated" .. g .. " " .. Word.updated .. l .. ")"
-Word.bits.usage                         = ""
-    .. Word.bits.wordi .. " "
-    .. Word.bits.command .. ""
-    .. Word.bits.opts .. ""
-    .. Word.bits.flags .. "" .. ""
-    .. Word.bits.args .. ""
-    .. Word.bits.brk.l .. "" .. Word.bits.ellipses .. "" .. Word.bits.brk.r
-Word.bits.desc                          = Word.bits.wordlua .. x ..
-    " is a dev-focused, familiar" .. Word.bits.markdown .. "\n  "
-    .. "environment, focused on providing familiarity \n  "
-    .. "and extensibility for developers, in development."
+Word.bits.version = Word.bits.vers
+  .. l
+  .. " ("
+  .. l
+  .. "updated"
+  .. g
+  .. " "
+  .. Word.updated
+  .. l
+  .. ")"
+Word.bits.usage = ""
+  .. Word.bits.wordi
+  .. " "
+  .. Word.bits.command
+  .. ""
+  .. Word.bits.opts
+  .. ""
+  .. Word.bits.flags
+  .. ""
+  .. ""
+  .. Word.bits.args
+  .. ""
+  .. Word.bits.brk.l
+  .. ""
+  .. Word.bits.ellipses
+  .. ""
+  .. Word.bits.brk.r
+Word.bits.desc = Word.bits.wordlua
+  .. x
+  .. " is a dev-focused, familiar"
+  .. Word.bits.markdown
+  .. "\n  "
+  .. "environment, focused on providing familiarity \n  "
+  .. "and extensibility for developers, in development."
 
 --+  +----------------------+ kind +----------------------+  +--
 --+  |                                                    |  +--
@@ -173,7 +239,7 @@ Word.bits.desc                          = Word.bits.wordlua .. x ..
 --+  |                                                    |  +--
 --+  +----------------------------------------------------+  +--
 
-local Kind                              = {
+local Kind = {
   opt = {
     param = "param",
     flag = "flag",
@@ -188,7 +254,7 @@ local Kind                              = {
 --+  |                                                    |  +--
 --+  +----------------------------------------------------+  +--
 
-local Arg                               = {
+local Arg = {
   long = nil,
   kind = nil,
   short = nil,
@@ -198,7 +264,7 @@ local Arg                               = {
   help = "",
 }
 
-Arg.Kind                                = {
+Arg.Kind = {
   -- like --... or -... or --...=... or -...=...
   opt = {
     -- like --...=... or -...=...
@@ -214,7 +280,7 @@ Arg.Kind                                = {
         short = "opt_param_long_short",
         -- like --abc=...
         long = "opt_param_long_long",
-      }
+      },
     },
     flag = {
       -- like -...
@@ -230,7 +296,7 @@ Arg.Kind                                = {
         short = "opt_flag_long_short",
         -- like --abc
         long = "opt_flag_long_long",
-      }
+      },
     },
   },
   arg = "arg",
@@ -239,8 +305,7 @@ Arg.Kind                                = {
     long = "cmd_long",
     -- like a
     short = "cmd_short",
-
-  }
+  },
 }
 
 ---@return string, string
@@ -295,20 +360,71 @@ Arg.Kind.cmd.iscmd = function(k)
   return false
 end
 
-
 function Arg.Kind.unknown(a, k)
   if k == Arg.Kind.opt.flag.long.long then
-    print(r .. "unknown" .. x .. b .. " long " .. l .. "(long)" .. x .. " flag: " .. Word.bits.hy2 .. a)
+    print(
+      r
+        .. "unknown"
+        .. x
+        .. b
+        .. " long "
+        .. l
+        .. "(long)"
+        .. x
+        .. " flag: "
+        .. Word.bits.hy2
+        .. a
+    )
   elseif k == Arg.Kind.opt.flag.long.short then
-    print(r .. "unknown" .. x .. b .. " long " .. l .. "(short)" .. x .. " flag: " .. Word.bits.hy2 .. a)
+    print(
+      r
+        .. "unknown"
+        .. x
+        .. b
+        .. " long "
+        .. l
+        .. "(short)"
+        .. x
+        .. " flag: "
+        .. Word.bits.hy2
+        .. a
+    )
   elseif k == Arg.Kind.opt.flag.short.long then
-    print(r .. "unknown" .. x .. g .. " short " .. l .. "(long)" .. x .. " flag: " .. Word.bits.hy .. a)
+    print(
+      r
+        .. "unknown"
+        .. x
+        .. g
+        .. " short "
+        .. l
+        .. "(long)"
+        .. x
+        .. " flag: "
+        .. Word.bits.hy
+        .. a
+    )
   elseif k == Arg.Kind.opt.flag.short.short then
-    print(r .. "unknown" .. x .. g .. " short " .. l .. "(short)" .. x .. " flag: " .. Word.bits.hy .. a)
+    print(
+      r
+        .. "unknown"
+        .. x
+        .. g
+        .. " short "
+        .. l
+        .. "(short)"
+        .. x
+        .. " flag: "
+        .. Word.bits.hy
+        .. a
+    )
   elseif k == Arg.Kind.cmd.short then
-    print(r .. "unknown" .. x .. g .. " short " .. y .. "cmd" .. l .. ": " .. x .. a)
+    print(
+      r .. "unknown" .. x .. g .. " short " .. y .. "cmd" .. l .. ": " .. x .. a
+    )
   elseif k == Arg.Kind.cmd.long then
-    print(r .. "unknown" .. x .. b .. " long " .. y .. "cmd" .. l .. ": " .. x .. a)
+    print(
+      r .. "unknown" .. x .. b .. " long " .. y .. "cmd" .. l .. ": " .. x .. a
+    )
   else
     print(r .. "unknown" .. x .. " arg" .. l .. ": " .. x .. a)
   end
@@ -332,7 +448,9 @@ function Arg.init(lng, sh, k, d, h, v)
   self.long = lng or ""
   self.short = sh or l[1]
   self.kind = k or Kind.arg
-  self.handler = h or function() print(l, s) end
+  self.handler = h or function()
+    print(l, s)
+  end
   self.value = v or nil
   self.help = Arg.help(self)
   return self
@@ -341,22 +459,35 @@ end
 function Arg:help(h)
   if self.kind == Kind.cmd then
     return ""
-        .. g .. self.short .. "" .. x .. " "
-        .. Word.bits.pipe .. " "
-        .. g .. self.long:sub(1, 1)
-        .. x .. self.long:sub(2)
-        .. "\t  "
-        .. self.desc
+      .. g
+      .. self.short
+      .. ""
+      .. x
+      .. " "
+      .. Word.bits.pipe
+      .. " "
+      .. g
+      .. self.long:sub(1, 1)
+      .. x
+      .. self.long:sub(2)
+      .. "\t  "
+      .. self.desc
   elseif self.kind == Kind.opt.flag then
     return ""
-        .. Word.bits.hy
-        .. b .. self.short .. x .. " "
-        .. Word.bits.pipe .. " "
-        .. Word.bits.hy2
-        .. b .. self.long:sub(1, 1)
-        .. x .. self.long:sub(2)
-        .. "\t  "
-        .. self.desc
+      .. Word.bits.hy
+      .. b
+      .. self.short
+      .. x
+      .. " "
+      .. Word.bits.pipe
+      .. " "
+      .. Word.bits.hy2
+      .. b
+      .. self.long:sub(1, 1)
+      .. x
+      .. self.long:sub(2)
+      .. "\t  "
+      .. self.desc
   else
     print(self.long, self.short)
   end
@@ -392,11 +523,11 @@ end
 --+  +----------------------------------------------------+  +--
 
 local function test(...)
-  print "test"
+  print("test")
 end
 
 local function conf(...)
-  print "conf"
+  print("conf")
 end
 
 --+  +----------------------+ func +----------------------+  +--
@@ -405,25 +536,20 @@ end
 --+  |                                                    |  +--
 --+  +----------------------------------------------------+  +--
 
-
-Word.opts = {
-
-}
-Word.args = {
-
-}
+Word.opts = {}
+Word.args = {}
 
 Word.help = {
   header = {
-    print = function(pre, h) print("\n" .. pre .. " " .. h .. " ") end,
+    print = function(pre, h)
+      print("\n" .. pre .. " " .. h .. " ")
+    end,
     info = "󰯂 INFO ",
     cmds = " CMDS ",
     args = "󰆧 ARGS ",
     flag = "󰷐 FLAGS",
     opts = "󰆧 OPTS ",
     usage = "󰒓 USAGE",
-
-
   },
   word = function()
     print("\n" .. Word.bits.wordi .. " " .. x .. Word.bits.version)
@@ -477,7 +603,7 @@ Word.flags = {
     print("debug")
   end),
   config = Arg.flag("config", "Specify config file", function(...)
-    print "config"
+    print("config")
   end),
   stdout = Arg.flag("stdout", "Set stdout output", function()
     print("stdout")
@@ -490,16 +616,16 @@ Word.flags = {
 
 Word.cmds = {
   init = Arg.cmd("init", "Initialize workspace", function()
-    print('init')
+    print("init")
   end),
   upgrade = Arg.cmd("upgrade", "Upgrade binary", function()
-    print('upgrade')
+    print("upgrade")
   end),
   run = Arg.cmd("run", "Run the lsp", function(...)
-    print "run"
+    print("run")
   end),
   lsp = Arg.cmd("lsp", "Serve the lsp", function(...)
-    print "serve"
+    print("serve")
   end),
   -- version = Arg.cmd("version", "Print version", Word.flags.version.desc, Word.flags.version.handler),
   config = Arg.cmd("config", "Set config values", Word.flags.config.handler),
@@ -521,7 +647,9 @@ function Word:pflag(a, k)
       return Arg.handle(v, a, k)
     end
   end
-  if ok == false then Arg.Kind.unknown(a, k) end
+  if ok == false then
+    Arg.Kind.unknown(a, k)
+  end
 end
 
 ---  @param a string arg
@@ -533,7 +661,9 @@ function Word:pcmd(a, k)
       return Arg.handle(v, a, k)
     end
   end
-  if ok == false then return Arg.Kind.unknown(a, k) end
+  if ok == false then
+    return Arg.Kind.unknown(a, k)
+  end
 end
 
 ---  @param a string

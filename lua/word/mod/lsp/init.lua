@@ -267,9 +267,9 @@ M.load = function()
           args = 0,
           name = "lsp.definition",
         },
-        typeDefinition = {
+        type = {
           args = 0,
-          name = "lsp.typeDefinition",
+          name = "lsp.type",
         },
         delaration = {
           args = 0,
@@ -1171,7 +1171,7 @@ end
 M.data["lsp.semantic"] = function(event) end
 M.data["lsp.implementation"] = function(event) end
 M.data["lsp.declaration"] = function(event) end
-M.data["lsp.typeDefinition"] = function(event) end
+M.data["lsp.type"] = function(event) end
 M.data["lsp.definition"] = function(event) end
 M.data["lsp.workspace"] = function(event)
   M.data["lsp.workspace.lens"] = function(event) end

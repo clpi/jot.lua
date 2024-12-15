@@ -2,16 +2,19 @@
 #
 # nvimf="--headless -u ./test/config/minit.lua --noplugin -c ''"
 
-export PATH=$PATH:$HOME/word/scripts/bin
-
 w:
 	./scripts/bin/word
 wl:
 	./scripts/bin/wordls
 
-iw:
+lnw:
+  ln -s ./scripts/bin/word ./word
+lnwl:
+  ln -s ./scripts/bin/word-lsp ./word-lsp
+
+iw: lnw
 	cp -r ./scripts/bin/word ${HOME}/.local/bin/
-iwl:
+iwl: lnwl
 	cp -r ./scripts/bin/word-lsp ${HOME}/.local/bin/
 
 i: iw iwl
