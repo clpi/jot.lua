@@ -3,35 +3,8 @@ local lib, log, mod = down.lib, down.log, down.mod
 
 local M = mod.create("edit.hl")
 
---[[
---]]
 M.config = {
-  -- The TS highlight for each down type.
-  --
-  -- The `highlight` table is a large collection of nested trees. At the leaves of each of these
-  -- trees is the final highighlightight to apply to that tree. For example: `"+@comment"` tells down to
-  -- link to an existing highighlightight group `@comment` (denoted by the `+` prefix). When no prefix is
-  -- found, the string is treated as arguments passed to `:highighlightight`, for example: `gui=bold
-  -- fg=#000000`.
-  --
-  -- Nested trees concatenate, thus:
-  -- ```lua
-  -- tags = {
-  --     ranged_verbatim = {
-  --         begin = "+@comment",
-  --     },
-  -- }
-  -- ```
-  -- matches the highighlightight group:
-  -- ```lua
-  -- @down.tags.ranged_verbatim.begin
-  -- ```
-  -- and converts into the following command:
-  -- ```vim
-  -- highighlightight! link @down.tags.ranged_verbatim.begin @comment
-  -- ```
   highlight = {
-    -- highlight displayed in down selection window popups.
     selection_window = {
       heading = "+@annotation",
       arrow = "+@none",
@@ -40,11 +13,7 @@ M.config = {
       nestedkeyname = "+@string",
     },
 
-    -- highlight displayed in all sorts of tag types.
-    --
-    -- These include: `@`, `.`, `|`, `#`, `+` and `=`.
     tags = {
-      -- highlight for the `@` verbatim tags.
       ranged_verbatim = {
         begin = "+@keydown",
 

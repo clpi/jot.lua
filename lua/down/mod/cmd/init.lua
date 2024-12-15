@@ -83,7 +83,7 @@ M.data = {
       if #args == 0 or argument_count < ref.min_args then
         local completions = M.data.data.generate_completions(
           _,
-          table.concat({ "down ", data.args, " " })
+          table.concat({ "Down ", data.args, " " })
         )
         M.data.data.select_next_cmd_arg(data.args, completions)
         return
@@ -230,7 +230,7 @@ M.data = {
     ---@param qargs table #A string of arguments previously supplied to the down command
     ---@param choices table #all possible choices for the next argument
     select_next_cmd_arg = function(qargs, choices)
-      local current = table.concat({ "down ", qargs })
+      local current = table.concat({ "Down ", qargs })
 
       local query
 

@@ -11,10 +11,10 @@ function L.setup()
   }
 end
 
----@class edit.cursor.Config
+---@class down.edit.cursor.Config
 L.config = {}
 
----@class edit.cursor.Data
+---@class down.edit.cursor.Data
 ---@field public node TSNode|nil
 ---@field public text string[]
 ---@field public prev TSNode|nil

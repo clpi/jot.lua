@@ -439,7 +439,7 @@ end
 --- @param cfg? table A config that reflects the structure of down.config.user.setup["init.name"].config
 function Mod.load_mod_as_dependency(modn, parent_mod, cfg)
   if Mod.load_mod(modn, cfg) and Mod.is_mod_loaded(parent_mod) then
-    Mod.loaded_mod[parent_mod].required[modn] = Mod.get_mod_config(modn)
+    Mod.loaded_mod[parent_mod].required[modn] = Mod.mod_config(modn)
   end
 end
 
@@ -461,7 +461,7 @@ end
 --- Returns the init.config table if the init is loaded
 --- @param modn string The name of the init to retrieve (init must be loaded)
 --- @return table?
-function Mod.get_mod_config(modn)
+function Mod.mod_config(modn)
   if not Mod.is_mod_loaded(modn) then
     log.trace(
       "Attempt to get init config with name"

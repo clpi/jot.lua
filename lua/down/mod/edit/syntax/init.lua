@@ -1,15 +1,15 @@
 local down = require("down")
 local mod, utils = down.mod, down.utils
 
-local M = Mod.create("edit.syntax")
+local M = mod.create("edit.syntax")
 
 local function schedule(func)
   vim.schedule(function()
     if
-        M.data.data.disable_deferred_updates
+        M.data.disable_deferred_updates
         or (
           (
-            M.data.data.debounce_counters[vim.api.nvim_win_get_cursor(0)[1] + 1]
+            M.data.debounce_counters[vim.api.nvim_win_get_cursor(0)[1] + 1]
             or 0
           ) >= M.config.performance.max_debounce
         )
@@ -30,8 +30,8 @@ M.setup = function()
   }
 end
 
-M.data.data = {
-
+---@class down.edit.syntax.Data
+M.data = {
   largest_change_start = -1,
   largest_change_end = -1,
 
@@ -57,20 +57,16 @@ M.data.data = {
   },
 
   available_languages = {},
-}
 
----@class syntax
-M.data = {
-
-  -- fills M.data.data.ooaded_code_blocks with the list of active code blocks in the buffer
+  -- fills M.data.ooaded_code_blocks with the list of active code blocks in the buffer
   -- stores globally apparently
   check_code_block_type = function(buf, reload, from, to)
     -- parse the current buffer, and clear out the buffer's loaded code blocks if needed
     local current_buf = vim.api.nvim_buf_get_name(buf)
 
     -- load nil table with empty values
-    if M.data.data.code_block_table[current_buf] == nil then
-      M.data.data.code_block_table[current_buf] = { loaded_regex = {} }
+    if M.data.code_block_table[current_buf] == nil then
+      M.data.code_block_table[current_buf] = { loaded_regex = {} }
     end
 
     -- recreate table for buffer on buffer change
@@ -81,16 +77,16 @@ M.data = {
             like reentering the buffer, this will get cleared to recreate what languages
             are loaded. then another function will handle unloading syntax files on next load
         --]]
-    for key in pairs(M.data.data.code_block_table) do
+    for key in pairs(M.data.code_block_table) do
       if current_buf == key and reload == true then
         for k, _ in
-        pairs(M.data.data.code_block_table[current_buf].loaded_regex)
+        pairs(M.data.code_block_table[current_buf].loaded_regex)
         do
           M.data.remove_syntax(
             string.format("textGroup%s", string.upper(k)),
             string.format("textSnip%s", string.upper(k))
           )
-          M.data.data.code_block_table[current_buf].loaded_regex[k] = nil
+          M.data.code_block_table[current_buf].loaded_regex[k] = nil
         end
       end
     end
@@ -132,7 +128,7 @@ M.data = {
 
           -- make sure that the language is actually valid
           local type_func = function()
-            return M.data.data.available_languages[regex_lang].type
+            return M.data.available_languages[regex_lang].type
           end
           local ok, type = pcall(type_func)
 
@@ -143,10 +139,10 @@ M.data = {
           -- add language to table
           -- if type is empty it means this language has never been found
           if
-              M.data.data.code_block_table[current_buf].loaded_regex[regex_lang]
+              M.data.code_block_table[current_buf].loaded_regex[regex_lang]
               == nil
           then
-            M.data.data.code_block_table[current_buf].loaded_regex[regex_lang] =
+            M.data.code_block_table[current_buf].loaded_regex[regex_lang] =
             {
               type = type,
               range = {},
@@ -154,7 +150,7 @@ M.data = {
             }
           end
           -- else just do what we need to do
-          M.data.data.code_block_table[current_buf].loaded_regex[regex_lang].range[start_row] =
+          M.data.code_block_table[current_buf].loaded_regex[regex_lang].range[start_row] =
               end_row
           table.insert(compare_table, regex_lang)
         end
@@ -163,7 +159,7 @@ M.data = {
       -- compare loaded languages to see if the file actually has the code blocks
       if from == nil then
         for lang in
-        pairs(M.data.data.code_block_table[current_buf].loaded_regex)
+        pairs(M.data.code_block_table[current_buf].loaded_regex)
         do
           local found_lang = false
           for _, matched in pairs(compare_table) do
@@ -176,7 +172,7 @@ M.data = {
           -- remove the syntax include and region
           if found_lang == false then
             -- delete loaded lang from the table
-            M.data.data.code_block_table[current_buf].loaded_regex[lang] = nil
+            M.data.code_block_table[current_buf].loaded_regex[lang] = nil
             M.data.remove_syntax(
               string.format("textGroup%s", string.upper(lang)),
               string.format("textSnip%s", string.upper(lang))
@@ -199,10 +195,10 @@ M.data = {
     -- schedule(function()
     local current_buf = vim.api.nvim_buf_get_name(buf)
     -- only parse from the loaded_code_blocks M, not from the file directly
-    if M.data.data.code_block_table[current_buf] == nil then
+    if M.data.code_block_table[current_buf] == nil then
       return
     end
-    local lang_table = M.data.data.code_block_table[current_buf].loaded_regex
+    local lang_table = M.data.code_block_table[current_buf].loaded_regex
     for lang_name, curr_table in pairs(lang_table) do
       if curr_table.type == "syntax" then
         -- NOTE: the regex fallback code was originally mostly adapted from Vimwiki
@@ -216,7 +212,7 @@ M.data = {
         -- sync groups when needed
         if
             ignore_buf == false
-            and vim.api.nvim_buf_get_name(buf) == M.data.data.last_buffer
+            and vim.api.nvim_buf_get_name(buf) == M.data.last_buffer
         then
           M.data.sync_regex_code_blocks(buf, lang_name, from, to)
         end
@@ -277,7 +273,7 @@ M.data = {
 
           -- include the cluster that will put inside the region
           -- source using the available languages
-          for syntax, table in pairs(M.data.data.available_languages) do
+          for syntax, table in pairs(M.data.available_languages) do
             if table.type == "syntax" then
               if lang_name == syntax then
                 if empty_result == 0 then
@@ -316,17 +312,17 @@ M.data = {
                     actual_cluster = match
                   end
                   if actual_cluster ~= nil then
-                    M.data.data.code_block_table[current_buf].loaded_regex[lang_name].cluster =
+                    M.data.code_block_table[current_buf].loaded_regex[lang_name].cluster =
                         actual_cluster
                   end
                 elseif
-                    M.data.data.code_block_table[current_buf].loaded_regex[lang_name].cluster
+                    M.data.code_block_table[current_buf].loaded_regex[lang_name].cluster
                     ~= nil
                 then
                   local command = string.format(
                     "silent! syntax cluster %s add=%s",
                     group,
-                    M.data.data.code_block_table[current_buf].loaded_regex[lang_name].cluster
+                    M.data.code_block_table[current_buf].loaded_regex[lang_name].cluster
                   )
                   vim.cmd(command)
                 end
@@ -379,7 +375,7 @@ M.data = {
         end
 
         vim.b.current_syntax = "" ---@diagnostic disable-line
-        M.data.data.last_buffer = vim.api.nvim_buf_get_name(buf)
+        M.data.last_buffer = vim.api.nvim_buf_get_name(buf)
       end
     end
     -- end)
@@ -400,10 +396,10 @@ M.data = {
   sync_regex_code_blocks = function(buf, regex, from, to)
     local current_buf = vim.api.nvim_buf_get_name(buf)
     -- only parse from the loaded_code_blocks M, not from the file directly
-    if M.data.data.code_block_table[current_buf] == nil then
+    if M.data.code_block_table[current_buf] == nil then
       return
     end
-    local lang_table = M.data.data.code_block_table[current_buf].loaded_regex
+    local lang_table = M.data.code_block_table[current_buf].loaded_regex
     for lang_name, curr_table in pairs(lang_table) do
       -- if we got passed a regex, then we need to only parse the right one
       if regex ~= nil then
@@ -466,6 +462,7 @@ M.data = {
   end,
 }
 
+---@class down.edit.syntax.Config
 M.config = {
   -- Performance options for highlighting.
   --
@@ -496,26 +493,16 @@ M.config = {
 }
 
 M.load = function()
-  -- Enabled the required autocommands
-  -- This is generally any potential redraw event
-  -- M.required["autocommands"].enable_autocommand("BufEnter")
-  -- M.required["autocommands"].enable_autocommand("ColorScheme")
-  -- M.required["autocommands"].enable_autocommand("TextChanged")
-  -- M.required["autocommands"].enable_autocommand("InsertLeave")
-  -- M.required["autocommands"].enable_autocommand("VimLeavePre")
-
-  -- Load available regex languages
-  -- get the available regex files for the current session
-  M.data.data.available_languages = utils.get_language_list(false)
+  M.data.available_languages = utils.get_language_list(false)
 end
 
 M.on = function(event)
-  M.data.data.debounce_counters[event.cursor_position[1] + 1] = M.data.data.debounce_counters
+  M.data.debounce_counters[event.cursor_position[1] + 1] = M.data.debounce_counters
       [event.cursor_position[1] + 1]
       or 0
 
   local function should_debounce()
-    return M.data.data.debounce_counters[event.cursor_position[1] + 1]
+    return M.data.debounce_counters[event.cursor_position[1] + 1]
         >= M.config.performance.max_debounce
   end
 
@@ -530,12 +517,6 @@ M.on = function(event)
       M.data.check_code_block_type(buf, false)
       M.data.trigger_highlight_regex_code_block(buf, false, false)
     else
-      -- This bit of code gets triggered if the line count of the file is bigger than one increment level
-      -- provided by the user.
-      -- In this case, the syntax trigger enters a block mode and splits up the file into chunks. It then goes through each
-      -- chunk at a set interval and applies the syntax that way to reduce load and improve performance.
-
-      -- This points to the current block the user's cursor is in
       local block_current =
           math.floor(event.cursor_position[1] / M.config.performance.increment)
 
@@ -605,12 +586,12 @@ M.on = function(event)
           return
         end
 
-        M.data.data.last_change.active = true
+        M.data.last_change.active = true
 
         local mode = vim.api.nvim_get_mode().mode
 
         if mode ~= "i" then
-          M.data.data.debounce_counters[event.cursor_position[1] + 1] = M.data.data.debounce_counters
+          M.data.debounce_counters[event.cursor_position[1] + 1] = M.data.debounce_counters
               [event.cursor_position[1] + 1]
               + 1
 
@@ -629,28 +610,28 @@ M.on = function(event)
             line_count = new_line_count
 
             vim.schedule(function()
-              M.data.data.debounce_counters[event.cursor_position[1] + 1] = M.data.data.debounce_counters
+              M.data.debounce_counters[event.cursor_position[1] + 1] = M.data.debounce_counters
                   [event.cursor_position[1] + 1]
                   - 1
             end)
           end)
         else
-          if M.data.data.largest_change_start == -1 then
-            M.data.data.largest_change_start = start
+          if M.data.largest_change_start == -1 then
+            M.data.largest_change_start = start
           end
 
-          if M.data.data.largest_change_end == -1 then
-            M.data.data.largest_change_end = _end
+          if M.data.largest_change_end == -1 then
+            M.data.largest_change_end = _end
           end
 
-          M.data.data.largest_change_start = start
-              < M.data.data.largest_change_start
+          M.data.largest_change_start = start
+              < M.data.largest_change_start
               and start
-              or M.data.data.largest_change_start
-          M.data.data.largest_change_end = _end
-              > M.data.data.largest_change_end
+              or M.data.largest_change_start
+          M.data.largest_change_end = _end
+              > M.data.largest_change_end
               and _end
-              or M.data.data.largest_change_end
+              or M.data.largest_change_end
         end
       end,
     })
@@ -661,56 +642,50 @@ M.on = function(event)
 
     schedule(function()
       if
-          not M.data.data.last_change.active
-          or M.data.data.largest_change_end == -1
+          not M.data.last_change.active
+          or M.data.largest_change_end == -1
       then
         M.data.check_code_block_type(
           event.buffer,
           false
-        -- M.data.data.last_change.line,
-        -- M.data.data.last_change.line + 1
+        -- M.data.last_change.line,
+        -- M.data.last_change.line + 1
         )
         M.data.trigger_highlight_regex_code_block(
           event.buffer,
           false,
           true,
-          M.data.data.last_change.line,
-          M.data.data.last_change.line + 1
+          M.data.last_change.line,
+          M.data.last_change.line + 1
         )
       else
         M.data.check_code_block_type(
           event.buffer,
           false,
-          M.data.data.last_change.line,
-          M.data.data.last_change.line + 1
+          M.data.last_change.line,
+          M.data.last_change.line + 1
         )
         M.data.trigger_highlight_regex_code_block(
           event.buffer,
           false,
           true,
-          M.data.data.largest_change_start,
-          M.data.data.largest_change_end
+          M.data.largest_change_start,
+          M.data.largest_change_end
         )
       end
 
-      M.data.data.largest_change_start, M.data.data.largest_change_end =
+      M.data.largest_change_start, M.data.largest_change_end =
           -1, -1
     end)
   elseif event.type == "autocommands.events.vimleavepre" then
-    M.data.data.disable_deferred_updates = true
-    -- this autocmd is used to fix hi link syntax languages
-    -- TEMP(vhyrro): Temporarily removed for testing - executes code twice when it should not.
-    -- elseif event.type == "autocommands.events.textchanged" then
-    -- M.data.data.origger_highlight_regex_code_block(event.buffer, false, true)
-    -- elseif event.type == "autocommands.events.textchangedi" then
-    --     M.data.data.origger_highlight_regex_code_block(event.buffer, false, true)
+    M.data.disable_deferred_updates = true
   elseif event.type == "autocommands.events.colorscheme" then
     M.data.trigger_highlight_regex_code_block(event.buffer, true, false)
   end
 end
 
 M.events.subscribed = {
-  ["autocommands"] = {
+  autocommands = {
     bufenter = true,
     colorscheme = true,
     insertleave = true,

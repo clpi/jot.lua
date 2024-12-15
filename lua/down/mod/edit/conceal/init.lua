@@ -13,14 +13,17 @@ M.setup = function()
   }
 end
 
+---@class down.edit.conceal.Data
+M.data = {}
 M.data.math = M.math.data
 M.data.border = M.border.data
 M.data.chars = M.chars.data
+---@class down.edit.conceal.Config
 M.config = {
   link_style = "markdown",
 }
-M.data.data.start_link_concealing = function()
-  if M.config == "markdown" then
+M.data.start_link_concealing = function()
+  if M.config.link_style == "markdown" then
     madd(
       "Conceal",
       "\\[[^[]\\{-}\\]\\zs([^(]\\{-})\\ze",

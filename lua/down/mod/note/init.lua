@@ -1,4 +1,5 @@
 local down = require("down")
+local u = require "down.mod.note.util"
 local config, lib, log, mod =
     require("down.config").config, down.lib, down.log, down.mod
 
@@ -355,7 +356,7 @@ M.data = {
   open_toc = function()
     local workspace = M.config.workspace
         or M.required["workspace"].get_current_workspace()[1]
-    local index = mod.get_mod_config("workspace").index
+    local index = mod.mod_config("workspace").index
     local folder_name = M.config.note_folder
 
     -- If the toc exists, open it, if not, create it
@@ -377,7 +378,7 @@ M.data = {
   create_toc = function()
     local workspace = M.config.workspace
         or M.required["workspace"].get_current_workspace()[1]
-    local index = mod.get_mod_config("workspace").index
+    local index = mod.mod_config("workspace").index
     local workspace_path = M.required["workspace"].get_workspace(workspace)
     local workspace_name_for_link = M.config.workspace or ""
     local folder_name = M.config.note_folder
@@ -660,6 +661,28 @@ M.on = function(event)
       M.data.note_tomorrow()
     elseif event.split_type[2] == "note.yesterday" then
       M.data.note_yesterday()
+    elseif event.split_type[2] == "calendar" then
+      if not event.content[1] then
+        local cal = M.required["ui.calendar"]
+        if not cal then
+          print("[ERROR]: `ui.calendar` is not loaded!")
+          return
+        end
+        cal.select_date({
+          callback = vim.schedule_wrap(function(osdate)
+            M.data.open_note(
+              nil,
+              string.format("%04d", osdate.year)
+              .. "-"
+              .. string.format("%02d", osdate.month)
+              .. "-"
+              .. string.format("%02d", osdate.day)
+            )
+          end),
+        })
+      else
+        M.data.open_note(nil, event.content[1])
+      end
     elseif event.split_type[2] == "note.calendar" then
       if not event.content[1] then
         local cal = M.required["ui.calendar"]
@@ -705,56 +728,6 @@ M.on = function(event)
   end
 end
 
-M.data.weekdays = {
-  "Sunday",
-  "Monday",
-  "Tuesday",
-  "Wednesday",
-  "Thursday",
-  "Friday",
-  "Saturday",
-}
-M.data.months = {
-  "January",
-  "February",
-  "March",
-  "April",
-  "May",
-  "June",
-  "July",
-  "August",
-  "September",
-  "October",
-  "November",
-  "December",
-}
-M.data.dateformat = {
-  week = "%V",
-  hour24 = "%H:%M:%S",
-  hour12 = "%I:%M:%S %p",
-}
-function M.data:number_to_weekday(n)
-  if n ~= nil then
-    return M.data.weekday[n]
-  end
-end
-
-M.data.number_to_month = function(n)
-  return M.data.months[n]
-end
-M.data.year = tonumber(os.date("%Y"))
-M.data.month = tonumber(os.date("%m"))
-M.data.day = tonumber(os.date("%d"))
-M.data.timetable = {
-  year = M.data.year,
-  month = M.data.month,
-  day = M.data.day,
-  hour = 0,
-  min = 0,
-  sec = 0,
-}
-M.data.time = os.time()
-M.data.weekday = tonumber(os.date("%w", os.time(M.data.timetable)))
 M.setup = function()
   if M.config.strategies[M.config.strategy] then
     M.config.strategy =
@@ -763,6 +736,10 @@ M.setup = function()
 
   mod.await("cmd", function(cmd)
     cmd.add_commands_from_table({
+      calendar = {
+        max_args = 1,
+        name = "calendar",
+      }, -- format :yyyy-mm-dd
       note = {
         min_args = 1,
         max_args = 2,
@@ -817,7 +794,10 @@ M.setup = function()
           tomorrow = { args = 0, name = "note.tomorrow" },
           yesterday = { args = 0, name = "note.yesterday" },
           today = { args = 0, name = "note.today" },
-          calendar = { max_args = 1, name = "note.calendar" }, -- format :yyyy-mm-dd
+          calendar = {
+            max_args = 1,
+            name = "note.calendar"
+          }, -- format :yyyy-mm-dd
           template = {
             subcommands = {
               year = {
@@ -886,6 +866,7 @@ M.events.subscribed = {
     ["note.tomorrow"] = true,
     ["note.capture"] = true,
     ["note.today"] = true,
+    ["calendar"] = true,
     ["note.calendar"] = true,
     ["note.template"] = true,
     ["note.template.day"] = true,

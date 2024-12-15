@@ -8,9 +8,9 @@ M.setup = function()
   }
 end
 
----@class parse.datetime.Config
+---@class down.edit.parse.datetime.Config
 M.config = {}
----@class parse.datetime.Data
+---@class down.edit.parse.datetime.Data
 ---@field date parse.datetime.Date
 ---@field grammar parse.datetime.Grammar
 ---@field time parse.datetime.Time

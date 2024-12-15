@@ -1,7 +1,7 @@
 local down = require("down")
-local log, Ms = down.log, down.mod
+local log, mod = down.log, down.mod
 
-local M = Ms.create("edit.todo")
+local M = mod.create("edit.todo")
 
 M.setup = function()
   return { loaded = true, requires = { "integration.treesitter" } }
@@ -28,14 +28,15 @@ M.load = function()
   end
 end
 
+---@class down.edit.todo.Config
 M.config = {
   -- The default order of TODO item cycling when cycling via
   -- `<C-Space>`.
   --
   -- Defaults to the following order: `undone`, `done`, `pending`.
   order = {
-    { "undone", " " },
-    { "done", "x" },
+    { "undone",  " " },
+    { "done",    "x" },
     { "pending", "-" },
   },
 
@@ -48,7 +49,7 @@ M.config = {
   -- Defaults to the following order: `undone`, `done`.
   order_with_children = {
     { "undone", " " },
-    { "done", "x" },
+    { "done",   "x" },
   },
 
   -- When set to `true`, will automatically convert parent
@@ -100,7 +101,7 @@ local function task_set(character, name)
     local cursor = vim.api.nvim_win_get_cursor(0)
 
     local todo_at_cursor =
-      M.data.data.get_todo_from_cursor(buffer, cursor[1] - 1)
+        M.data.data.get_todo_from_cursor(buffer, cursor[1] - 1)
 
     if not todo_at_cursor then
       return
@@ -110,7 +111,7 @@ local function task_set(character, name)
   end)
 end
 
----@class todos
+------@class down.edit.todo.Data
 M.data = {
   data = {
 
@@ -135,9 +136,9 @@ M.data = {
       -- If the final item does not exist or the target item is not a detached modifier
       -- (i.e. it does not have a "prefix" node) then it is not a node worth updating.
       if
-        not item_at_cursor
-        or not item_at_cursor:named_child(0)
-        or not item_at_cursor:named_child(0):type():match("prefix")
+          not item_at_cursor
+          or not item_at_cursor:named_child(0)
+          or not item_at_cursor:named_child(0):type():match("prefix")
       then
         return
       end
@@ -158,8 +159,8 @@ M.data = {
       -- Go through all the children of the current todo item node and count the amount of "done" children
       for node in item_at_cursor:iter_children() do
         if
-          node:named_child(1)
-          and node:named_child(1):type() == "detached_modifier_extension"
+            node:named_child(1)
+            and node:named_child(1):type() == "detached_modifier_extension"
         then
           for status in node:named_child(1):iter_children() do
             if status:type():match("^todo_") then
@@ -194,8 +195,8 @@ M.data = {
       if counts.uncertain > 0 and counts.done + counts.uncertain == counter then
         resulting_char = "="
       elseif
-        counts.on_hold > 0
-        and counts.done + counts.on_hold + counts.uncertain == counter
+          counts.on_hold > 0
+          and counts.done + counts.on_hold + counts.uncertain == counter
       then
         resulting_char = "="
       elseif counts.pending > 0 then
@@ -209,7 +210,7 @@ M.data = {
       end
 
       local first_status_extension =
-        M.data.data.find_first_status_extension(item_at_cursor:named_child(1))
+          M.data.data.find_first_status_extension(item_at_cursor:named_child(1))
 
       -- TODO(vhyrro):
       -- Implement a toggleable behaviour where down can automatically convert this:
@@ -273,7 +274,7 @@ M.data = {
     ---@return userdata? #The node if it was located, else nil
     get_todo_from_cursor = function(buf, line)
       local node_at_cursor =
-        M.required["integration.treesitter"].get_first_node_on_line(buf, line)
+          M.required["integration.treesitter"].get_first_node_on_line(buf, line)
 
       if not node_at_cursor then
         return
@@ -314,7 +315,7 @@ M.data = {
       end
 
       local todo_type =
-        M.data.data.find_first_status_extension(todo_node:named_child(1)) ---@diagnostic disable-line -- TODO: type error workaround <pysan3>
+          M.data.data.find_first_status_extension(todo_node:named_child(1)) ---@diagnostic disable-line -- TODO: type error workaround <pysan3>
 
       return todo_type and todo_type:type():sub(string.len("todo_") + 1) or nil
     end,
@@ -338,7 +339,7 @@ M.data = {
       end
 
       local first_status_extension =
-        M.data.data.find_first_status_extension(node:named_child(1)) ---@diagnostic disable-line -- TODO: type error workaround <pysan3>
+          M.data.data.find_first_status_extension(node:named_child(1)) ---@diagnostic disable-line -- TODO: type error workaround <pysan3>
 
       if not first_status_extension then
         if not M.config.create_todos then
@@ -419,7 +420,7 @@ M.data = {
       for child in todo_at_cursor:iter_children() do
         if M.data.data.get_todo_type(child) then
           next = alternative_types[get_index(alternative_types, todo_type)]
-            or alternative_types[1]
+              or alternative_types[1]
           break
         end
       end
