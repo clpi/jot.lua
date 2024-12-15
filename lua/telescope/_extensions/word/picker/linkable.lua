@@ -13,6 +13,6 @@ return function(opts)
     search = "^\\s*(\\*+|\\|{1,2}|\\${1,2})\\s+",
     use_regex = true,
     search_dirs = { tostring(current_workspace) },
-    prompt_title = "Find in Norg files",
+    prompt_title = "Find in Word files",
   })
 end

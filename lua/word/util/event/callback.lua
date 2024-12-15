@@ -8,7 +8,7 @@ local C = {
 --- @param event_name string The full path to the event we want to listen on.
 --- @param callback fun(event: word.event, content: table|any) The function to call whenever our event gets triggered.
 --- @param content_filter? fun(event: word.event): boolean # A filtering function to test if a certain event meets our expectations.
-function C.on_event(event_name, callback, content_filter)
+function C.on(event_name, callback, content_filter)
   -- If the table doesn't exist then create it
   C.callback_list[event_name] = C.callback_list[event_name] or {}
   -- Insert the callback and content filter

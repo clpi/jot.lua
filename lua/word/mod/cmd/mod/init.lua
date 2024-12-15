@@ -31,7 +31,7 @@ M.setup = function()
 end
 
 
-M.on_event = function(event)
+M.on = function(event)
   if event.type == "cmd.events.mod.setup" then
     local ok = pcall(mod.load_mod, event.content[1])
 

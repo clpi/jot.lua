@@ -1027,7 +1027,7 @@ local function install_word_ts()
   end
 end
 
-M.on_event = function(event)
+M.on = function(event)
   if event.split_type[2] == "sync" then
     local ok, err = pcall(install_word_ts)
 

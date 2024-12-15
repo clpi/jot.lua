@@ -37,7 +37,7 @@ E.data.data = {}
 
 E.data = {}
 
-E.on_event = function(e) end
+E.on = function(e) end
 
 E.events.subscribed = {
   cmd = {

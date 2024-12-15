@@ -27,5 +27,3 @@ v:
 #   cd book && mdbook serve
 
 # default: clean
-i:
-

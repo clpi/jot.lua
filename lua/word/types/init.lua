@@ -92,7 +92,7 @@
 --- @field required? word.mod.Mods Contains the public tables of all mod that were required via the `requires` array provided in the `setup()` function of this init.
 --- @field setup? fun(): word.mod.Setup? Function that is invoked before any other loading occurs. Should perform preliminary startup tasks.
 --- @field replaced? boolean If `true`, this means the init is a replacement for a base init. This flag is set automatically whenever `setup().replaces` is set to a value.
---- @field on_event fun(event: word.Event) A callback that is invoked any time an event the init has subscribed to has fired.
+--- @field on fun(event: word.Event) A callback that is invoked any time an event the init has subscribed to has fired.
 --- Returns a new word init, exposing all the necessary function and variables.
 --- @return word.Mod
 ---

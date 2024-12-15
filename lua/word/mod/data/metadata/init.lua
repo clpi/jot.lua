@@ -3,6 +3,27 @@ local mod = require("word.mod")
 local M = mod.create("data.metadata")
 
 M.setup = function()
+  -- mod.await("cmd", function(cmd)
+  --   cmd.add_commands_from_table({
+  --     meta = {
+  --       subcommands = {
+  --         clear = {
+  --           args = 0,
+  --           name = "data.metadata.clear",
+  --         },
+  --         update = {
+  --           args = 0,
+  --           name = "data.metadata.update",
+  --         },
+  --         insert = {
+  --           name = "data.metadata.insert",
+  --           args = 0,
+  --         },
+  --       },
+  --       name = "metadata",
+  --     },
+  --   })
+  -- end)
   return {
     loaded = true,
     required = {
@@ -16,30 +37,6 @@ end
 M.config.public = {
   fields = {},
 }
-
-M.load = function()
-  mod.await("cmd", function(cmd)
-    cmd.add_commands_from_table({
-      meta = {
-        subcommands = {
-          clear = {
-            args = 0,
-            name = "data.metadata.clear",
-          },
-          update = {
-            args = 0,
-            name = "data.metadata.update",
-          },
-          insert = {
-            name = "data.metadata.insert",
-            args = 0,
-          },
-        },
-        name = "metadata",
-      },
-    })
-  end)
-end
 
 ---@class word.data.metadata.Data
 M.data = {
@@ -68,6 +65,6 @@ M.events.subscribed = {
   },
 }
 
-M.on_event = function() end
+M.on = function() end
 
 return M

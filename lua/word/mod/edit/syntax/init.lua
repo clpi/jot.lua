@@ -509,7 +509,7 @@ M.load = function()
   M.data.data.available_languages = utils.get_language_list(false)
 end
 
-M.on_event = function(event)
+M.on = function(event)
   M.data.data.debounce_counters[event.cursor_position[1] + 1] = M.data.data.debounce_counters
       [event.cursor_position[1] + 1]
       or 0

@@ -110,7 +110,7 @@ M.data = {
         M.events.defined[ref.name] = mod.define_event(M, ref.name)
       end
 
-      mod.broadcast_event(
+      mod.broadcast(
         assert(
           mod.create_event(
             M,
@@ -381,7 +381,7 @@ M.config.public = {
 
 M.post_load = M.data.sync
 
-M.on_event = function(event)
+M.on = function(event)
   if event.type == "cmd.events.mod.setup" then
     local ok = pcall(mod.load_mod, event.content[1])
 

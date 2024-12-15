@@ -4,6 +4,36 @@ local config, lib, log, mod = word.cfg, word.lib, word.log, word.mod
 local M = mod.create("data.template")
 
 M.setup = function()
+  if M.config.public.strategies[M.config.public.strategy] then
+    M.config.public.strategy =
+      M.config.public.strategies[M.config.public.strategy]
+  end
+
+  -- mod.await("cmd", function(cmd)
+  --   cmd.add_commands_from_table({
+  --     template = {
+  --       min_args = 1,
+  --       max_args = 2,
+  --       subcommands = {
+  --         index = { args = 0, name = "data.template.index" },
+  --         month = { max_args = 1, name = "data.template.month" },
+  --         tomorrow = { args = 0, name = "data.template.tomorrow" },
+  --         yesterday = { args = 0, name = "data.template.yesterday" },
+  --         today = { args = 0, name = "data.template.today" },
+  --         custom = { max_args = 1, name = "data.template.custom" }, -- format :yyyy-mm-dd
+  --         template = { args = 0, name = "data.template.template" },
+  --         toc = {
+  --           args = 1,
+  --           name = "data.template.toc",
+  --           subcommands = {
+  --             open = { args = 0, name = "data.template.toc.open" },
+  --             update = { args = 0, name = "data.template.toc.update" },
+  --           },
+  --         },
+  --       },
+  --     },
+  --   })
+  -- end)
   return {
     loaded = true,
     requires = {
@@ -385,40 +415,7 @@ M.data = {
   },
 }
 
-M.load = function()
-  if M.config.public.strategies[M.config.public.strategy] then
-    M.config.public.strategy =
-      M.config.public.strategies[M.config.public.strategy]
-  end
-
-  mod.await("cmd", function(cmd)
-    cmd.add_commands_from_table({
-      template = {
-        min_args = 1,
-        max_args = 2,
-        subcommands = {
-          index = { args = 0, name = "data.template.index" },
-          month = { max_args = 1, name = "data.template.month" },
-          tomorrow = { args = 0, name = "data.template.tomorrow" },
-          yesterday = { args = 0, name = "data.template.yesterday" },
-          today = { args = 0, name = "data.template.today" },
-          custom = { max_args = 1, name = "data.template.custom" }, -- format :yyyy-mm-dd
-          template = { args = 0, name = "data.template.template" },
-          toc = {
-            args = 1,
-            name = "data.template.toc",
-            subcommands = {
-              open = { args = 0, name = "data.template.toc.open" },
-              update = { args = 0, name = "data.template.toc.update" },
-            },
-          },
-        },
-      },
-    })
-  end)
-end
-
-M.on_event = function(event)
+M.on = function(event)
   if event.split_type[1] == "cmd" then
     if event.split_type[2] == "data.template.index" then
       M.data.data.open_index()

@@ -1,29 +1,25 @@
-local d = require("word")
-local lib, mod = d.lib, d.mod
+local mod = require("word.mod")
 
-local M = Mod.create("data.sync")
-
-M.load = function()
-  Mod.await("cmd", function(cmd)
-    cmd.add_commands_from_table({
-      sync = {
-        subcommands = {
-          update = {
-            args = 0,
-            name = "sync.update",
-          },
-          insert = {
-            name = "sync.insert",
-            args = 0,
-          },
-        },
-        name = "sync",
-      },
-    })
-  end)
-end
+local M = mod.create("data.sync")
 
 M.setup = function()
+  --   mod.await("cmd", function(cmd)
+  --     cmd.add_commands_from_table({
+  --       sync = {
+  --         subcommands = {
+  --           update = {
+  --             args = 0,
+  --             name = "sync.update",
+  --           },
+  --           insert = {
+  --             name = "sync.insert",
+  --             args = 0,
+  --           },
+  --         },
+  --         name = "sync",
+  --       },
+  --     })
+  --   end)
   return {
     loaded = true,
     requires = {

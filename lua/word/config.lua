@@ -4,7 +4,7 @@ local f = vim.fn
 
 --- @type word.Config
 C.config = {
-  ---@type word.config.User
+  ---@type word.config.UserMod
   user = {
     mod = {
       config = {},

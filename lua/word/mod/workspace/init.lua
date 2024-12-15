@@ -19,28 +19,12 @@ M.maps = function()
 end
 
 M.load = function()
-  -- Go through every workspace and expand special symbols like ~
   for name, workspace_location in pairs(M.config.public.workspaces) do
     -- M.config.workspaces[name] = vim.fn.expand(vim.fn.fnameescape(workspace_location)) ---@diagnostic disable-line -- TODO: type error workaround <pysan3>
     -- print(name, workspace_location)
     M.config.public.workspaces[name] =
       Path(workspace_location):resolve():to_absolute()
   end
-
-  -- vim.keymap.set("<c-\\><c-\\>", "<Plug>(word.workspace.new-note)", M.data.new_note)
-
-  -- Used to detect when we've entered a buffer with a potentially different cwd
-
-  -- M.required.autocommands.enable_autocommand("BufEnter", true)
-  -- mod.await("cmd", function(cmd)
-  --   cmd.add_commands_from_table({
-  --     index = {
-  --       args = 0,
-  --       name = "workspace.index",
-  --     },
-  --   })
-  -- end)
-  --
   vim.api.nvim_create_autocmd("BufEnter", {
     -- pattern = "markdown",
     callback = function()
@@ -264,7 +248,7 @@ M.data = {
     end
 
     -- Broadcast the workspace_changed event with all the necessary information
-    mod.broadcast_event(
+    mod.broadcast(
       assert(
         mod.create_event(
           M,
@@ -290,7 +274,7 @@ M.data = {
     -- Set the new workspace and its path accordingly
     M.config.public.workspaces[workspace_name] = workspace_path
     -- Broadcast the workspace_added event with the newly added workspace as the content
-    mod.broadcast_event(
+    mod.broadcast(
       assert(
         mod.create_event(
           M,
@@ -405,7 +389,7 @@ M.data = {
 
     -- Broadcast file creation event
     local bufnr = M.data.get_file_bufnr(destination:tostring())
-    mod.broadcast_event(
+    mod.broadcast(
       assert(
         mod.create_event(
           M,
@@ -621,7 +605,7 @@ M.data = {
   end,
 }
 
-M.on_event = function(event)
+M.on = function(event)
   -- If somebody has executed the :word workspace command then
   if event.type == "cmd.events.workspace.workspace" then
     -- Have we supplied an argument?

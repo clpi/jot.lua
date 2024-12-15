@@ -1113,7 +1113,7 @@ M.events.subscribed = {
   },
 }
 
-M.on_event = function(event)
+M.on = function(event)
   if M.data[event.split_type[2]] then
     M.data[event.split_type[2]](event)
   end

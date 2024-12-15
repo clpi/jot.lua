@@ -1,12 +1,39 @@
-local co = require("coroutine")
-local pop = require("plenary.popup")
 local word = require("word")
 local config, lib, log, mod = word.cfg, word.lib, word.log, word.mod
 
 local M = mod.create("data.log")
 
 M.setup = function()
-  vim.api.nvim_create_namespace("word/data/log")
+  if M.config.public.strategies[M.config.public.strategy] then
+    M.config.public.strategy =
+      M.config.public.strategies[M.config.public.strategy]
+  end
+
+  -- mod.await("cmd", function(cmd)
+  --   cmd.add_commands_from_table({
+  --     log = {
+  --       min_args = 1,
+  --       max_args = 2,
+  --       subcommands = {
+  --         index = { args = 0, name = "log.index" },
+  --         month = { max_args = 1, name = "log.month" },
+  --         tomorrow = { args = 0, name = "log.tomorrow" },
+  --         yesterday = { args = 0, name = "log.yesterday" },
+  --         new = { args = 0, name = "log.new" },
+  --         custom = { max_args = 1, name = "log.custom" }, -- format :yyyy-mm-dd
+  --         template = { args = 0, name = "log.template" },
+  --         toc = {
+  --           args = 1,
+  --           name = "log.toc",
+  --           subcommands = {
+  --             open = { args = 0, name = "log.toc.open" },
+  --             update = { args = 0, name = "log.toc.update" },
+  --           },
+  --         },
+  --       },
+  --     },
+  --   })
+  -- end)
   return {
     loaded = true,
     requires = {
@@ -409,40 +436,9 @@ M.data = {
   end,
 }
 
-M.load = function()
-  if M.config.public.strategies[M.config.public.strategy] then
-    M.config.public.strategy =
-      M.config.public.strategies[M.config.public.strategy]
-  end
+M.load = function() end
 
-  mod.await("cmd", function(cmd)
-    cmd.add_commands_from_table({
-      log = {
-        min_args = 1,
-        max_args = 2,
-        subcommands = {
-          index = { args = 0, name = "log.index" },
-          month = { max_args = 1, name = "log.month" },
-          tomorrow = { args = 0, name = "log.tomorrow" },
-          yesterday = { args = 0, name = "log.yesterday" },
-          new = { args = 0, name = "log.new" },
-          custom = { max_args = 1, name = "log.custom" }, -- format :yyyy-mm-dd
-          template = { args = 0, name = "log.template" },
-          toc = {
-            args = 1,
-            name = "log.toc",
-            subcommands = {
-              open = { args = 0, name = "log.toc.open" },
-              update = { args = 0, name = "log.toc.update" },
-            },
-          },
-        },
-      },
-    })
-  end)
-end
-
-M.on_event = function(event)
+M.on = function(event)
   if event.split_type[1] == "cmd" then
     if event.split_type[2] == "log.index" then
       M.data.open_index()
@@ -505,69 +501,4 @@ M.events.subscribed = {
   },
 }
 
-M.examples = {
-  ["Changing TOC format to divide year in quarters"] = function()
-    -- In your ["log"] options, change toc_format to a function like this:
-
-    require("word").setup({
-      load = {
-        -- ...
-        ["log"] = {
-          config = {
-            -- ...
-            toc_format = function(entries)
-              -- Convert the entries into a certain format
-
-              local output = {}
-              local current_year
-              local current_quarter
-              local last_quarter
-              local current_month
-              for _, entry in ipairs(entries) do
-                -- Don't print the year if it hasn't changed
-                if not current_year or current_year < entry[1] then
-                  current_year = entry[1]
-                  current_month = nil
-                  table.insert(output, "* " .. current_year)
-                end
-
-                -- Check to which quarter the current month corresponds to
-                if entry[2] <= 3 then
-                  current_quarter = 1
-                elseif entry[2] <= 6 then
-                  current_quarter = 2
-                elseif entry[2] <= 9 then
-                  current_quarter = 3
-                else
-                  current_quarter = 4
-                end
-
-                -- If the current month corresponds to another quarter, print it
-                if current_quarter ~= last_quarter then
-                  table.insert(output, "** Quarter " .. current_quarter)
-                  last_quarter = current_quarter
-                end
-
-                -- Don't print the month if it hasn't changed
-                if not current_month or current_month < entry[2] then
-                  current_month = entry[2]
-                  table.insert(output, "*** Month " .. current_month)
-                end
-
-                -- Prints the file link
-                table.insert(
-                  output,
-                  "   " .. entry[4] .. string.format("[%s]", entry[5])
-                )
-              end
-
-              return output
-            end,
-            -- ...
-          },
-        },
-      },
-    })
-  end,
-}
 return M

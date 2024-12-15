@@ -1559,7 +1559,7 @@ local event_handlers = {
   ["cmd.events.icon.toggle"] = handle_toggle_prettifier,
 }
 
-module.on_event = function(event)
+module.on = function(event)
   if
     not module.data.data.enabled and (event.type ~= "cmd.events.icon.toggle")
   then

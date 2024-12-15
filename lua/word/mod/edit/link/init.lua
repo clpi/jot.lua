@@ -471,23 +471,23 @@ link from the word under the cursor or a visual selection (if there is one).
 }
 
 M.load = function()
-  mod.await("cmd", function(cmd)
-    cmd.add_commands_from_table({
-      link = {
-        name = "link",
-        subcommands = {
-          update = {
-            args = 0,
-            name = "link.new",
-          },
-          insert = {
-            name = "link.backlinks",
-            args = 0,
-          },
-        },
-      },
-    })
-  end)
+  -- mod.await("cmd", function(cmd)
+  -- cmd.add_commands_from_table({
+  --   link = {
+  --     name = "link",
+  --     subcommands = {
+  --       update = {
+  --         args = 0,
+  --         name = "link.new",
+  --       },
+  --       insert = {
+  --         name = "link.backlinks",
+  --         args = 0,
+  --       },
+  --     },
+  --   },
+  -- })
+  -- end)
 end
 M.data.pathType = function(path, anchor)
   if not path then

@@ -75,7 +75,7 @@ end
 --- @param when_true function|any The value to return when `comparison` is true.
 --- @param when_false function|any The value to return when `comparison` is false.
 --- @return any # The value that either `when_true` or `when_false` returned.
---- @see neorg.core.lib.match
+--- @see word.core.lib.match
 function lib.when(comparison, when_true, when_false)
   if type(comparison) ~= "boolean" then
     comparison = (comparison ~= nil)

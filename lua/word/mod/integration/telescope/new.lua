@@ -121,7 +121,7 @@ M.load       = function()
   end
 end
 
-M.on_event   = function(event)
+M.on   = function(event)
   if event.type == "integration.telescope" then
   elseif event.type == "integration.telescope.link" then
     vim.cmd [[Telescope word find_word]]

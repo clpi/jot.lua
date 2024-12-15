@@ -67,6 +67,6 @@ D.data = {
   },
 }
 
-D.on_event = function(e) end
+D.on = function(e) end
 
 return D

@@ -82,7 +82,7 @@ M.load = function()
   end
 end
 
-M.on_event = function(event)
+M.on = function(event)
   if event.type == "cmd.events.integration.telescope.find.files" then
     vim.cmd([[Telescope word find_word]])
   elseif event.type == "cmd.events.integration.telescope.find.workspace" then

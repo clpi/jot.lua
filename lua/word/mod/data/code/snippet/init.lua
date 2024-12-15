@@ -1,35 +1,31 @@
-local M = Mod.create("data.code.snippet")
+local mod = require("word.mod")
+local M = mod.create("data.code.snippet")
 
 M.setup = function()
+  -- mod.await("cmd", function(cmd)
+  --   cmd.add_commands_from_table({
+  --     snippet = {
+  --       subcommands = {
+  --         insert = {
+  --           args = 0,
+  --           name = "data.snippet.insert",
+  --         },
+  --         update = {
+  --           name = "data.snippet.update",
+  --           args = 0,
+  --         },
+  --       },
+  --       name = "snippet",
+  --     },
+  --   })
+  -- end)
   return {
     loaded = true,
     requires = { "workspace", "cmd" },
   }
 end
 
-M.load = function()
-  Mod.await("cmd", function(cmd)
-    cmd.add_commands_from_table({
-      snippet = {
-        subcommands = {
-          insert = {
-            args = 0,
-            name = "data.snippet.insert",
-          },
-          update = {
-            name = "data.snippet.update",
-            args = 0,
-          },
-        },
-        name = "snippet",
-      },
-    })
-  end)
-end
-
 M.config.public = {}
-
-M.data.data = {}
 
 M.data = {}
 

@@ -54,7 +54,7 @@ Mod.default_mod = function(name)
       Map.nmap(",wy", "<CMD>Word note year<CR>")
     end,
     load = function() end,
-    on_event = function() end,
+    on = function() end,
     post_load = function() end,
     name = "config",
     namespace = "word." .. name,
@@ -72,7 +72,7 @@ Mod.default_mod = function(name)
     events = {
       subscribed = { -- The events that the init is subscribed to
       },
-      defined = {    -- The events that the init itself has defined
+      defined = { -- The events that the init itself has defined
       },
     },
     required = {},
@@ -93,8 +93,8 @@ function Mod.create(name, imports)
       if not Mod.load_mod(fullpath) then
         log.error(
           "Unable to load import '"
-          .. fullpath
-          .. "'! An error  (see traceback below):"
+            .. fullpath
+            .. "'! An error  (see traceback below):"
         )
         assert(false)
       end
@@ -186,20 +186,20 @@ function Mod.load_mod_from_table(m)
   -- Invoke the setup function. This function returns whether or not the loading of the init was successful and some metadata.
   ---@type word.mod.Setup
   local mod_load = m.setup and m.setup()
-      or {
-        loaded = true,
-        replaces = {},
-        merge = false,
-        requires = {},
-        wants = {},
-      }
+    or {
+      loaded = true,
+      replaces = {},
+      merge = false,
+      requires = {},
+      wants = {},
+    }
 
   -- We do not expect init.setup() to ever return nil, that's why this check is in place
   if not mod_load then
     log.error(
       "init"
-      .. m.name
-      .. "does not handle init loading correctly; init.setup() returned nil. Omitting..."
+        .. m.name
+        .. "does not handle init loading correctly; init.setup() returned nil. Omitting..."
     )
     return false
   end
@@ -231,15 +231,15 @@ function Mod.load_mod_from_table(m)
         if config.user.mod[req_mod] then
           log.trace(
             "Wanted init"
-            .. req_mod
-            .. "isn't loaded but can be as it's defined in the user's config. Loading..."
+              .. req_mod
+              .. "isn't loaded but can be as it's defined in the user's config. Loading..."
           )
 
           if not Mod.load_mod(req_mod) then
             require("word.util.log").error(
               "Unable to load wanted init for"
-              .. m.name
-              .. "- the init didn't load successfully"
+                .. m.name
+                .. "- the init didn't load successfully"
             )
 
             -- Modake sure to clean up after ourselves if the init failed to load
@@ -248,8 +248,7 @@ function Mod.load_mod_from_table(m)
           end
         else
           log.error(
-            ("Unable to load init %s, wanted dependency %s was not satisfied. Be sure to load the init and its appropriate config too!")
-            :format(
+            ("Unable to load init %s, wanted dependency %s was not satisfied. Be sure to load the init and its appropriate config too!"):format(
               m.name,
               req_mod
             )
@@ -308,8 +307,7 @@ function Mod.load_mod_from_table(m)
     -- If this flag has already been set before, then throw an error - there is no way for us to know which hotswapped init should take priority.
     if mod_to_replace.replaced then
       log.error(
-        ("Unable to replace init %s - init replacement clashing detected. This error triggers when a init tries to be replaced more than two times - word doesn't know which replacement to prioritize.")
-        :format(
+        ("Unable to replace init %s - init replacement clashing detected. This error triggers when a init tries to be replaced more than two times - word doesn't know which replacement to prioritize."):format(
           mod_to_replace.name
         )
       )
@@ -354,7 +352,7 @@ function Mod.load_mod_from_table(m)
   -- local msg = ("%fms"):format((vim.loop.hrtime() - start) / 1e6)
   -- vim.notify(msg.." "..init.name)
 
-  Mod.broadcast_event({
+  Mod.broadcast({
     type = "mod_loaded",
     split_type = { "mod_loaded" },
     filename = "",
@@ -388,8 +386,8 @@ function Mod.load_mod(modn, cfg)
   if not modl then
     log.error(
       "Unable to load init"
-      .. modn
-      .. "- loaded file returned nil. Be sure to return the table created by mod.create() at the end of your init.lua file!"
+        .. modn
+        .. "- loaded file returned nil. Be sure to return the table created by mod.create() at the end of your init.lua file!"
     )
     return false
   end
@@ -397,9 +395,8 @@ function Mod.load_mod(modn, cfg)
   if modl == true then
     log.error(
       "An error has occurred when loading"
-      .. modn
-      ..
-      "- loaded file didn't return anything meaningful. Be sure to return the table created by mod.create() at the end of your init.lua file!"
+        .. modn
+        .. "- loaded file didn't return anything meaningful. Be sure to return the table created by mod.create() at the end of your init.lua file!"
     )
     return false
   end
@@ -412,8 +409,8 @@ function Mod.load_mod(modn, cfg)
     -- print(modl.config.custom, modl.config.public, config.mod[modn])
     modl.config.custom = config.mod[modn]
     modl.config.public =
-    -- vim.tbl_extend("force", modl.config.public, modl.config.custom or {})
-        utils.extend(modl.config.public, modl.config.custom or {})
+      -- vim.tbl_extend("force", modl.config.public, modl.config.custom or {})
+      utils.extend(modl.config.public, modl.config.custom or {})
   end
 
   -- Pass execution onto load_mod_from_table() and let it handle the rest
@@ -465,8 +462,8 @@ function Mod.get_mod_config(modn)
   if not Mod.is_mod_loaded(modn) then
     log.trace(
       "Attempt to get init config with name"
-      .. modn
-      .. "failed - init is not loaded."
+        .. modn
+        .. "failed - init is not loaded."
     )
     return
   end
@@ -489,8 +486,8 @@ function Mod.get_mod_version(modn)
   if not Mod.is_mod_loaded(modn) then
     log.trace(
       "Attempt to get init version with name"
-      .. modn
-      .. "failed - init is not loaded."
+        .. modn
+        .. "failed - init is not loaded."
     )
     return
   end
@@ -502,8 +499,8 @@ function Mod.get_mod_version(modn)
   if not version then
     log.trace(
       "Attempt to get init version with name"
-      .. modn
-      .. "failed - version variable not present."
+        .. modn
+        .. "failed - version variable not present."
     )
     return
   end
@@ -520,7 +517,7 @@ function Mod.await(modn, callback)
     return
   end
 
-  cb.on_event("mod_loaded", function(_, m)
+  cb.on("mod_loaded", function(_, m)
     callback(m.data)
   end, function(event)
     return event.content.name == modn
@@ -612,7 +609,7 @@ function Mod.create_event(m, type, content, ev)
 
   -- Retrieve the template from init.events.defined
   local event_template =
-      Mod.get_event_template(Mod.loaded_mod[modn] or { name = "" }, type)
+    Mod.get_event_template(Mod.loaded_mod[modn] or { name = "" }, type)
 
   if not event_template then
     log.warn("Unable to create event of type" .. type .. ". Returning nil...")
@@ -638,7 +635,7 @@ function Mod.create_event(m, type, content, ev)
   new_event.cursor_position = vim.api.nvim_win_get_cursor(winid)
   local row_1b = new_event.cursor_position[1]
   new_event.line_content =
-      vim.api.nvim_buf_get_lines(bufid, row_1b - 1, row_1b, true)[1]
+    vim.api.nvim_buf_get_lines(bufid, row_1b - 1, row_1b, true)[1]
   new_event.referrer = m.name
   new_event.broadcast = true
   new_event.buffer = bufid
@@ -651,13 +648,13 @@ end
 --- Sends an event to all subscribed mod. The event contains the filename, filehead, cursor position and line content as a bonus.
 --- @param event word.Event An event, usually created by `mod.create_event()`.
 --- @param callback function? A callback to be invoked after all events have been asynchronously broadcast
-function Mod.broadcast_event(event, callback)
+function Mod.broadcast(event, callback)
   -- Broadcast the event to all mod
   if not event.split_type then
     log.error(
       "Unable to broadcast event of type"
-      .. event.type
-      .. "- invalid event name"
+        .. event.type
+        .. "- invalid event name"
     )
     return
   end
@@ -668,7 +665,7 @@ function Mod.broadcast_event(event, callback)
     if cm.events.subscribed and cm.events.subscribed[event.split_type[1]] then
       local evt = cm.events.subscribed[event.split_type[1]][event.split_type[2]]
       if evt ~= nil and evt == true then
-        cm.on_event(event)
+        cm.on(event)
       end
     end
   end
@@ -694,7 +691,7 @@ function Mod.send_event(recv, ev)
   if modl.events.subscribed and modl.events.subscribed[ev.split_type[1]] then
     local evt = modl.events.subscribed[ev.split_type[1]][ev.split_type[2]]
     if evt ~= nil and evt == true then
-      modl.on_event(ev)
+      modl.on(ev)
     end
   end
 end

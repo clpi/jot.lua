@@ -340,7 +340,7 @@ M.config.public = {
   indent_errors = "notify",
 }
 
-M.on_event = function(event)
+M.on = function(event)
   if event.type == "cmd.events.base.code.current-file" then
     local codes = M.data.code(event.buffer)
 

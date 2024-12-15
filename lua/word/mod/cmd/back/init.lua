@@ -26,7 +26,7 @@ init.data = {
   },
 }
 
-init.on_event = function(event)
+init.on = function(event)
   if event.type == "cmd.events.back" then
     -- Get all the buffers
     local buffers = vim.api.nvim_list_bufs()
