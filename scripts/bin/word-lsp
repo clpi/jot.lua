@@ -1,277 +1,582 @@
-#!/usr/bin/env bash
+#!/usr/bin/env lua
 
-# ======================= word-lsp =======================
+--+  +----------------------+ word +----------------------+  +--
+--+  |                                                    |  +--
+--+  |    word       v0.1.0-alpha                         |  +--
+--+  |                                                    |  +--
+--+  |    ABOUT                                           |  +--
+--+  |      word (word.lua) is a dev-focused note-taking  |  +--
+--+  |      environment for markdown, in development.     |  +--
+--+  |                                                    |  +--
+--+  |    USAGE                                           |  +--
+--+  |       word  [options]  <args>  [file]              |  +--
+--+  |                                                    |  +--
+--+  |    OPTIONS                                         |  +--
+--+  |      -h, --help         Show help and exit         |  +--
+--+  |      -v, --version      Show version and exit      |  +--
+--+  |      -i, --interactive  Run in interactive mode    |  +--
+--+  |      -e, --execute      Run in execute mode        |  +--
+--+  |      -c, --config       Specify a config file      |  +--
+--+  |                                                    |  +--
+--+  |    ARGS                                            |  +--
+--+  |      serve             Run the server              |  +--
+--+  |      init              Initialize the server       |  +--
+--+  |      shell             Run the shell               |  +--
+--+  |      update            Update the server           |  +--
+--+  |      install           Install the server          |  +--
+--+  |      uninstall         Uninstall the server        |  +--
+--+  |      config            Configure the server        |  +--
+--+  |      status            Show the server status      |  +--
+--+  |      start             Start the server            |  +--
+--+  |      stop              Stop the server             |  +--
+--+  |      restart           Restart the server          |  +--
+--+  |                                                    |  +--
+--+  +----------------------------------------------------+  +--
 
-# ----------------------- exports -----------------------
+local w_ok, word                        = pcall(require, "word")
+local u_ok, util                        = pcall(require, "word.util")
+local m_ok, mod                         = pcall(require, "word.mod")
+local c_ok, conf                        = pcall(require, "word.config")
+local l_ok, lsp                         = pcall(require, "word.mod.lsp")
+local ws_ok, ws                         = pcall(require, "word.mod.workspace")
+local wts_ok, wts                       = pcall(require, "word.mod.integration.treesitter")
 
-export WORD_LSP_BIN="word-lsp"
-export WORD_LSP_COMPLETIONS=$(head </usr/share/dict/words -n 1000 | jq --raw-input --slurp 'split("\n")[:-1] | map({label: . })')
-export WORD_LSP_SERVERINFO='{
-  "name": "word-lsp",
-  "version": "0.0.1"
-}'
-export WORD_LSP_CLIENTINFO='{
-  "name": "word-lsp",
-  "version": "0.0.1"
-}'
-export WORD_LSP_CAPABILITIES='{
-  "textDocumentSync": 1,
-  "hoverProvider": true,
-  "completionProvider": {
-    "resolveProvider": true,
-    "triggerCharacters": [".", "_", "*", "%", "<", "#", "[", "(",  "/", "-", "@", "#", ":", "|", "$", "&"]
+--+  +---------------------+ extern +---------------------+  +--
+--+  |                                                    |  +--
+--+  |  import the word lua dependencies.                 |  +--
+--+  |                                                    |  +--
+--+  +----------------------------------------------------+  +--
+
+local lp_ok, lp                         = pcall(require, "lpeg")
+local vt_ok, vts                        = pcall(require, "vim.treesitter")
+local ts_ok, nts                        = pcall(require, "nvim-treesitter")
+local tsu_ok, tsu                       = pcall(require, "nvim-treesitter.ts_utils")
+
+--+  +----------------------+ util +----------------------+  +--
+--+  |                                                    |  +--
+--+  |  define utility functions.                         |  +--
+--+  |                                                    |  +--
+--+  +----------------------------------------------------+  +--
+
+local x, i, s, e, u, cr                 = "\x1b[0m", "\x1b[7m", "\x1b[1m", "\x1b[3m", "\x1b[4m", "\x1b[9m"
+local lb, rb, gb, yb, bb, mb, cb, wb    = "\x1b[40m", "\x1b[41m", "\x1b[42m", "\x1b[43m", "\x1b[44m", "\x1b[45m",
+    "\x1b[46m",
+    "\x1b[47m"
+local l, r, g, y, b, m, c, w            = "\x1b[90m", "\x1b[31m", "\x1b[32m", "\x1b[33m", "\x1b[34m", "\x1b[35m",
+    "\x1b[36m",
+    "\x1b[37m"
+local bi                                = function(inp) return inp .. i end
+local si                                = function(inp) return inp .. s .. i end
+local br, bg, by, bb, bm, bc, bw        = bi(r), bi(g), bi(y), bi(b), bi(m), bi(c), bi(w)
+local bbr, bbg, bby, bbb, bbm, bbc, bbw = si(r), si(g), si(y), si(b), si(m), si(c), si(w)
+
+--+  +----------------------+ vars +----------------------+  +--
+--+  |                                                    |  +--
+--+  |  define necessary variables.                       |  +--
+--+  |                                                    |  +--
+--+  +----------------------------------------------------+  +--
+
+local Word                              = {
+  pre = {
+    i = function(c, a) return c .. "" .. a end,
+    y = function(a) return bby .. "" .. a end,
+    c = function(a) return bbc .. "" .. a end,
+    m = function(a) return bbm .. "" .. a end,
+    r = function(a) return bbr .. "" .. a end,
+    w = function(a) return bbw .. "" .. a end,
+    g = function(a) return bbg .. "" .. a end,
+    b = function(a) return bbb .. "" .. a end,
+  },
+  colors = {
+    word = y,
+    info = c,
+    cmd = m,
+    arg = w,
+    flag = g,
+  },
+  style = function(pre, h) return pre .. " " .. h .. " " end,
+  version = "v0.1.0-alpha.2",
+  repo = "github.com/clpi/word.lua",
+  home = "word.cli.st",
+  updated = "2024-12-15",
+  color = true,
+  debug = false,
+}
+Word.styles                             = {
+
+}
+Word.bits                               = {
+  vers = l .. "v" .. x .. w .. "0.1.1" .. l .. "-" .. x .. w .. "alpha",
+  lambda = l .. s .. "󰘧 " .. x,
+  wordi = l .. s .. "󰘧 " .. x .. y .. "word" .. x,
+  brk = {
+    l = l .. "[" .. x,
+    r = l .. "]" .. x,
+  },
+  brc = {
+    l = l .. "{" .. x,
+    r = l .. "}" .. x,
+  },
+  par = {
+    l = l .. "(" .. x,
+    r = l .. ")" .. x,
+  },
+  icon = {
+    block = l .. "󰆧 " .. x,
+    info = l .. "󰆨 " .. x,
+  },
+  arrow = {
+    l = l .. "←" .. x,
+    r = l .. "→" .. x,
+  },
+  arr = {
+    l = l .. "<" .. x,
+    r = l .. ">" .. x,
+  },
+  ellipses = l .. "…" .. x,
+  pipe = l .. "|" .. x,
+  comma = l .. "," .. x,
+  colon = l .. ":" .. x,
+  period = l .. "." .. x,
+  asterisk = l .. "*" .. x,
+  plus = l .. "+" .. x,
+  hy = l .. "-" .. x,
+  hy2 = l .. "--" .. x,
+  eq = l .. "=" .. x,
+  word = y .. "word" .. x,
+  markdown = g .. " 󰍔 Markdown" .. x,
+  wordluai = x .. y .. lb .. l .. "󰘧" .. y .. " word" .. "." .. "lua",
+  wordlua = x .. y .. lb .. "word.lua",
+  command = l .. "[" .. g .. "󰆧 " .. l .. "" .. g .. "command" .. l .. "]" .. x,
+  opts = l .. "[" .. b .. "󰆧 " .. l .. "" .. b .. "opts" .. l .. "]" .. x,
+  flags = l .. "[" .. m .. "󰆧 " .. l .. "" .. m .. "flags" .. l .. "]" .. x,
+  args = l .. "[" .. r .. "󰆧 " .. l .. "" .. r .. "args" .. l .. "]" .. x,
+  author = "Chris Pecunies " .. g .. "<clp@clp.is>",
+}
+Word.bits.version                       = Word.bits.vers ..
+    l .. " (" .. l .. "updated" .. g .. " " .. Word.updated .. l .. ")"
+Word.bits.usage                         = ""
+    .. Word.bits.wordi .. " "
+    .. Word.bits.command .. ""
+    .. Word.bits.opts .. ""
+    .. Word.bits.flags .. "" .. ""
+    .. Word.bits.args .. ""
+    .. Word.bits.brk.l .. "" .. Word.bits.ellipses .. "" .. Word.bits.brk.r
+Word.bits.desc                          = Word.bits.wordlua .. x ..
+    " is a dev-focused, familiar" .. Word.bits.markdown .. "\n  "
+    .. "environment, focused on providing familiarity \n  "
+    .. "and extensibility for developers, in development."
+
+--+  +----------------------+ kind +----------------------+  +--
+--+  |                                                    |  +--
+--+  |  define kind type.                                 |  +--
+--+  |                                                    |  +--
+--+  +----------------------------------------------------+  +--
+
+local Kind                              = {
+  opt = {
+    param = "param",
+    flag = "flag",
+  },
+  arg = "arg",
+  cmd = "cmd",
+}
+
+--+  +----------------------+ args +----------------------+  +--
+--+  |                                                    |  +--
+--+  |  define arg type.                                  |  +--
+--+  |                                                    |  +--
+--+  +----------------------------------------------------+  +--
+
+local Arg                               = {
+  long = nil,
+  kind = nil,
+  short = nil,
+  value = nil,
+  handler = nil,
+  desc = "",
+  help = "",
+}
+
+Arg.Kind                                = {
+  -- like --... or -... or --...=... or -...=...
+  opt = {
+    -- like --...=... or -...=...
+    param = {
+      short = {
+        -- like -a=...
+        short = "opt_param_short_letter",
+        -- like -abc=... NOTE: bad
+        long = "opt_param_short_short",
+      },
+      long = {
+        -- like --a=... NOTE: bad
+        short = "opt_param_long_short",
+        -- like --abc=...
+        long = "opt_param_long_long",
+      }
+    },
+    flag = {
+      -- like -...
+      short = {
+        -- like -a
+        short = "opt_flag_short_short",
+        -- like -abc NOTE: bad
+        long = "opt_flag_short_long",
+      },
+      -- like --...
+      long = {
+        -- like --a NOTE: bad
+        short = "opt_flag_long_short",
+        -- like --abc
+        long = "opt_flag_long_long",
+      }
+    },
+  },
+  arg = "arg",
+  cmd = {
+    -- like abc
+    long = "cmd_long",
+    -- like a
+    short = "cmd_short",
+
   }
-}'
-
-# -----------------------   var   -----------------------
-
-WORD_LSP_DEBUG=false
-WORD_LSP_STDIO=false
-WORD_LSP_PORT=2088
-WORD_LSP_HOST=localhost
-
-# ----------------------- methods -----------------------
-
-# param 1: id
-# param 2: result
-function lsp-reply() {
-  reply '{
-    "jsonrpc": "2.0",
-    "id": '"$1"',
-    "result": '"$2"'
-  }'
 }
 
-function reply() {
-  local b="$1"
-  local len=${#b}
-  local r="Content-Length: $len\r\n\r\n$b"
-  echo "$r" >>/tmp/out.log
-  echo -e "$r"
+---@return string, string
+function Arg.Kind.check(a)
+  if a:sub(1, 1) == "-" then
+    if a:sub(2, 2) == "-" then
+      a = a:sub(3)
+      if #a == 1 then
+        return a, Arg.Kind.opt.flag.long.short
+      end
+      return a, Arg.Kind.opt.flag.long.long
+    else
+      a = a:sub(2)
+      if #a == 1 then
+        return a, Arg.Kind.opt.flag.short.short
+      end
+      return a, Arg.Kind.opt.flag.short.long
+    end
+  else
+    if #a == 1 then
+      return a, Arg.Kind.cmd.short
+    else
+      return a, Arg.Kind.cmd.long
+    end
+  end
+end
+
+Arg.Kind.opt.param.is = function(k)
+  if k:sub(1, 9) == "opt_param" then
+    return true
+  end
+  return false
+end
+Arg.Kind.opt.flag.is = function(k)
+  if k:sub(1, 8) == "opt_flag" then
+    return true
+  end
+  return false
+end
+
+Arg.Kind.opt.isopt = function(k)
+  if k:sub(1, 3) == "opt" then
+    return true
+  end
+  return false
+end
+
+Arg.Kind.cmd.iscmd = function(k)
+  if k:sub(1, 3) == "cmd" then
+    return true
+  end
+  return false
+end
+
+
+function Arg.Kind.unknown(a, k)
+  if k == Arg.Kind.opt.flag.long.long then
+    print(r .. "unknown" .. x .. b .. " long " .. l .. "(long)" .. x .. " flag: " .. Word.bits.hy2 .. a)
+  elseif k == Arg.Kind.opt.flag.long.short then
+    print(r .. "unknown" .. x .. b .. " long " .. l .. "(short)" .. x .. " flag: " .. Word.bits.hy2 .. a)
+  elseif k == Arg.Kind.opt.flag.short.long then
+    print(r .. "unknown" .. x .. g .. " short " .. l .. "(long)" .. x .. " flag: " .. Word.bits.hy .. a)
+  elseif k == Arg.Kind.opt.flag.short.short then
+    print(r .. "unknown" .. x .. g .. " short " .. l .. "(short)" .. x .. " flag: " .. Word.bits.hy .. a)
+  elseif k == Arg.Kind.cmd.short then
+    print(r .. "unknown" .. x .. g .. " short " .. y .. "cmd" .. l .. ": " .. x .. a)
+  elseif k == Arg.Kind.cmd.long then
+    print(r .. "unknown" .. x .. b .. " long " .. y .. "cmd" .. l .. ": " .. x .. a)
+  else
+    print(r .. "unknown" .. x .. " arg" .. l .. ": " .. x .. a)
+  end
+end
+
+function Arg.flag(lng, desc, h, sh)
+  return Arg.init(lng, sh or lng:sub(1, 1), Kind.opt.flag, desc, h)
+end
+
+function Arg.cmd(lng, desc, h, sh)
+  return Arg.init(lng, sh or lng:sub(1, 1), Kind.cmd, desc, h)
+end
+
+function Arg.init(lng, sh, k, d, h, v)
+  local self = {}
+  self.__index = self
+  self.__tostring = function(t)
+    return t.long
+  end
+  self.desc = d or ""
+  self.long = lng or ""
+  self.short = sh or l[1]
+  self.kind = k or Kind.arg
+  self.handler = h or function() print(l, s) end
+  self.value = v or nil
+  self.help = Arg.help(self)
+  return self
+end
+
+function Arg:help(h)
+  if self.kind == Kind.cmd then
+    return ""
+        .. g .. self.short .. "" .. x .. " "
+        .. Word.bits.pipe .. " "
+        .. g .. self.long:sub(1, 1)
+        .. x .. self.long:sub(2)
+        .. "\t  "
+        .. self.desc
+  elseif self.kind == Kind.opt.flag then
+    return ""
+        .. Word.bits.hy
+        .. b .. self.short .. x .. " "
+        .. Word.bits.pipe .. " "
+        .. Word.bits.hy2
+        .. b .. self.long:sub(1, 1)
+        .. x .. self.long:sub(2)
+        .. "\t  "
+        .. self.desc
+  else
+    print(self.long, self.short)
+  end
+end
+
+function Arg:isopt()
+  return self.kind == Kind.opt.param or self.kind == Kind.opt.flag
+end
+
+function Arg:check(a, k)
+  if a == self.long and k == Arg.Kind.opt.flag.long.long then
+    return true
+  elseif a == self.short and k == Arg.Kind.opt.flag.short.short then
+    return true
+  elseif a == self.short and k == Arg.Kind.cmd.short then
+    return true
+  elseif a == self.long and k == Arg.Kind.cmd.long then
+    return true
+  end
+  return false
+end
+
+function Arg:handle(a, k)
+  if Arg.check(self, a, k) then
+    return self.handler()
+  end
+end
+
+--+  +--------------------+ handlers +--------------------+  +--
+--+  |                                                    |  +--
+--+  |  define handler functions.                         |  +--
+--+  |                                                    |  +--
+--+  +----------------------------------------------------+  +--
+
+local function test(...)
+  print "test"
+end
+
+local function conf(...)
+  print "conf"
+end
+
+--+  +----------------------+ func +----------------------+  +--
+--+  |                                                    |  +--
+--+  |  define core functions.                            |  +--
+--+  |                                                    |  +--
+--+  +----------------------------------------------------+  +--
+
+
+Word.opts = {
+
+}
+Word.args = {
+
 }
 
-# param 1: id
-# param 2: method
-function lsp-handle() {
-  ID="$1"
-  METHOD="$2"
-  case $2 in
-    'initialize') lsp-reply $ID '{
-    "clientInfo": '"$WORD_LSP_CLIENTINFO"',
-    "capabilities": '"$WORD_LSP_CAPABILITIES"'
-  }' ;;
-    'textDocument/moniker') lsp-reply "$ID" '[]' ;;
-    'textDocument/codeLens') lsp-reply "$ID" '[]' ;;
-    'textDocument/definition') lsp-reply "$ID" '[]' ;;
-    'textDocument/documentHighlight') lsp-reply "$ID" '[]' ;;
-    'textDocument/documentLink') lsp-reply "$ID" '[]' ;;
-    'textDocument/publishDiagnostics') lsp-reply $ID '[]' ;;
-    'textDocument/signatureHelp') lsp-reply $ID '{
-    "signatures": [],
-    "activeSignature": 0,
-    "activeParameter": 0
-  }' ;;
-    'textDocument/completion') lsp-reply "$ID" '{
-    "isIncomplete": false,
-    "items": '"$WORD_LSP_COMPLETIONS"'
-  }' ;;
-    'textDocument/rename') lsp-reply "$ID" 'null' ;;
-    'textDocument/formatting') lsp-reply "$ID" '[]' ;;
-    'textDocument/rangeFormatting') lsp-reply "$ID" '[]' ;;
-    'textDocument/onTypeFormatting') lsp-reply "$ID" '[]' ;;
-    'textDocument/prepareRename') lsp-reply "$ID" 'null' ;;
-    'textDocument/hover') lsp-reply "$ID" '{
-    "contents": {
-      "kind": "markdown",
-      "value": "```python\nhello world\n```"
-    }
-  }' ;;
-  esac
+Word.help = {
+  header = {
+    print = function(pre, h) print("\n" .. pre .. " " .. h .. " ") end,
+    info = "󰯂 INFO ",
+    cmds = " CMDS ",
+    args = "󰆧 ARGS ",
+    flag = "󰷐 FLAGS",
+    opts = "󰆧 OPTS ",
+    usage = "󰒓 USAGE",
 
-}
-function lsp-format() {
-  echo ""
-}
 
-function lsp-serve() {
-  echo "Serving at " $WORD_LSP_PORT
-  while IFS= read -r LN; do
-    [[ "$LN" =~ ^Content-Length:\ ([0-9]+) ]]
-    LEN="${BASH_REMATCH[1]}"
-    LEN=$((len + 2))
-    PAYLOAD=$(head -c "$LEN")
-    ID=$(echo -E "$PAYLOAD" | jq --raw-output '.id')
-    METHOD=$(echo -E "$PAYLOAD" | jq --raw-output '.method')
-    log $ID $METHOD
-    lsp-handle $ID $METHOD
-  done
-
+  },
+  word = function()
+    print("\n" .. Word.bits.wordi .. " " .. x .. Word.bits.version)
+    -- print(b .. "  author " .. x .. "   " .. Word.bits.author)
+    -- print(b .. "  repo " .. x .. "     " .. Word.repo)
+    -- print(b .. "  home " .. x .. "     " .. Word.home)
+  end,
+  info = function()
+    Word.help.header.print(bby, Word.help.header.info)
+    print(bg .. "" .. x .. "  " .. Word.bits.desc)
+  end,
+  usage = function()
+    Word.help.header.print(bbg, Word.help.header.usage)
+    print(bg .. "" .. x .. "  " .. Word.bits.usage)
+  end,
+  cmds = function()
+    Word.help.header.print(bbg, Word.help.header.cmds)
+    for _, v in pairs(Word.cmds) do
+      print(bg .. "" .. x .. "  " .. Arg.help(v))
+    end
+  end,
+  flags = function()
+    Word.help.header.print(bbb, Word.help.header.flag)
+    for _, v in pairs(Word.flags) do
+      print(bg .. "" .. x .. " " .. Arg.help(v))
+    end
+  end,
+  opts = function()
+    Word.help.header.print(bbm, Word.help.header.opts)
+    print(br .. "" .. x .. "  " .. x .. r .. Word.bits.ellipses)
+  end,
+  args = function()
+    Word.help.header.print(bbr, Word.help.header.args)
+    print(bm .. "" .. x .. "  " .. x .. m .. Word.bits.ellipses)
+  end,
 }
-
-# =======================  format  =======================
-
-# ----------------------- styling -----------------------
-
-X="\x1b[0m" # RESET
-B="\x1b[1m" # BOLD
-D="\x1b[2m" # DIM
-I="\x1b[3m" # ITALIC
-U="\x1b[4m" # UNDERLINE
-L="\x1b[5m" # BLINK
-R="\x1b[7m" # REVERSE
-H="\x1b[8m" # HIDDEN
-F="\x1b[9m" # STRIKE
-
-# ----------------------- colors -----------------------
-
-FL="\x1b[30m" # FG BLACK
-FR="\x1b[31m" # FG RED
-FG="\x1b[32m" # FG GREEN
-FY="\x1b[33m" # FG YELLOW
-FB="\x1b[34m" # FG BLUE
-FM="\x1b[35m" # FG MAGENTA
-FM="\x1b[36m" # FG CYAN
-FW="\x1b[37m" # FG WHITE
-
-BL="\x1b[40m" # BG BLACK
-BR="\x1b[41m" # BG RED
-BG="\x1b[42m" # BG GREEN
-BY="\x1b[43m" # BG YELLOW
-BB="\x1b[44m" # BG BLUE
-BM="\x1b[45m" # BG MAGENTA
-BC="\x1b[46m" # BG CYAN
-BW="\x1b[47m" # BG WHITE
-
-# -----------------------  helpers  -----------------------
-
-bold() {
-  echo -e "$B$1$X"
-}
-italic() {
-  echo -e "$I$1$X"
-}
-underline() {
-  echo -e "$U$1$X"
-}
-strike() {
-  echo -e "$F$1$X"
-}
-reverse() {
-  echo -e "$R$1$X"
-}
-blink() {
-  echo -e "$L$1$X"
-}
-dim() {
-  echo -e "$D$1$X"
-}
-color() {
-  echo -e "$2$1$X"
-}
-# 1: log
-# 2: message
-# 3: context
-# 4: location
-# 5: color
-logs() {
-  DIV="$FW$R$D$L $X"
-  LOC=""
-  CTX=""
-  MSG=""
-  LOG=""
-  [[ -n "$1" ]] && LOG="$B$5$R $1 $X" || LOG=""
-  [[ -n "$2" ]] && MSG="$FW$D$2$X" || MSG=""
-  [[ -n "$3" ]] && CTX="$5$B$3$X" || CTX=""
-  [[ -n "$4" ]] && LOC="$FL$B($4)$X" || LOC=""
-  echo -e "$LOG $CTX $MSG $LOC"
-}
-LOC=""
-
-# 1: context
-# 2: message
-# 3: location
-info() {
-  logs "󰍡  INF" $2 $1 "" "$FB"
-}
-log() {
-  logs "󰗚  LOG" $2 $1 "" $FW
-}
-# 󰙅 󰍔 󱡠 󰆼  󰘧 󰷐
-dbg() {
-  logs "󰯂  DBG" $2 $1 "" $FM
-}
-hint() {
-  logs "  HNT" $2 $1 "" $FG
-}
-warn() {
-  logs "  WRN" $2 $1 "" $FY
-}
-err() {
-  logs "󰟢  ERR" $2 $1 "" $FR
-}
-lsp() {
-  logs "󰘧  LSP" $2 $1 "" $FM
-}
-word() {
-  logs "󰒓  word" $2 $1 "" $FB
-}
-trace() {
-  logs "󰆧  TRC" $2 $1 "" $FM
+Word.help.print = function()
+  Word.help.word()
+  Word.help.info()
+  -- Word.help.usage()
+  Word.help.cmds()
+  Word.help.flags()
+  -- Word.help.opts()
+  -- Word.help.args()
+end
+Word.flags = {
+  version = Arg.flag("version", "Print version", function()
+    print(Word.version)
+  end),
+  debug = Arg.flag("debug", "Set debug", function()
+    print("debug")
+  end),
+  config = Arg.flag("config", "Specify config file", function(...)
+    print "config"
+  end),
+  stdout = Arg.flag("stdout", "Set stdout output", function()
+    print("stdout")
+  end),
+  profile = Arg.flag("color", "Set color output", function()
+    print("color")
+  end),
+  help = Arg.flag("help", "Print help", Word.help.print),
 }
 
-# ======================= argparse =======================
-# ----------------------- subcmds -----------------------
-
-function show-help() {
-  echo "Usage: $WORD_LSP_BIN [-h] [-v] [-f filename]"
-  echo ""
-  echo "COMMANDS"
-  echo ""
-  echo "  serve"
-  echo "  run"
-  echo ""
-  echo "OPTIONS"
-  echo ""
-  echo "  --help    | -h         Show help"
-  echo "  --version | -v         Show version"
-  echo "  -c CONFIG-FILE         Specify a file"
-  echo ""
-}
-function show-version() {
-  word "version" "0.0.1-alpha.1"
-}
-function shell() {
-  lsp "shell" "sh"
+Word.cmds = {
+  init = Arg.cmd("init", "Initialize workspace", function()
+    print('init')
+  end),
+  upgrade = Arg.cmd("upgrade", "Upgrade binary", function()
+    print('upgrade')
+  end),
+  run = Arg.cmd("run", "Run the lsp", function(...)
+    print "run"
+  end),
+  lsp = Arg.cmd("lsp", "Serve the lsp", function(...)
+    print "serve"
+  end),
+  -- version = Arg.cmd("version", "Print version", Word.flags.version.desc, Word.flags.version.handler),
+  config = Arg.cmd("config", "Set config values", Word.flags.config.handler),
+  help = Arg.cmd("help", "Print help", Word.flags.help.handler),
 }
 
-function update() {
-  word "update" "..."
-}
+--+  +---------------------+ parse +---------------------+  +--
+--+  |                                                    |  +--
+--+  |  define parse functions.                           |  +--
+--+  |                                                    |  +--
+--+  +----------------------------------------------------+  +--
 
-# ----------------------- main fn -----------------------
-function main() {
-  # if no subcommand, serve
+---  @param a string arg
+function Word:pflag(a, k)
+  local ok = false
+  for _, v in pairs(self.flags) do
+    if Arg.check(v, a, k) then
+      ok = true
+      return Arg.handle(v, a, k)
+    end
+  end
+  if ok == false then Arg.Kind.unknown(a, k) end
+end
 
-  [[ $# -eq 0 ]] && lsp-serve
+---  @param a string arg
+function Word:pcmd(a, k)
+  local ok = false
+  for _, v in pairs(self.cmds) do
+    if Arg.check(v, a, k) then
+      ok = true
+      return Arg.handle(v, a, k)
+    end
+  end
+  if ok == false then return Arg.Kind.unknown(a, k) end
+end
 
-  case "$1" in
-    serve | s | run | r) lsp-serve ;;
-    shell | sh) shell ;;
-    --config | -c) WORD_LSP_CONFIG=$2 ;;
-    --stdio | -s) WORD_LSP_STDIO=true ;;
-    --debug | -d) WORD_LSP_DEBUG=true ;;
-    --port | -p) WORD_LSP_PORT=$2 ;;
-    --host) WORD_LSP_HOST=$2 ;;
-    help | h | -h | --help) show-help ;;
-    format | f) lsp-format ;;
-    version | v | --version | -v) show-version ;;
-    update | up | u) update ;;
-  esac
-}
+---  @param a string
+function Word:pstr(a)
+  local st, k = Arg.Kind.check(a)
+  if Arg.Kind.opt.isopt(k) then
+    return self:pflag(st, k)
+  elseif Arg.Kind.cmd.iscmd(k) then
+    return self:pcmd(st, k)
+  else
+    Arg.Kind.unknown(st, k)
+  end
+end
 
-main "$@"
+---  @return nil
+function Word:parse()
+  local i, a, ac = 1, arg, #arg
+  if ac == 0 then
+    return self.flags.help.handler()
+  end
+  for ai, a in ipairs(a) do
+    return self:pstr(a)
+  end
+end
 
-# echo "Running wordsh..."
-# serve
+--+  +----------------------+ main +----------------------+  +--
+--+  |                                                    |  +--
+--+  |  define and call main function.                    |  +--
+--+  |                                                    |  +--
+--+  +----------------------------------------------------+  +--
 
-# vim:ft=bash
+function Word:main()
+  self:parse()
+end
+
+Word:main()
+
+--+  +----------------------+ word +----------------------+  +--
+--+  |                                                    |  +--
+--+  |  version 0.1.0-alpha.                              |  +--
+--+  |                                                    |  +--
+--+  |  author: Chris Pecunies <clp@clp.is>               |  +--
+--+  |                                                    |  +--
+--+  +----------------------------------------------------+  +--
+
+--vim:ft=lua,ts=2,sw=2,sts=2,et
