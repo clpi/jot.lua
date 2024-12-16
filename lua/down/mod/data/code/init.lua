@@ -37,7 +37,7 @@ M.setup = function()
   end
   return {
     requires = {
-      "integration.treesitter",
+      "tool.treesitter",
       "data",
       "cmd",
     },
@@ -59,7 +59,7 @@ end
 M.data = {
   code = function(buffer)
     ---@type base.treesitter
-    local treesitter = M.required["integration.treesitter"]
+    local treesitter = M.required["tool.treesitter"]
     local parsed_document_metadata = treesitter.get_document_metadata(buffer)
       or {}
     local code_settings = parsed_document_metadata.code or {}

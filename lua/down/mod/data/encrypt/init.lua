@@ -22,7 +22,7 @@ E.setup = function()
   return {
     loaded = true,
     requires = {
-      "integration.treesitter",
+      "tool.treesitter",
       "cmd",
       "workspace",
     },

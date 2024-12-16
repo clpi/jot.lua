@@ -12,7 +12,7 @@ M.setup = function()
   return {
     loaded = true,
     requires = {
-      "integration.treesitter",
+      "tool.treesitter",
     },
   }
 end
@@ -1151,7 +1151,7 @@ local function prettify_range(bufid, row_start_0b, row_end_0bex)
   -- TODO: optimize
   row_end_0bex = math.min(row_end_0bex + 1, vim.api.nvim_buf_line_count(bufid))
 
-  local tsm = M.required["integration.treesitter"]
+  local tsm = M.required["tool.treesitter"]
   local document_root = tsm.get_document_root(bufid)
   assert(document_root)
 

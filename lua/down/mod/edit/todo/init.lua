@@ -4,7 +4,7 @@ local log, mod = down.log, down.mod
 local M = mod.create("edit.todo")
 
 M.setup = function()
-  return { loaded = true, requires = { "integration.treesitter" } }
+  return { loaded = true, requires = { "tool.treesitter" } }
 end
 
 M.load = function()
@@ -239,7 +239,7 @@ M.data = {
         return
       end
 
-      local range = M.required["integration.treesitter"].get_node_range(
+      local range = M.required["tool.treesitter"].get_node_range(
         first_status_extension
       )
 
@@ -274,7 +274,7 @@ M.data = {
     ---@return userdata? #The node if it was located, else nil
     get_todo_from_cursor = function(buf, line)
       local node_at_cursor =
-          M.required["integration.treesitter"].get_first_node_on_line(buf, line)
+          M.required["tool.treesitter"].get_first_node_on_line(buf, line)
 
       if not node_at_cursor then
         return
@@ -357,7 +357,7 @@ M.data = {
           { "(" .. char .. ") " }
         )
       else
-        local range = M.required["integration.treesitter"].get_node_range(
+        local range = M.required["tool.treesitter"].get_node_range(
           first_status_extension
         )
 

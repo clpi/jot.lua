@@ -7,8 +7,8 @@ local M = require("down.mod").modules(
   "note",
   "cmd",
   "workspace",
-  "integration.telescope",
-  "integration.treesitter",
+  "tool.telescope",
+  "tool.treesitter",
   "data",
   "lsp",
   "edit"

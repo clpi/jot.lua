@@ -441,7 +441,7 @@ M.data = {
   },
 
   --- Parses the public completion table and attempts to find all valid matches
-  ---@param context table #The context provided by the integration engine
+  ---@param context table #The context provided by the tool engine
   ---@param prev table? #The previous table of completions - used for descent
   ---@param saved string? #The saved regex in the form of a string, used to concatenate children nodes with parent nodes' regexes
   complete = function(context, prev, saved)
@@ -486,7 +486,7 @@ M.data = {
           local ret_completions =
           { items = items, options = completion_data.options or {} }
 
-          -- Set the match variable for the integration M
+          -- Set the match variable for the tool M
           ret_completions.match = match
 
           -- If the completion data has a node variable then attempt to match the current node too!
@@ -682,7 +682,7 @@ M.setup = function()
     loaded = true,
     requires = {
       "workspace",
-      "integration.treesitter",
+      "tool.treesitter",
       "edit.link",
     },
   }
@@ -946,21 +946,21 @@ M.load = function()
       and M.config.engine["mod_name"]
   then
     local completion_mod = M.config.engine == "nvim-compe"
-        and Mod.load_mod("core.integrations.nvim-compe")
-    mod.load_mod_as_dependency("core.integrations.nvim-compe", M.name, {})
-    M.data.engine = mod.get_mod("core.integrations.nvim-compe")
+        and Mod.load_mod("core.tools.nvim-compe")
+    mod.load_mod_as_dependency("core.tools.nvim-compe", M.name, {})
+    M.data.engine = mod.get_mod("core.tools.nvim-compe")
   elseif
       M.config.engine == "nvim-cmp"
-      and mod.load_mod("core.integrations.nvim-cmp")
+      and mod.load_mod("core.tools.nvim-cmp")
   then
-    mod.load_mod_as_dependency("core.integrations.nvim-cmp", M.name, {})
-    M.data.engine = mod.get_mod("core.integrations.nvim-cmp")
+    mod.load_mod_as_dependency("core.tools.nvim-cmp", M.name, {})
+    M.data.engine = mod.get_mod("core.tools.nvim-cmp")
   elseif
       M.config.engine == "coq_nvim"
-      and mod.load_mod("core.integrations.coq_nvim")
+      and mod.load_mod("core.tools.coq_nvim")
   then
-    mod.load_mod_as_dependency("core.integrations.coq_nvim", M.name, {})
-    M.data.engine = mod.get_mod("core.integrations.coq_nvim")
+    mod.load_mod_as_dependency("core.tools.coq_nvim", M.name, {})
+    M.data.engine = mod.get_mod("core.tools.coq_nvim")
   else
     log.error(
       "Unable to load completion M -",
@@ -973,18 +973,18 @@ M.load = function()
   dirutils = M.required["core.dirman.utils"]
   dirman = M.required["core.dirman"]
   link_utils = M.required["core.links"]
-  treesitter = M.required["core.integrations.treesitter"]
+  treesitter = M.required["core.tools.treesitter"]
 
-  -- Set a special function in the integration M to allow it to communicate with us
+  -- Set a special function in the tool M to allow it to communicate with us
   M.data.engine.invoke_completion_engine = function(context) ---@diagnostic disable-line
     return M.data.complete(context) ---@diagnostic disable-line -- TODO: type error workaround <pysan3>
   end
 
-  -- Create the integration engine's source
+  -- Create the tool engine's source
   M.data.engine.create_source({
     completions = M.config.completions,
   })
-  -- ts = mod.required["integration.treesitter"]
+  -- ts = mod.required["tool.treesitter"]
 end
 
 M.data = {

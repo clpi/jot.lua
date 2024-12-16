@@ -67,7 +67,7 @@ M.setup = function()
   return {
     loaded = true,
     requires = {
-      "integration.treesitter",
+      "tool.treesitter",
       "data",
       "workspace",
       "cmd",
@@ -320,7 +320,7 @@ M.load = function()
     callback = M.data.start_lsp,
   })
 end
-M.data.ts = Mod.get_mod("integration.treesitter")
+M.data.ts = Mod.get_mod("tool.treesitter")
 M.data.workspace_file = Mod.get_mod("lsp.workspace.file")
 M.data.workspace = Mod.get_mod("workspace")
 M.data.lsp_ws = Mod.get_mod("lsp.workspace")

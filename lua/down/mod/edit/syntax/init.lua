@@ -25,7 +25,7 @@ M.setup = function()
   return {
     loaded = true,
     requires = {
-      "integration.treesitter",
+      "tool.treesitter",
     },
   }
 end
@@ -92,7 +92,7 @@ M.data = {
     end
 
     -- If the tree is valid then attempt to perform the query
-    local tree = M.required["integration.treesitter"].get_document_root(buf)
+    local tree = M.required["tool.treesitter"].get_document_root(buf)
 
     if tree then
       -- get the language node used by the code block

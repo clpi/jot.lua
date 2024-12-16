@@ -840,7 +840,7 @@ M.setup = function()
       "data",
       "data.template",
       "workspace",
-      "integration.treesitter",
+      "tool.treesitter",
     },
   }
 end

@@ -42,7 +42,7 @@ M.config = {
 M.setup = function()
   return {
     loaded = true,
-    requires = { "integration.treesitter" },
+    requires = { "tool.treesitter" },
   }
 end
 
@@ -79,7 +79,7 @@ function M.data.attach_introspector(buffer)
     )
   end
 
-  M.required["integration.treesitter"].execute_query(
+  M.required["tool.treesitter"].execute_query(
     [[
     (_
       state: (detached_modifier_extension)) @item
@@ -104,7 +104,7 @@ function M.data.attach_introspector(buffer)
 
       ---@type TSNode?
       local node =
-        M.required["integration.treesitter"].get_first_node_on_line(buf, first)
+        M.required["tool.treesitter"].get_first_node_on_line(buf, first)
 
       if not node then
         return
@@ -135,7 +135,7 @@ function M.data.attach_introspector(buffer)
       introspect(node)
 
       local node_above =
-        M.required["integration.treesitter"].get_first_node_on_line(
+        M.required["tool.treesitter"].get_first_node_on_line(
           buf,
           first - 1
         )

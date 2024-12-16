@@ -20,6 +20,7 @@ Mod = setmetatable({}, {
   end,
 })
 
+---@param name string The name of the new mod
 Mod.default = function(name)
   return {
     setup = function()
@@ -75,7 +76,6 @@ Mod.default = function(name)
     import = {},
   }
 end
--- local cmd = require("down.cmd")
 
 --- @param name string The name of the new init. Modake sure this is unique. The recommended naming convention is `category.modn` or `category.subcategory.modn`.
 --- @param imports? string[] A list of imports to attach to the init. Import data is requestable via `init.required`. Use paths relative to the current init.
@@ -107,30 +107,30 @@ function Mod.create(name, imports)
   return new
 end
 
---- Constructs a default array of modules
+--[[
+              Flow of functions:
+
+      +-------+  load mod   +------------------+ +------+
+      | setup |>----------->| cmds, opts, maps |>| load |
+      +-------+  set data   +------------------+ +------+
+
+--]]
+--- Constructs a default array of modules,
+--- NOTE: Specifically for the introductory `config` module
 --- @param name string The name of the new metainit. Modake sure this is unique. The recommended naming convention is `category.modn` or `category.subcategory.modn`.
 --- @param ... string A list of init names to load.
 --- @return down.Mod
 Mod.modules = function(name, ...)
   ---@type down.Mod
   local m = Mod.create(name)
-
   m.config.enable = { ... }
-  -- print(ms[0])
-  -- print(m.config.enable[0])
-
   m.setup = function()
     return { loaded = true }
   end
-  if m.cmds then
-    m.cmds()
-  end
-  if m.opts then
-    m.opts()
-  end
-  if m.maps then
-    m.maps()
-  end
+  -- TODO: consider removing
+  if m.cmds then m.cmds() end
+  if m.opts then m.opts() end
+  if m.maps then m.maps() end
 
   m.load = function()
     m.config.enable = (function()
@@ -155,19 +155,9 @@ Mod.modules = function(name, ...)
   end
   return m
 end
-
--- TODO: What goes below this line until the next notice used to belong to mod
--- We need to find a way to make these functions easier to maintain
-
---- Tracks the amount of currently loaded mod.
 Mod.loaded_mod_count = 0
-
---- The table of currently loaded mod
 --- @type { [string]: down.Mod }
 Mod.loaded_mod = {}
-
---- Loads and enables a init
---- Loads a specified init. If the init subscribes to any events then they will be activated too.
 --- @param m down.Mod The actual init to load.
 --- @return boolean # Whether the init successfully loaded.
 function Mod.load_mod_from_table(m)
@@ -271,17 +261,14 @@ function Mod.load_mod_from_table(m)
     -- Loop through each dependency and load it one by one
     for _, req_mod in pairs(mod_load.requires) do
       log.trace("Loading submod" .. req_mod)
-
       if not Mod.is_mod_loaded(req_mod) then
-        -- print(req_mod)
         if not Mod.load_mod(req_mod) then
           log.error(
             ("Unable to load init %s, required dependency %s did not load successfully"):format(
-              m.name,
+              m.name ..
               req_mod
             )
           )
-
           -- Modake sure to clean up after ourselves if the init failed to load
           Mod.loaded_mod[m.name] = nil
           return false
@@ -289,7 +276,6 @@ function Mod.load_mod_from_table(m)
       else
         log.trace("mod" .. req_mod .. "already loaded, skipping...")
       end
-
       -- Create a reference to the dependency's public table
       m.required[req_mod] = Mod.loaded_mod[req_mod].data
     end
@@ -309,10 +295,8 @@ function Mod.load_mod_from_table(m)
           mod_to_replace.name
         )
       )
-
       -- Modake sure to clean up after ourselves if the init failed to load
       Mod.loaded_mod[m.name] = nil
-
       return false
     end
 

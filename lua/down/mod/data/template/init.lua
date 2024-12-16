@@ -38,7 +38,7 @@ M.setup = function()
     loaded = true,
     requires = {
       "workspace",
-      "integration.treesitter",
+      "tool.treesitter",
     },
   }
 end

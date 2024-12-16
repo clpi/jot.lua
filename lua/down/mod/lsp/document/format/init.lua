@@ -9,7 +9,7 @@ M.setup = function()
   return {
     loaded = true,
     requires = {
-      "integration.treesitter",
+      "tool.treesitter",
       "workspace",
     },
   }
@@ -55,7 +55,7 @@ local workspace, workspace, ts
 M.load = function()
   -- TODO: how would I get types in here?
   ---@type treesitter
-  ts = M.required["integration.treesitter"]
+  ts = M.required["tool.treesitter"]
   workspace = M.required["workspace"]
 end
 

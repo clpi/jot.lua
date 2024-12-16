@@ -3,18 +3,17 @@
 Welcome -- to the `down.lua` book. I hope this helps!
 
 - [Intro](./intro.md)
-- [Philosophy](./philosophy.md)
-- [Setup](./setup.md)
 - [About](./about/index.md)
 
-  - [Options](./about/options.md)
-  - [Commands](./about/commands.md)
-  - [Autocommands](./about/autocommands.md)
+  - [Philosophy](./philosophy.md)
   - [Compare](./about/compare.md)
 
 - [Configuring](./config/index.md)
 
   - [Setting up](./config/setting-up.md)
+  - [Options](./about/options.md)
+  - [Commands](./about/commands.md)
+  - [Autocommands](./about/autocommands.md)
   - [Keymaps](./config/keymaps.md)
   - [Basic](./config/basic.md)
   - [Advanced](./config/advanced.md)
@@ -29,8 +28,13 @@ Welcome -- to the `down.lua` book. I hope this helps!
 - [Modules](./modules/index.md)
 
   - [Introduction](./modules/intro.md)
-  - [Examples](./modules/example.md)
+  - [Examples](./modules/examples.md)
+    - [Barebones](./../lua/module/examples/barebones.lua)
+    - [Basic](./../lua/module/examples/basic.lua)
   - [Quickstart](./modules/quickstart.md)
+  - [Bultin Overview](./modules/builtin.md)
+  - [Full Overview](./modules/core.md)
+  - [Further Reading](./modules/further.md)
 
 - [Customizing](./customizing/index.md)
 
@@ -61,10 +65,10 @@ Welcome -- to the `down.lua` book. I hope this helps!
   - [General](./plans/general.md)
   - [Todo](./plans/todo.md)
 
-- [Support](./support.md)
+- [Contributing](./contributing/index.md)
 
-  - [Issues](./contributing/issues.md)
-  - [Contributing](./contributing/discussions.md)
+  - [Contributing to Issues](./contributing/issues.md)
+  - [Contributing to Discussions](./contributing/discussions.md)
   - [Sponsorship](./contributing/sponsorship.md)
 
 - [Tools](./tools/index.md)
@@ -79,5 +83,4 @@ Welcome -- to the `down.lua` book. I hope this helps!
 
 - [Contributing](./contributing/intro.md)
 - [Roadmap](./roadmap.md)
-- [Credits](./credits.md)
 - [Map](./index.md)

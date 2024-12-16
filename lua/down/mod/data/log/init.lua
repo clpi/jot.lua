@@ -43,7 +43,7 @@ M.setup = function()
       "ui.win",
       "ui.progress",
       "workspace",
-      "integration.treesitter",
+      "tool.treesitter",
     },
   }
 end

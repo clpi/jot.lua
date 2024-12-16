@@ -31,7 +31,7 @@ M.setup = function()
   --   })
   -- end
   return {
-    requires = { "integration.treesitter", "ui", "cmd" },
+    requires = { "tool.treesitter", "ui", "cmd" },
   }
 end
 
@@ -122,7 +122,7 @@ M.data = {
   parse_toc_macro = function(buffer)
     local toc, toc_name = false, nil
 
-    local success = M.required["integration.treesitter"].execute_query(
+    local success = M.required["tool.treesitter"].execute_query(
       [[
                 (infirm_tag
                     (tag_name) @name
@@ -133,7 +133,7 @@ M.data = {
 
         if
             capture_name == "name"
-            and M.required["integration.treesitter"]
+            and M.required["tool.treesitter"]
             .get_node_text(node, buffer)
             :lower()
             == "toc"
@@ -141,7 +141,7 @@ M.data = {
           toc = true
         elseif capture_name == "parameters" and toc then
           toc_name =
-              M.required["integration.treesitter"].get_node_text(node, buffer)
+              M.required["tool.treesitter"].get_node_text(node, buffer)
           return true
         end
       end,
@@ -183,11 +183,11 @@ M.data = {
 
         if prefix and title then
           local prefix_text =
-              M.required["integration.treesitter"].get_node_text(
+              M.required["tool.treesitter"].get_node_text(
                 prefix,
                 original_buffer
               )
-          local title_text = M.required["integration.treesitter"].get_node_text(
+          local title_text = M.required["tool.treesitter"].get_node_text(
             title,
             original_buffer
           )
@@ -279,7 +279,7 @@ M.data = {
         )
 
     local down_root =
-        M.required["integration.treesitter"].get_document_root(down_buffer)
+        M.required["tool.treesitter"].get_document_root(down_buffer)
     if not down_root then
       return
     end

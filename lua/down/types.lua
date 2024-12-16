@@ -2,7 +2,7 @@
 ---
 --- @alias down.mod.Data { [any]: any }
 
---- @class (exact) down.mod.Mods
+--- @class down.mod.Mods
 --- @field ['lsp.document']? lsp.document.Data
 --- @field ['lsp.workspace']? lsp.workspace.Data
 --- @field ['lsp.completion']? lsp.completion.Data
@@ -66,7 +66,7 @@
 --- Public configs may be tweaked by the user from the `down.setup()` function,  whereas private configs are for internal use only.
 --- @alias down.mod.Config table
 
---- @class (exact) down.mod.Events
+--- @class down.mod.Events
 --- @field defined? { [string]: down.Event }              Lists all events by this init.
 --- @field subscribed? { [string]: { [string]: boolean } } Lists the events that the init is subscribed to.
 
@@ -75,7 +75,7 @@
 --- Defines a init.
 --- A init is an object that contains a set of hooks which are invoked by down whenever something in the
 --- environment occurs. This can be an event, a simple act of the init being loaded or anything else.
---- @class (exact) down.Mod
+--- @class down.Mod
 --- @field hook? fun(manual: boolean, arguments?: string)    A user-defined function that is invoked whenever down starts up. May be used to e.g. set custom keybindings.
 --- @field config? down.mod.Config The config for the init.
 --- @field events? down.mod.Events Describes all information related to events for this init.

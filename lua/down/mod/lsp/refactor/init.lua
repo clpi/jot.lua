@@ -9,7 +9,7 @@ M.setup = function()
   return {
     loaded = true,
     requires = {
-      "integration.treesitter",
+      "tool.treesitter",
       "workspace",
     },
   }
@@ -17,7 +17,7 @@ end
 
 local workspace, ts
 M.load = function()
-  -- ts = M.required["integration.treesitter"]
+  -- ts = M.required["tool.treesitter"]
   -- workspace = M.required["workspace"]
 end
 
