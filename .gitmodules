@@ -1,31 +1,7 @@
-  # TODO: add as necessary
-  # TODO: migrate incrementally to org
-
 [submodule "ext/vsc"]
   path = ./ext/vsc
-  url  = git@github.com:clpi/word-vscode
+  url  = git@github.com:clpi/down.vscode
 
-  # [submodule "ext/helix"]
-    # path = ext/helix
-    # url  = https://github.com/clpi/word-helix.lua
-
-  # [submodule "ext/lapce"]
-  #   path = "ext/lapce"
-  #   url  = "https://github.com/clpi/word-lapce.lua"
-
-  # [submodule "ext/emacs"]
-  #   path = "ext/emacs"
-  #   url  = "https://github.com/clpi/word-emacs.lua"
-
-  # [submodule "ext/zed"]
-  #   path = ext/zed
-  #   url  = "https://github.com/clpi/word-zed.lua"
-
-  # [submodule "ext/py"]
-  #   path = ext/py
-  #   url  = "https://github.com/clpi/word-py.lua"
-
-  # [submodule "ext/nim"]
-  #   path = ext/nim
-  #   url  = "https://github.com/clpi/word-nim.lua"
-
+[submodule "ext/lsp"]
+	path = ext/lsp
+	url = git@github.com:clpi/down.lsp.git

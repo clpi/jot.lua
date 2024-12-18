@@ -28,7 +28,7 @@ downls
 **ext/oc
 **ext/helix
 **ext/zed
-**ext/lsp
+# **ext/lsp
 **ext/rust-lsp
 **ext/nim
 **.book/
