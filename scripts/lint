@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+
+check() {
+  echo -e "Check"
+  luacheck --config .luacheckrc lua/ test/
+}
+sele() {
+  echo -e "Selene"
+  selene --display-style=quiet lua/* test/*
+}
+styl() {
+  echo -e "Stylua"
+  stylua --config stylua.toml lua/ test/
+}
+
+main() {
+  [[ -z $1 ]] && check && styl && sele
+  [[ $1 == "check" ]] && check
+  [[ $1 == "sele" ]] && sele
+  [[ $1 == "styl" ]] && styl
+}
+
+main "$@"
+
+#vim:ft=bash

@@ -1,0 +1,115 @@
+#!/usr/bin/env bash
+
+NL=$'\r\n'
+HEAD="Content-Length: "
+CMP=$(head <"/usr/share/dict/words" -n 1000 | jq --raw-input --slurp 'split("\n")[:-1] | map({ label: . })')
+
+lsp-encode() {
+  local body="$1"
+  local len=${#body}
+  local resp="Content-Length: $len\r\n\r\n$body"
+  echo "$resp" >>/tmp/downls.log
+  echo -e "$resp"
+}
+
+lsp-completions() {
+  echo ''
+}
+
+lsp-notify() {
+  lsp-encode '{
+    "method": "'"$1"'",
+    "params": '"$2"'
+  }'
+}
+lsp-reply() {
+  lsp-encode '{
+    "jsonrpc": "2.0",
+    "id": '"$1"',
+    "result": '"$2"'
+  }'
+}
+lsp-req() {
+  lsp-encode '{
+    "jsonrpc": "2.0",
+    "id": '"$1"',
+    "method": "'"$2"'",
+    "params": '"$3"'
+  }'
+}
+lsp-initialize() {
+  lsp-req "$1" "initialize" '{
+    "rootPath": "/Users/clp/clp",
+    "workspaceFolders": [
+      {
+        "uri": "file:///Users/clp/clp",
+        "name": "clp"
+      }
+    ],
+  }'
+}
+
+lsp-handle() {
+  local id="$1"
+  case $2 in
+  'initialize') lsp-reply id '{
+    "serverInfo": {
+      "name": "downls",
+      "version": "0.1.2-alpha"
+    },
+    "capabilities": {
+      "completionProvider": {
+
+      },
+      "hoverProvider": true,
+      "definitionProvider": true,
+      "workspaceSymbolProvider": true,
+      "workspace": {
+        "workspaceFolders": {
+          "supported": true,
+          "changeNotifications": true
+        }
+      },
+      "textDocumentSync": 1
+      }
+    }' ;;
+  'workspace/configuration') lsp-reply id '{
+  }' ;;
+  'textDocument/completion') lsp-reply id '{
+      "isIncomplete": false,
+      "items": '"$CMP"'
+    }' ;;
+  'textDocument/codeAction') lsp-reply id '{
+    }' ;;
+  'textDocument/codeLens') lsp-reply id '{
+    }' ;;
+  'textDocument/definition') lsp-reply id '{
+    }' ;;
+  'textDocument/documentHighlight') lsp-reply id '{
+    }' ;;
+  'textDocument/documentSymbol') lsp-reply id '{
+    }' ;;
+  'textDocument/formatting') lsp-reply id '{
+    }' ;;
+  'shutdown') lsp-reply id 'null' ;;
+  'exit') exit ;;
+  *) ;;
+  esac
+}
+
+main() {
+  echo -e 'Starting lsp server'
+  while IFS= read -r line; do
+    [[ "$line" =~ ^Content-Length:\ ([0-9]+) ]]
+    len="${BASH_REMATCH[1]}"
+    len=$((len + 2))
+    payload=$(head -c "$len")
+    echo -e "$payload $len $line"
+    id=$(echo -E "$payload" | jq -r '.id')
+    mt=$(echo -E "$payload" | jq -r '.method')
+    lsp-handle "$id" "$mt"
+  done
+}
+
+main "$@"
+#vim:ft=bash

@@ -1,6 +1,12 @@
 {
   "$schema": "https://raw.githubusercontent.com/sumneko/vscode-lua/master/setting/schema.json",
   "workspace.checkThirdParty": false,
+  "runtime.version": "LuaJIT",
+  "workspace.library": [
+    "$VIMRUNTIME",
+    "lua",
+    "${3rd]/luv/library"
+  ],
   "semantic.annotation": true,
   "semantic.keyword": true,
   "semantic.variable": true,

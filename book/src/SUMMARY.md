@@ -5,7 +5,7 @@ Welcome -- to the `down.lua` book. I hope this helps!
 - [Intro](./intro.md)
 - [About](./about/index.md)
 
-  - [Philosophy](./philosophy.md)
+  - [Philosophy](./about/philosophy.md)
   - [Compare](./about/compare.md)
 
 - [Configuring](./config/index.md)

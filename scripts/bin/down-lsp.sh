@@ -43,17 +43,17 @@
 #    |                                                    |    #
 #    +----------------------------------------------------+    #
 
-export down_LSP_BIN="down-lsp"
-export down_LSP_COMPLETIONS=$(head </usr/share/dict/downs -n 1000 | jq --raw-input --slurp 'split("\n")[:-1] | map({label: . })')
-export down_LSP_SERVERINFO='{
+export DOWN_LSP_BIN="down-lsp"
+export DOWN_LSP_COMPLETIONS=$(head </usr/share/dict/words -n 1000 | jq --raw-input --slurp 'split("\n")[:-1] | map({label: . })')
+export DOWN_LSP_SERVERINFO='{
   "name": "down-lsp",
   "version": "0.0.1"
 }'
-export down_LSP_CLIENTINFO='{
+export DOWN_LSP_CLIENTINFO='{
   "name": "down-lsp",
   "version": "0.0.1"
 }'
-export down_LSP_CAPABILITIES='{
+export DOWN_LSP_CAPABILITIES='{
   "textDocumentSync": 1,
   "hoverProvider": true,
   "completionProvider": {
@@ -68,10 +68,10 @@ export down_LSP_CAPABILITIES='{
 #    |                                                     |    #
 #    +-----------------------------------------------------+    #
 
-down_LSP_DEBUG=false
-down_LSP_STDIO=false
-down_LSP_PORT=2088
-down_LSP_HOST=localhost
+DOWN_LSP_DEBUG=false
+DOWN_LSP_STDIO=false
+DOWN_LSP_PORT=2088
+DOWN_LSP_HOST=localhost
 
 #    +---------------------+  func  +----------------------+    #
 #    |                                                     |    #
@@ -104,8 +104,8 @@ function lsp-handle() {
   METHOD="$2"
   case $2 in
   'initialize') lsp-reply $ID '{
-    "clientInfo": '"$down_LSP_CLIENTINFO"',
-    "capabilities": '"$down_LSP_CAPABILITIES"'
+    "clientInfo": '"$DOWN_LSP_CLIENTINFO"',
+    "capabilities": '"$DOWN_LSP_CAPABILITIES"'
   }' ;;
   'textDocument/moniker') lsp-reply "$ID" '[]' ;;
   'textDocument/codeLens') lsp-reply "$ID" '[]' ;;
@@ -120,7 +120,7 @@ function lsp-handle() {
   }' ;;
   'textDocument/completion') lsp-reply "$ID" '{
     "isIncomplete": false,
-    "items": '"$down_LSP_COMPLETIONS"'
+    "items": '"$DOWN_LSP_COMPLETIONS"'
   }' ;;
   'textDocument/rename') lsp-reply "$ID" 'null' ;;
   'textDocument/formatting') lsp-reply "$ID" '[]' ;;
@@ -139,9 +139,12 @@ function lsp-handle() {
 function lsp-format() {
   echo -e ""
 }
+lsp-test() {
+  echo -e "test..."
+}
 
 function lsp-serve() {
-  echo -e "Serving at " $down_LSP_PORT
+  echo -e "Serving at " $DOWN_LSP_PORT
   while IFS= read -r LN; do
     [[ "$LN" =~ ^Content-Length:\ ([0-9]+) ]]
     LEN="${BASH_REMATCH[1]}"
@@ -264,7 +267,7 @@ lsp() {
   logs "󰘧  LSP" $2 $1 "" $FM
 }
 down() {
-  logs "��������������������������������  down" $2 $1 "" $FB
+  logs "����������������������������������������  down" $2 $1 "" $FB
 }
 trace() {
   logs "󰆧  TRC" $2 $1 "" $FM
@@ -348,15 +351,22 @@ function main() {
   [[ $# -eq 0 ]] && lsp-serve
 
   case "$1" in
+  --markdown | -M | --md) DOWN_LSP_MARKDOWN=true ;;
+  --down | -D | --dn | --dwn) DOWN_LSP_DOWN=true ;;
+  --stdin | -i) DOWN_LSP_STDIN=true ;;
+  --config | -c) DOWN_LSP_CONFIG=$2 ;;
+  --stdio | -s) DOWN_LSP_STDIO=true ;;
+  --debug | -d) DOWN_LSP_DEBUG=true ;;
+  --port | -p) DOWN_LSP_PORT=$2 ;;
+  --host | -H) DOWN_LSP_HOST=$2 ;;
+  --console | -C) DOWN_LSP_CONSOLE=1 ;;
+  --style | -S) DOWN_LSP_STYLE=1 ;;
+
   serve | s | run | r) lsp-serve ;;
   shell | sh) shell ;;
-  --config | -c) down_LSP_CONFIG=$2 ;;
-  --stdio | -s) down_LSP_STDIO=true ;;
-  --debug | -d) down_LSP_DEBUG=true ;;
-  --port | -p) down_LSP_PORT=$2 ;;
-  --host) down_LSP_HOST=$2 ;;
   halp | --halp) show-help ;;
   help | h | -h | --help) down-help ;;
+  test | t) lsp-test ;;
   format | f) lsp-format ;;
   version | v | --version | -v) show-version ;;
   update | up | u) update ;;

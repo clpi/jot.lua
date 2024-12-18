@@ -1,9 +1,14 @@
 **.after/
 **.vscode/
+**.down/
+**/*.down
 ./lib/
-./down-lsp
-./down
+down-lsp
+down
+down-lsp.sh
+downls
 **.DS_Store
+**.lapce/
 **.idea/
 **node_modules
 **ext/c

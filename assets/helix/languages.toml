@@ -1,0 +1,102 @@
+[language-server.down]
+command = "down-lsp.sh"
+args = ["--stdio"]
+timeout = 20
+
+[language-server.down.config]
+documentFormatting = true
+
+[language-server.down.config.workspaces]
+default = "~/home",
+notes = "~/notes",
+wiki = "~/wiki"
+index = "index",
+notes = "notes",
+
+[language-server.down.config.down]
+rootMarkers = [".git/"],
+filetypes = ["down"]
+debug = false
+
+[language-server.down.environment]
+DOWN_LSP_PATH = "$HOME/.local/bin/down-lsp.sh"
+DOWN_BIN_PATH = "$HOME/.local/bin/down.sh"
+
+[[language]]
+name = "markdown"
+language-servers = [
+  {
+    name = "down",
+    only-features = [
+      "hover",
+      "completion",
+      "workspace-command",
+      "workspace-symbols",
+      "goto-reference",
+      "rename-symbol",
+      "document-symbols",
+      "diagnostics",
+      "goto-definition",
+      "signature-help",
+      "code-action",
+      "inlay-hint",
+      "document-highlight",
+      "format",
+      "goto-declaration",
+      "goto-implementation",
+      "goto-type-definition",
+    ]
+  }
+]
+
+[[language]]
+name = "down"
+language-id = "down"
+shebangs = ["down", "down-lsp", "dwn"]
+auto-format = true
+file-types = ["down", "dw"]
+comment-tokens = ["--", "-!"]
+roots = [
+  ".git/", ".down/", ".downrc", ".downignore", "*.down"
+]
+text-width = 100
+block-comment-tokens = [
+  { start = "-/", end = "/-"}
+  { start = "--!", end = "!--"}
+]
+scope = "source.down"
+soft-wrap = true
+workspace-lsp-root
+indent = { tab-width = 2, unit = " " }
+language-servers = [
+  {
+    name = "down",
+    only-features = [
+      "hover",
+      "completion",
+      "workspace-command",
+      "workspace-symbols",
+      "goto-reference",
+      "rename-symbol",
+      "document-symbols",
+      "diagnostics",
+      "goto-definition",
+      "signature-help",
+      "code-action",
+      "inlay-hint",
+      "document-highlight",
+      "format",
+      "goto-declaration",
+      "goto-implementation",
+      "goto-type-definition",
+    ]
+  }
+]
+
+[[grammar]]
+name = "down"
+file-types = ["down", "dw"]
+comment-tokens = ["--", "-/", "/-", "-!"]
+scope = "source.down"
+indent = { tab-width = 2, style = "space" }
+language-servers

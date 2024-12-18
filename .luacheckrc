@@ -1,14 +1,15 @@
+-- std          = "lua51+nvim"
+
 cache        = true
 codes        = true
 self         = false
-
 read_globals = {
   "vim",
 }
 -- Global objects
 globals      = {
   "_",
-  "word",
+  "down",
   "vim",
   "log",
 }
