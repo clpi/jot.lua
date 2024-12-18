@@ -5,3 +5,7 @@
 [submodule "ext/lsp"]
 	path = ext/lsp
 	url = git@github.com:clpi/down.lsp.git
+
+[submodule "ext/rsp"]
+	path = ext/rsp
+	url = git@github.com:clpi/down-lsp.git
