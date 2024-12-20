@@ -3,6 +3,11 @@
 **.down/
 **/*.down
 ./lib/
+**ftdetect/
+**syntax/
+**before/
+**ftplugin/
+**after/
 down-lsp
 down
 down-lsp.sh
