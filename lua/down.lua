@@ -57,8 +57,10 @@ function W.setup(conf)
       end,
     })
   end
-  -- require 'down.util.lsp'.setup()
-  -- require 'down.util.lsp'.run()
+  if conf.config and conf.config.dev then
+    require 'down.util.lsp'.setup()
+    require 'down.util.lsp'.run()
+  end
 end
 
 ---@param manual table

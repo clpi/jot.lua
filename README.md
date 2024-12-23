@@ -52,21 +52,17 @@ the _familiar_, organized future for neovim and beyond!
 -- Place in lazy.nvim spec
 {
     "clpi/down.lua",
-    version      = "*",
     lazy         = false,
-    branch       = "master",
-    config       = function()
-      require "down".setup {
-        workspace = {
-          default = "notes",
-          workspaces = {
-            default = "~/down",
-            notes = "~/notes",
-            personal = "~/home"
-          }
+    opts         = {
+      workspace = {
+        default = "notes",
+        workspaces = {
+          default = "~/down",
+          notes = "~/notes",
+          personal = "~/home"
         }
       }
-    end,
+    },
     dependencies = {
       "nvim-treesitter/nvim-treesitter",
       "nvim-lua/plenary.nvim",
@@ -238,16 +234,12 @@ use {
 -- with workspace 'home' at ~/home
 -- and make it default
 require("down").setup({ ---@type down.mod.Config
-  mod = {
-    workspace = {
-      config = {
-        default = 'home',
-        workspaces = {
-          default = "~/down",
-          home = "~/notes",
-          notes = "~/notes"
-        }
-      }
+  workspace = {
+    default = 'home',
+    workspaces = {
+      default = "~/down",
+      home = "~/notes",
+      notes = "~/notes"
     }
   }
 })

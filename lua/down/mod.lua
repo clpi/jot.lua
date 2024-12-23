@@ -110,7 +110,7 @@ end
 --- @param name string The name of the new metainit. Modake sure this is unique. The recommended naming convention is `categoryn` or `category.subcategoryn`.
 --- @param ... string A list of init names to load.
 --- @return down
-local modules = function(name, ...)
+Mod.modules = function(name, ...)
   ---@type down
   local m = Mod.create(name)
   m.config.enable = { ... }
@@ -408,7 +408,7 @@ end
 --- @param cfg? table A config that reflects the structure of down.config.user.setup["init.name"].config
 function Mod.load_mod_as_dependency(modn, parent_mod, cfg)
   if Mod.load_mod(modn, cfg) and Mod.is_mod_loaded(parent_mod) then
-    Mod.loaded_mod[parent_mod].required[modn] = Mod_config(modn)
+    Mod.loaded_mod[parent_mod].required[modn] = Mod.mod_config(modn)
   end
 end
 
@@ -428,7 +428,7 @@ end
 --- Returns the init.config table if the init is loaded
 --- @param modn string The name of the init to retrieve (init must be loaded)
 --- @return table?
-function Mod_config(modn)
+function Mod.mod_config(modn)
   if not Mod.is_mod_loaded(modn) then
     log.trace('Attempt to get init config with name' .. modn .. 'failed - init is not loaded.')
     return
