@@ -1,0 +1,16 @@
+---@meta down.types.mod
+---
+--- The scope of an entity.
+--- @alias down.mod.Data
+---   | down.lsp.document.Data
+---   | down.lsp.workspace.Data
+---   | down.lsp.completion.Data
+---   | down.lsp.actions.Data
+---   | down.lsp.command.Data
+---   | down.lsp.hint.Data
+---   | down.data.task.Data
+---   | down.data.store.Data
+---   | down.data.task.agenda.Data
+---   | down.data.log.Data
+---   | down.lsp.hover.Data
+---   | down.lsp.lens.Data

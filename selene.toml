@@ -1,7 +1,0 @@
-std = "neovim"
-
-[rules]
-global_usage = "follow"
-mixed_table = "allow"
-multiple_statements = "allow"
-incorrect_standard_library_use = "allow"

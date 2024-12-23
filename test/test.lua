@@ -32,5 +32,4 @@ function T.in_file(filename, content, cb)
   vim.api.nvim_buf_delete(buf, { force = true })
 end
 
-return tests
-
+return T

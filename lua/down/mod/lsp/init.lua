@@ -22,7 +22,9 @@ local M = mod.create("lsp", {
   "completion",
 })
 
+
 M.opts = function() end
+
 M.maps = function()
   local bufnr = require("down.util.buf").buf()
   local bufopts = { noremap = true, silent = true, buffer = bufnr }

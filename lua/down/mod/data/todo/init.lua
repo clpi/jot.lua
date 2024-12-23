@@ -1,19 +1,19 @@
 local mod, map = require("down.mod"), require("down.util.maps")
 
-local M = mod.create("data.todo")
+local M = mod.create("data.task")
 
 M.maps = function()
-  map.nmap(",wt", "<CMD>Telescope down todo<CR>")
+  map.nmap(",wt", "<CMD>Telescope down task<CR>")
 end
 
----@class down.data.todo.Data
+---@class down.data.task.Data
 M.data = {
-  namespace = vim.api.nvim_create_namespace("down.data.todo"),
+  namespace = vim.api.nvim_create_namespace("down.data.task"),
 
   --- List of active buffers
   buffers = {},
 }
----@class down.data.todo.Config
+---@class down.data.task.Config
 M.config = {
 
   highlight_group = "Normal",
@@ -49,7 +49,7 @@ end
 M.load = function()
   vim.api.nvim_create_autocmd("Filetype", {
     pattern = "markdown",
-    desc = "Attaches the TODO introspector to any down buffer.",
+    desc = "Attaches the task introspector to any down buffer.",
     callback = function(ev)
       local buf = ev.buf
 
@@ -58,7 +58,7 @@ M.load = function()
       end
 
       M.data.buffers[buf] = true
-      -- M.public.attach_introspector(buf) -- TODO
+      -- M.public.attach_introspector(buf) -- task
     end,
   })
 end
@@ -68,8 +68,8 @@ end
 ---@param buffer number #The buffer ID to attach to.
 function M.data.attach_introspector(buffer)
   if
-    not vim.api.nvim_buf_is_valid(buffer)
-    or vim.bo[buffer].filetype ~= "markdown"
+      not vim.api.nvim_buf_is_valid(buffer)
+      or vim.bo[buffer].filetype ~= "markdown"
   then
     error(
       string.format(
@@ -104,7 +104,7 @@ function M.data.attach_introspector(buffer)
 
       ---@type TSNode?
       local node =
-        M.required["tool.treesitter"].get_first_node_on_line(buf, first)
+          M.required["tool.treesitter"].get_first_node_on_line(buf, first)
 
       if not node then
         return
@@ -135,16 +135,16 @@ function M.data.attach_introspector(buffer)
       introspect(node)
 
       local node_above =
-        M.required["tool.treesitter"].get_first_node_on_line(
-          buf,
-          first - 1
-        )
+          M.required["tool.treesitter"].get_first_node_on_line(
+            buf,
+            first - 1
+          )
 
       do
-        local todo_status = node_above:named_child(1)
+        local task_status = node_above:named_child(1)
 
         if
-          todo_status and todo_status:type() == "detached_modifier_extension"
+            task_status and task_status:type() == "detached_modifier_extension"
         then
           introspect(node_above)
         end
@@ -158,7 +158,7 @@ function M.data.attach_introspector(buffer)
   })
 end
 
---- Aggregates TODO item counts from children.
+--- Aggregates task item counts from children.
 ---@param node TSNode
 ---@return number completed Total number of completed tasks
 ---@return number total Total number of counted tasks
@@ -170,15 +170,15 @@ function M.data.calculate_items(node)
 
   local total = 0
 
-  -- Go through all the children of the current todo item node and count the amount of "done" children
+  -- Go through all the children of the current task item node and count the amount of "done" children
   for child in node:iter_children() do
     if
-      child:named_child(1)
-      and child:named_child(1):type() == "detached_modifier_extension"
+        child:named_child(1)
+        and child:named_child(1):type() == "detached_modifier_extension"
     then
       for status in child:named_child(1):iter_children() do
-        if status:type():match("^todo_item_") then
-          local type = status:type():match("^todo_item_(.+)$")
+        if status:type():match("^task_item_") then
+          local type = status:type():match("^task_item_(.+)$")
 
           if not counts[type] then
             break

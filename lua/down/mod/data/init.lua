@@ -4,6 +4,8 @@
 ---            util.lua file that is required for submodules
 local M = require("down.mod").create("data", {
   "log",
+  "store",
+  "task",
   "mod",
   "sync",
   "dirs",
@@ -17,12 +19,24 @@ local M = require("down.mod").create("data", {
   -- "code",
 })
 
+
+---@type down.Store<down.File>
+local files = {
+  store = {
+
+
+
+
+  }
+}
+
 M.setup = function()
   vim.api.nvim_create_autocmd("VimLeavePre", {
     callback = function()
       M.data.flush()
     end,
   })
+
 
   M.data.sync()
   ---@type down.mod.Setup
@@ -133,7 +147,7 @@ M.data = {
 
     file:write(
       vim.mpack.encode and vim.mpack.encode(M.data.data.data)
-        or vim.mpack.pack(M.data.data.data)
+      or vim.mpack.pack(M.data.data.data)
     )
 
     io.close(file)

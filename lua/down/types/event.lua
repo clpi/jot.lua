@@ -1,0 +1,1 @@
+---@meta down.types.event

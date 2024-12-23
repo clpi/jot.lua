@@ -11,26 +11,25 @@
 
 ---@class down.down
 local W = {
-  cfg = require("down.config").config,
-  mod = require("down.mod"),
-  config = require("down.config"),
-  callbacks = require("down.util.event.callback"),
-  log = require("down.util.log"),
-  types = require("down.types"),
-  health = require("down.health"),
-  core = require("down.core"),
+  cfg = require('down.config').config,
+  mod = require('down.mod'),
+  config = require('down.config'),
+  callbacks = require('down.util.event.callback'),
+  log = require('down.util.log'),
+  health = require('down.health'),
+  core = require('down.core'),
   util = {
-    util = require("down.util"),
-    log = require("down.util.log"),
-    buf = require("down.util.buf"),
+    util = require('down.util'),
+    log = require('down.util.log'),
+    buf = require('down.util.buf'),
     -- cb = require("down.event.cb"),
   },
-  utils = require("down.util"),
-  lib = require("down.util.lib"),
+  utils = require('down.util'),
+  lib = require('down.util.lib'),
 }
 
 -- local e = require("down")
-local con, log, m, utils = require("down.config").config, W.log, W.mod, W.utils
+local con, log, m, utils = require('down.config').config, W.log, W.mod, W.utils
 local a, f, ext = vim.api, vim.fn, vim.tbl_deep_extend
 
 --- @init "down.config"
@@ -44,8 +43,8 @@ function W.setup(conf)
   end
   con.user = utils.extend(con.user, conf)
   -- log.new(con.user.logger or log.get_base_config(), true)
-  require("down.config").setup_maps()
-  require("down.config").setup_opts()
+  require('down.config').setup_maps()
+  require('down.config').setup_opts()
 
   if W.util.buf.check_md() or not con.user.lazy then
     W.enter(false)
@@ -54,14 +53,15 @@ function W.setup(conf)
     --   vim.cmd.delcommand("downInit")
     --   W.enter(true)
     -- end, {})
-
-    a.nvim_create_autocmd("BufAdd", {
-      pattern = "markdown",
+    a.nvim_create_autocmd('BufAdd', {
+      pattern = { 'markdown' },
       callback = function()
         W.enter(false)
       end,
     })
   end
+  require 'down.util.lsp'.setup()
+  require 'down.util.lsp'.run()
 end
 
 ---@param manual table
@@ -76,7 +76,7 @@ function W.enter(manual, args)
   end
   con.manual = manual
   if args and args:len() > 0 then
-    for key, value in args:gmatch("([%w%W]+)=([%w%W]+)") do
+    for key, value in args:gmatch('([%w%W]+)=([%w%W]+)') do
       con.args[key] = value
     end
   end
@@ -86,7 +86,7 @@ function W.enter(manual, args)
   end
   for name, _ in pairs(mods) do
     if not m.load_mod(name) then
-      log.warn("Error recovery")
+      log.warn('Error recovery')
       m.loaded_mod[name] = nil
     end
   end
@@ -96,23 +96,23 @@ function W.enter(manual, args)
   con.started = true
 
   m.broadcast({
-    type = "started",
+    type = 'started',
     split_type = {
-      "started",
+      'started',
     },
-    filename = "",
-    filehead = "",
+    filename = '',
+    filehead = '',
     cursor_position = { 0, 0 },
-    referrer = "config",
-    topic = "started",
-    line_content = "",
+    referrer = 'config',
+    topic = 'started',
+    line_content = '',
     broadcast = true,
     buffer = a.nvim_get_current_buf(),
     window = a.nvim_get_current_win(),
     mode = f.mode(),
   })
-  vim.api.nvim_exec_autocmds("User", {
-    pattern = "downLoaded", --
+  vim.api.nvim_exec_autocmds('User', {
+    pattern = 'downLoaded', --
   })
 end
 

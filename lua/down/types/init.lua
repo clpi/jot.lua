@@ -1,0 +1,211 @@
+--- @meta down.types
+--- @brief Provides core data types
+--- @version <5.2,JIT
+---
+---
+--- The important store value object
+--- @class (exact) down.old.Store<V>: { id: down.store.Name, uri: down.Uri, data?: down.store.Data<V> } store
+---
+--- [string]: down.Store<V>
+--- @class (exact) down.old.store.Map<V>: { [down.store.Key]?: down.Store<V> } Map { log1 = { i}}
+---
+--- The important store value object
+--- @class (exact) down.old.store.Kind: { [down.store.ItemKind]?: down.store.Map<down.store.Key> }
+---
+---
+---
+--- The scope of an entity.
+--- @class (exact) down.mod.Config.Lsp  lsp
+---   @field ['lsp.document']? down.lsp.document.Data lsp.document
+---   @field ['lsp.workspace']? down.lsp.workspace.Data lsp.workspace
+---
+---   @field ['lsp.completion']? down.lsp.completion.Data lsp.completion
+---
+--- The entire mod configuration
+--- @class (exact) down.mod.Config
+---   @field public lsp? lsp.Config
+---
+
+--- The scope of an entity.
+--- @class down.mod.Mods
+---   @field ['lsp.document']? lsp.document.Data
+---   @field ['lsp.workspace']? lsp.workspace.Data
+---   @field ['lsp.completion']? lsp.completion.Data
+---   @field ['lsp.actions']? lsp.actions.Data
+---   @field ['lsp.command']? lsp.command.Data
+---   @field ['lsp.hint']? lsp.hint.Data
+---   @field ['data.task']? data.task.Data
+---   @field ['data.store']? data.store.Data
+---   @field ['data.task.agenda']? data.task.agenda.Data
+---   @field ['data.log']? data.log.Data
+---   @field ['lsp.hover']? lsp.hover.Data
+---   @field ['lsp.lens']? lsp.lens.Data
+---   @field lsp? lsp.Data
+---   @field ['lsp.window']? lsp.window.Data
+---   @field ['lsp.semantic']? lsp.semantic.Data
+---   @field ["edit.conceal"]? edit.conceal.Data
+---   @field ["ui.icon"]? ui.icon.Data
+---   @field workspace? workspace.Data
+---   @field ["edit.fold"]? edit.fold.Data
+---   @field ["edit.hl"]? edit.hl.Data
+---   @field ["ui.win"]? ui.win.Data
+---   @field note? note.Data
+---   @field ['data.clipboard']? data.clipboard.Data
+---   @field ['data.dirs']? data.dirs.Data
+---   @field ['data.export']? data.export.Data
+---   @field ['data.encrypt']? data.encrypt.Data
+---   @field ['data.metadata']? data.metadata.Data
+---   @field ['data.syntax']? data.syntax.Data
+---   @field ['data.toc']? data.toc.Data
+---   @field ['edit.parse']? edit.parse.Data
+---   @field ['data.log']? data.log.Data
+---   @field ['data.link']? data.link.Data
+---   @field ['edit.link']? edit.link.Data
+---   @field cmd? cmd.Data
+---   @field ['data.tag']? data.tag.Data
+---   @field ['data.sync']? data.sync.Data
+---   @field ['data.mod']? data.mod.Data
+---   @field ['data.code']? data.code.Data
+---   @field ['data.todo']? data.todo.Data
+---   @field ['edit.todo']? edit.todo.Data
+---   @field ['edit.cursor']? edit.cursor.Data
+---   @field ['edit.find']? down.edit.find.Data
+---   @field ['edit.link']? down.edit.link.Data
+---   @field ['edit.indent']? down.edit.indent.Data
+---   @field ui? down.ui.Data
+---   @field media? down.data.media.Data media
+---   @field ['data.template']? down.data.template.Data
+---   @field ["data.code.snippet"]? down.data.code.snippet.Data
+---   @field ["data.code.run"]? down.data.code.run.Data
+---   @field ["ui.calendar"]? down.ui.calendar.Data
+---   @field ["ui.calendar.month"]? down.ui.calendar.month.Data
+---   @field ["integration.treesitter"]? down.down.integration.treesitter.Data
+---   @field ["integration.blink"]? down.integration.blink.Data
+---   @field ["integration.cmp"]? down.integration.cmp.Data
+---   @field ["integration.telescope"]? down.integration.telescope.Data
+---   @field ["integration.lualine"]? down.integration.lualine.Data
+---   @field ["integration.trouble"]? down.integration.trouble.Data
+---   @field ["integration.fzf"]? down.integration.fzf.Data
+---   @field ["ui.chat"]? down.ui.chat.Data
+---   @field ["ui.sidebar"]? down.ui.sidebar.Data
+---   @field ["ui.popup"]? down.ui.popup.Data
+---   @field ["ui.status"]? down.ui.status.Data
+---
+--- down.Mods
+--- @alias down.Mods down.mod.Mods
+---
+--- @class (exact) down.mod.config.Config: table
+---   @field [string]? { [string]?: any }
+---   @field enabled? boolean
+--- @alias down.mod.Config down.mod.Modconfig.Config
+---
+--- TODO: merge data field to [string]? { [string]?: down.Event }
+--- TODO:   down.mod.Events.defined ->
+--- TODO:     #field [string]? { [string]?: down.Event }
+---
+--- @class (exact) down.event.Subscribed
+---   @field public [string]? { [string]: boolean }
+
+--- @class (exact) down.mod.Events
+---   @field defined? { [string]: down.Event }              Lists all events by this init.
+---   @field subscribed? { [string]: { [string]: boolean } } Lists the events that the init is subscribed to.
+---   @field public [string]? down.Event
+
+--- @class (exact) down.mod.Setup: {
+---   [string]?: { [string]?: any },
+---   loaded: boolean,
+---   requires?: string[],
+---   replaces?: string,
+---   merge?: boolean,
+---   wants?: string[] }
+---   @field public [string]? any
+---
+--- @class (exact) down.mod.Config: { [string]?: any }
+---   @field public [string]? any
+
+--- TODO: merge data field to [string]?: down.mod.Data
+--- TODO:   down.Mod.data ->
+--- TODO:     #field [string]? down.config.UserMod
+--- TODO:   down.Mod.config ->
+--- TODO:     #field config? down.mod.Config
+
+--- @class (exact) down.Mod
+---   @field public [string]? down.mod.Data
+---   @field hook? fun(manual: boolean, arguments?: string)    A user-defined function that is invoked whenever down starts up. May be used to e.g. set custom keybindings.
+---   @field config? down.mod.Config The config for the init.
+---   @field events? down.mod.Events Describes all information related to events for this init.
+---   @field import? table<string, down.Mod> Imported submod of the given init. Contrary to `required`, which only exposes the public API of a init, imported mod can be accessed in their entirety.
+---   @field cmds? fun() Function that adds all the commands for the init.
+---   @field opts? fun() Function that adds all the options for the init.
+---   @field maps? fun() Function that adds all the mappings for the init.
+---   @field load? fun() Function that is invoked once the init is considered "stable", i.e. after all dependencies are loaded. Perform your main loading routine here.
+---   @field test? fun() Function that is invoked when the init is being tested.
+---   @field bench? fun() Function that is invoked when the init is being benchmarked.
+---   @field name string The name of the init.
+---   @field namespace string The name of the init.
+---   @field post_load? fun() Function that is invoked after all mod are loaded. Useful if you want the down environment to be fully set up before performing some task.
+---   @field path string The full path to the init (a more verbose version of `name`). Moday be used in lua's `require()` statements.
+---   @field public data? down.mod.Data Every init can expose any set of information it sees fit through this field. All functions and variables declared in this table will be to any other init loaded.
+---   @field required? down.mod.Mods Contains the public tables of all mod that were required via the `requires` array provided in the `setup()` function of this init.
+---   @field setup? fun(): down.mod.Setup? Function that is invoked before any other loading occurs. Should perform preliminary startup tasks.
+---   @field replaced? boolean If `true`, this means the init is a replacement for a base init. This flag is set automatically whenever `setup().replaces` is set to a value.
+---   @field on fun(event: down.Event) A callback that is invoked any time an event the init has subscribed to has fired.
+---
+--- @class (exact) down.config.Ft
+---   @field md boolean
+---   @field mdx boolean
+---   @field markdown boolean
+---   @field down boolean
+---
+--- TODO: make down.config.User? table
+--- TODO:   down.config.config.User.mod.config ->
+--- TODO:     #field [string]? down.config.UserMod
+---
+--- @class (exact) down.config.User
+---   @field [string]? down.config.UserMod
+---   @field mod down.config.UserMod
+---
+--- TODO: make down.config.UserMod? table
+--- TODO:   down.config.UserMod.config ->
+--- TODO:     #field [string]? down.Mod
+---
+--- @class (exact) down.config.UserMod { config?: table }
+---   @field [string]? table
+---   @field config? table
+
+--- TODO: make mod field merge to [string]: down.Mod
+--- TODO:   down.Config.mod ->
+--- TODO:     #field [string]? down.Mod
+---
+--- @class (exact) down.Config
+---   @field args table<string, string>                   A list of arguments provided to the `:downStart` function in the form of `key=value` pairs. Only applicable when `user_config.lazy_loading` is `true`.
+---   @field manual boolean?                                   Used if down was manually loaded via `:downStart`. Only applicable when `user_config.lazy_loading` is `true`.
+---   @field mod table<string, down.Mod> Acts as a copy of the user's config that may be modified at runtime.
+---   @field os OperatingSystem                           The operating system that down is currently running under.
+---   @field pathsep "\\"|"/"                                  The operating system that down is currently running under.
+---   @field started boolean                                   Set to `true` when down is fully initialized.
+---   @field user down.config.User              Stores the config provided by the user.
+---   @field version string                                    The version of down that is currently active. Automatically updated by CI on every release.
+---   @field public [string]? down.Mod
+
+--- Stores the config for the entirety of down.
+--- This includes not only the user config (passed to `setup()`), but also internal
+--- variables that describe something specific about the user's hardware.
+--- @see down.Setup
+---
+---
+--- @class (exact) down.Event
+---   @field type string The type of the event. Exists in the format of `category.name`.
+---   @field split_type string[] The event type, just split on every `.` character, e.g. `{ "category", "name" }`.
+---   @field content? table|any The content of the event. The data found here is specific to each individual event. Can be thought of as the payload.
+---   @field referrer string The name of the init that triggered the event.
+---   @field broadcast boolean Whether the event was broadcast to all mod. `true` is so, `false` if the event was specifically sent to a single recipient.
+---   @field cursor_position { [1]: number, [2]: number } The position of the cursor at the moment of broadcasting the event.
+---   @field filename string The name of the file that the user was in at the moment of broadcasting the event.
+---   @field filehead string The directory the user was in at the moment of broadcasting the event.
+---   @field line_content string The content of the line the user was editing at the moment of broadcasting the event.
+---   @field buffer number The buffer ID of the buffer the user was in at the moment of broadcasting the event.
+---   @field window number The window ID of the window the user was in at the moment of broadcasting the event.
+---   @field mode Mode The mode Neovim was in at the moment of broadcasting the event.
+---
+--- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---

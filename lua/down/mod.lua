@@ -1,11 +1,15 @@
 local uv, lu, fn = vim.loop or vim.uv, vim.lsp.util, vim.fn
-local cb = require("down.util.event.callback")
-local config = require("down.config").config
-local log = require("down.util.log")
-local utils = require("down.util")
+local cb = require('down.util.event.callback')
+local config = require('down.config').config
+local log = require('down.util.log')
+local utils = require('down.util')
+
+--- @!TODO : Change to body access where appropriate and now available to avoid complex config for end user
+---   1. Firsr try with  modules, then workspace
 
 -- TODO: remove global
 
+---@return
 ---@class down.Mod
 Mod = setmetatable({}, {
   __index = Mod,
@@ -20,6 +24,7 @@ Mod = setmetatable({}, {
   end,
 })
 
+---@return down.Mod
 ---@param name string The name of the new mod
 Mod.default = function(name)
   return {
@@ -42,25 +47,14 @@ Mod.default = function(name)
     ]])
     end,
     maps = function()
-      -- TODO: obviously inefficient
-      local Map = require("down.util.maps")
-      Map.nmap(",wi", "<CMD>Down index<CR>")
-      Map.nmap(",wp", "<CMD>Down note template<CR>")
-      Map.nmap(",wc", "<CMD>Down note calendar<CR>")
-      Map.nmap(",wn", "<CMD>Down note index<CR>")
-      Map.nmap(",w.", "<CMD>Down note tomorrow<CR>")
-      Map.nmap(",w,", "<CMD>Down note yesterday<CR>")
-      Map.nmap(",wm", "<CMD>Down note month<CR>")
-      Map.nmap(",wt", "<CMD>Down note today<CR>")
-      Map.nmap(",wy", "<CMD>Down note year<CR>")
     end,
     load = function() end,
     on = function() end,
     post_load = function() end,
-    name = "config",
-    namespace = "down." .. name,
-    path = "mod.config",
-    version = require("down").config.version,
+    name = 'config',
+    namespace = 'down.' .. name,
+    path = 'mod.config',
+    version = require('down').config.version,
     data = {
       --TODO: remove
       data = {},
@@ -85,13 +79,9 @@ function Mod.create(name, imports)
   local new = Mod.default(name)
   if imports then
     for _, imp in ipairs(imports) do
-      local fullpath = table.concat({ name, imp }, ".")
+      local fullpath = table.concat({ name, imp }, '.')
       if not Mod.load_mod(fullpath) then
-        log.error(
-          "Unable to load import '"
-          .. fullpath
-          .. "'! An error  (see traceback below):"
-        )
+        log.error("Unable to load import '" .. fullpath .. "'! An error  (see traceback below):")
         assert(false)
       end
       new.import[fullpath] = Mod.loaded_mod[fullpath]
@@ -100,8 +90,8 @@ function Mod.create(name, imports)
 
   if name then
     new.name = name
-    new.path = "mod." .. name
-    new.namespace = "down.mod." .. name
+    new.path = 'mod.' .. name
+    new.namespace = 'down.mod.' .. name
     vim.api.nvim_create_namespace(new.namespace)
   end
   return new
@@ -128,9 +118,15 @@ Mod.modules = function(name, ...)
     return { loaded = true }
   end
   -- TODO: consider removing
-  if m.cmds then m.cmds() end
-  if m.opts then m.opts() end
-  if m.maps then m.maps() end
+  if m.cmds then
+    m.cmds()
+  end
+  if m.opts then
+    m.opts()
+  end
+  if m.maps then
+    m.maps()
+  end
 
   m.load = function()
     m.config.enable = (function()
@@ -161,11 +157,11 @@ Mod.loaded_mod = {}
 --- @param m down.Mod The actual init to load.
 --- @return boolean # Whether the init successfully loaded.
 function Mod.load_mod_from_table(m)
-  log.info("Loading init with name" .. m.name)
+  log.info('Loading init with name' .. m.name)
 
   -- If our init is already loaded don't try loading it again
   if Mod.loaded_mod[m.name] then
-    log.trace("mod" .. m.name .. "already loaded. Omitting...")
+    log.trace('mod' .. m.name .. 'already loaded. Omitting...')
     return true
   end
 
@@ -183,49 +179,45 @@ function Mod.load_mod_from_table(m)
   -- We do not expect init.setup() to ever return nil, that's why this check is in place
   if not mod_load then
     log.error(
-      "init"
+      'init'
       .. m.name
-      .. "does not handle init loading correctly; init.setup() returned nil. Omitting..."
+      .. 'does not handle init loading correctly; init.setup() returned nil. Omitting...'
     )
     return false
   end
 
   -- A part of the table returned by init.setup() tells us whether or not the init initialization was successful
   if mod_load.loaded == false then
-    log.trace("mod" .. m.name .. "did not load properly.")
+    log.trace('mod' .. m.name .. 'did not load properly.')
     return false
   end
 
   local mod_to_replace
 
-  if mod_load.replaces and mod_load.replaces ~= "" then
+  if mod_load.replaces and mod_load.replaces ~= '' then
     mod_to_replace = vim.deepcopy(Mod.loaded_mod[mod_load.replaces])
   end
 
   Mod.loaded_mod[m.name] = m
 
   if mod_load.wants and not vim.tbl_isempty(mod_load.wants) then
-    log.info(
-      "mod" .. m.name .. "wants certain mod. Ensuring they are loaded..."
-    )
+    log.info('mod' .. m.name .. 'wants certain mod. Ensuring they are loaded...')
 
     -- Loop through each dependency and ensure it's loaded
     for _, req_mod in ipairs(mod_load.wants) do
-      log.trace("Verifying" .. req_mod)
+      log.trace('Verifying' .. req_mod)
 
       if not Mod.is_mod_loaded(req_mod) then
         if config.user.mod[req_mod] then
           log.trace(
-            "Wanted init"
+            'Wanted init'
             .. req_mod
             .. "isn't loaded but can be as it's defined in the user's config. Loading..."
           )
 
           if not Mod.load_mod(req_mod) then
-            require("down.util.log").error(
-              "Unable to load wanted init for"
-              .. m.name
-              .. "- the init didn't load successfully"
+            require('down.util.log').error(
+              'Unable to load wanted init for' .. m.name .. "- the init didn't load successfully"
             )
 
             -- Modake sure to clean up after ourselves if the init failed to load
@@ -234,7 +226,7 @@ function Mod.load_mod_from_table(m)
           end
         else
           log.error(
-            ("Unable to load init %s, wanted dependency %s was not satisfied. Be sure to load the init and its appropriate config too!")
+            ('Unable to load init %s, wanted dependency %s was not satisfied. Be sure to load the init and its appropriate config too!')
             :format(
               m.name,
               req_mod
@@ -254,19 +246,16 @@ function Mod.load_mod_from_table(m)
 
   -- If any dependencies have been defined, handle them
   if mod_load.requires and vim.tbl_count(mod_load.requires) > 0 then
-    log.info(
-      "mod" .. m.name .. "has dependencies. Loading dependencies first..."
-    )
+    log.info('mod' .. m.name .. 'has dependencies. Loading dependencies first...')
 
     -- Loop through each dependency and load it one by one
     for _, req_mod in pairs(mod_load.requires) do
-      log.trace("Loading submod" .. req_mod)
+      log.trace('Loading submod' .. req_mod)
       if not Mod.is_mod_loaded(req_mod) then
         if not Mod.load_mod(req_mod) then
           log.error(
-            ("Unable to load init %s, required dependency %s did not load successfully"):format(
-              m.name ..
-              req_mod
+            ('Unable to load init %s, required dependency %s did not load successfully'):format(
+              m.name .. req_mod
             )
           )
           -- Modake sure to clean up after ourselves if the init failed to load
@@ -274,7 +263,7 @@ function Mod.load_mod_from_table(m)
           return false
         end
       else
-        log.trace("mod" .. req_mod .. "already loaded, skipping...")
+        log.trace('mod' .. req_mod .. 'already loaded, skipping...')
       end
       -- Create a reference to the dependency's public table
       m.required[req_mod] = Mod.loaded_mod[req_mod].data
@@ -314,7 +303,7 @@ function Mod.load_mod_from_table(m)
     m.replaced = true
   end
 
-  log.info("Successfully loaded init" .. m.name)
+  log.info('Successfully loaded init' .. m.name)
 
   Mod.loaded_mod_count = Mod.loaded_mod_count + 1
 
@@ -335,16 +324,16 @@ function Mod.load_mod_from_table(m)
   -- vim.notify(msg.." "..init.name)
 
   Mod.broadcast({
-    type = "mod_loaded",
-    split_type = { "mod_loaded" },
-    filename = "",
-    filehead = "",
+    type = 'mod_loaded',
+    split_type = { 'mod_loaded' },
+    filename = '',
+    filehead = '',
     cursor_position = { 0, 0 },
     referrer = m.name,
-    line_content = "",
+    line_content = '',
     content = m,
     payload = m,
-    topic = "mod_loaded",
+    topic = 'mod_loaded',
     broadcast = true,
     buffer = vim.api.nvim_get_current_buf(),
     window = vim.api.nvim_get_current_win(),
@@ -364,19 +353,19 @@ function Mod.load_mod(modn, cfg)
   if Mod.is_mod_loaded(modn) then
     return true
   end
-  local modl = require("down.mod." .. modn)
+  local modl = require('down.mod.' .. modn)
   if not modl then
     log.error(
-      "Unable to load init"
+      'Unable to load init'
       .. modn
-      .. "- loaded file returned nil. Be sure to return the table created by mod.create() at the end of your init.lua file!"
+      .. '- loaded file returned nil. Be sure to return the table created by mod.create() at the end of your init.lua file!'
     )
     return false
   end
 
   if modl == true then
     log.error(
-      "An error has occurred when loading"
+      'An error has occurred when loading'
       .. modn
       ..
       "- loaded file didn't return anything meaningful. Be sure to return the table created by mod.create() at the end of your init.lua file!"
@@ -405,9 +394,9 @@ end
 --- @param parent_mod string|down.Mod If a string, then the parent is searched for in the loaded mod. If a table, then the init is treated as a valid init as returned by mod.create()
 function Mod.load_mod_as_dependency_from_table(md, parent_mod)
   if Mod.load_mod_from_table(md) then
-    if type(parent_mod) == "string" then
+    if type(parent_mod) == 'string' then
       Mod.loaded_mod[parent_mod].required[md.name] = md.data
-    elseif type(parent_mod) == "table" then
+    elseif type(parent_mod) == 'table' then
       parent_mod.required[md.name] = md.data
     end
   end
@@ -429,9 +418,7 @@ end
 --- @return T?
 function Mod.get_mod(modn)
   if not Mod.is_mod_loaded(modn) then
-    log.trace(
-      "Attempt to get init with name" .. modn .. "failed - init is not loaded."
-    )
+    log.trace('Attempt to get init with name' .. modn .. 'failed - init is not loaded.')
     return
   end
 
@@ -443,11 +430,7 @@ end
 --- @return table?
 function Mod.mod_config(modn)
   if not Mod.is_mod_loaded(modn) then
-    log.trace(
-      "Attempt to get init config with name"
-      .. modn
-      .. "failed - init is not loaded."
-    )
+    log.trace('Attempt to get init config with name' .. modn .. 'failed - init is not loaded.')
     return
   end
 
@@ -467,11 +450,7 @@ end
 function Mod.get_mod_version(modn)
   -- If the init isn't loaded then don't bother retrieving its version
   if not Mod.is_mod_loaded(modn) then
-    log.trace(
-      "Attempt to get init version with name"
-      .. modn
-      .. "failed - init is not loaded."
-    )
+    log.trace('Attempt to get init version with name' .. modn .. 'failed - init is not loaded.')
     return
   end
 
@@ -481,9 +460,7 @@ function Mod.get_mod_version(modn)
   -- If it can't be found then error out
   if not version then
     log.trace(
-      "Attempt to get init version with name"
-      .. modn
-      .. "failed - version variable not present."
+      'Attempt to get init version with name' .. modn .. 'failed - version variable not present.'
     )
     return
   end
@@ -500,7 +477,7 @@ function Mod.await(modn, callback)
     return
   end
 
-  cb.on("mod_loaded", function(_, m)
+  cb.on('mod_loaded', function(_, m)
     callback(m.data)
   end, function(event)
     return event.content.name == modn
@@ -510,12 +487,12 @@ end
 --- @param type string The full path of a init event
 --- @return string[]?
 function Mod.split_event_type(type)
-  local start_str, end_str = type:find("%.events%.")
+  local start_str, end_str = type:find('%.events%.')
 
   local split_event_type = { type:sub(0, start_str - 1), type:sub(end_str + 1) }
 
   if #split_event_type ~= 2 then
-    log.warn("Invalid type name:", type)
+    log.warn('Invalid type name:', type)
     return
   end
 
@@ -529,20 +506,18 @@ end
 function Mod.get_event_template(m, type)
   -- You can't get the event template of a type if the type isn't loaded
   if not Mod.is_mod_loaded(m.name) then
-    log.info("Unable to get event of type" .. type .. "with init", m.name)
+    log.info('Unable to get event of type' .. type .. 'with init', m.name)
     return
   end
 
   local split_type = Mod.split_event_type(type)
 
   if not split_type then
-    log.warn(
-      "Unable to get event template for event" .. type .. "and init" .. m.name
-    )
+    log.warn('Unable to get event template for event' .. type .. 'and init' .. m.name)
     return
   end
 
-  log.trace("Returning" .. split_type[2] .. "for init" .. split_type[1])
+  log.trace('Returning' .. split_type[2] .. 'for init' .. split_type[1])
 
   -- Return the defined event from the specific init
   return Mod.loaded_mod[m.name].events[split_type[2]]
@@ -558,23 +533,23 @@ function Mod.define_event(m, name)
   ---@type down.Event
   local new_event = {
     payload = nil,
-    topic = "base_event",
-    type = "base_event",
+    topic = 'base_event',
+    type = 'base_event',
     split_type = {},
     content = nil,
-    referrer = "config",
+    referrer = 'config',
     broadcast = true,
     cursor_position = {},
-    filename = "",
-    filehead = "",
-    line_content = "",
+    filename = '',
+    filehead = '',
+    line_content = '',
     buffer = 0,
     window = 0,
-    mode = "",
+    mode = '',
   }
 
   if name then
-    new_event.type = m.name .. ".events." .. name
+    new_event.type = m.name .. '.events.' .. name
   end
   new_event.referrer = m.name
   return new_event
@@ -591,11 +566,10 @@ function Mod.create_event(m, type, content, ev)
   local modn = Mod.split_event_type(type)[1]
 
   -- Retrieve the template from init.events
-  local event_template =
-      Mod.get_event_template(Mod.loaded_mod[modn] or { name = "" }, type)
+  local event_template = Mod.get_event_template(Mod.loaded_mod[modn] or { name = '' }, type)
 
   if not event_template then
-    log.warn("Unable to create event of type" .. type .. ". Returning nil...")
+    log.warn('Unable to create event of type' .. type .. '. Returning nil...')
     return
   end
 
@@ -608,8 +582,8 @@ function Mod.create_event(m, type, content, ev)
 
   -- Override all the important values
   new_event.split_type = assert(Mod.split_event_type(type))
-  new_event.filename = vim.fn.expand("%:t") --[[@as string]]
-  new_event.filehead = vim.fn.expand("%:p:h") --[[@as string]]
+  new_event.filename = vim.fn.expand('%:t') --[[@as string]]
+  new_event.filehead = vim.fn.expand('%:p:h') --[[@as string]]
   local bufid = ev and ev.buf or vim.api.nvim_get_current_buf()
   local winid = assert(vim.fn.bufwinid(bufid))
   if winid == -1 then
@@ -617,8 +591,7 @@ function Mod.create_event(m, type, content, ev)
   end
   new_event.cursor_position = vim.api.nvim_win_get_cursor(winid)
   local row_1b = new_event.cursor_position[1]
-  new_event.line_content =
-      vim.api.nvim_buf_get_lines(bufid, row_1b - 1, row_1b, true)[1]
+  new_event.line_content = vim.api.nvim_buf_get_lines(bufid, row_1b - 1, row_1b, true)[1]
   new_event.referrer = m.name
   new_event.broadcast = true
   new_event.buffer = bufid
@@ -634,11 +607,7 @@ end
 function Mod.broadcast(event, callback)
   -- Broadcast the event to all mod
   if not event.split_type then
-    log.error(
-      "Unable to broadcast event of type"
-      .. event.type
-      .. "- invalid event name"
-    )
+    log.error('Unable to broadcast event of type' .. event.type .. '- invalid event name')
     return
   end
 
@@ -663,9 +632,7 @@ end
 --- @return nil
 function Mod.send_event(recv, ev)
   if not Mod.is_mod_loaded(recv) then
-    log.warn(
-      "Unable to send event to init" .. recv .. "- the init is not loaded."
-    )
+    log.warn('Unable to send event to init' .. recv .. '- the init is not loaded.')
     return
   end
   ev.broadcast = false

@@ -1,22 +1,20 @@
-local M = require("down.mod").create("edit", {
-  "toc",
-  "parse",
-  "find",
-  "todo",
+local M = require('down.mod').create('edit', {
+  'toc',
+  'task',
   -- "fold",
   -- "inline",
   -- "syntax",
-  "cursor",
-  "indent",
-  "link",
+  'cursor',
+  'indent',
+  'link',
 })
-local down = require("down")
+local down = require('down')
 local config, lib, log, mod = down.cfg, down.lib, down.log, down.mod
 
 M.setup = function()
   return {
     loaded = true,
-    requires = { "edit.link" },
+    requires = { 'edit.link' },
   }
 end
 
@@ -25,7 +23,7 @@ M.config = {
   wrap = false,
   continue = true, ---@type boolean | nil
   context = 0,
-  jump_patterns = { "%[.*%]%(.-%)" },
+  jump_patterns = { '%[.*%]%(.-%)' },
 }
 
 M.data = {}
@@ -33,7 +31,7 @@ M.data = {}
 M.data.find_patterns = function(str, patterns, reverse, init)
   reverse = reverse or false
   -- If the patterns arg is a string, add it to a table
-  patterns = type(patterns) == "table" and patterns or { patterns }
+  patterns = type(patterns) == 'table' and patterns or { patterns }
   -- Truncate the string if we're doing a reverse search
   str = (reverse and init and string.sub(str, 1, init)) or str
   local left, right, left_tmp, right_tmp
@@ -53,10 +51,7 @@ M.data.find_patterns = function(str, patterns, reverse, init)
     -- If we've found a closer match amongst the provided patterns, use that instead
     -- (NOTE: 'closer' means closer to the beginning of the string if we're doing a forward
     -- search and closer to the end of the string if we're doing a reverse search)
-    if
-        left_tmp
-        and (left == nil or ((reverse and left_tmp > left) or left_tmp < left))
-    then
+    if left_tmp and (left == nil or ((reverse and left_tmp > left) or left_tmp < left)) then
       left, right = left_tmp, right_tmp
     end
   end
@@ -79,8 +74,7 @@ M.data.jump = function(pattern, reverse)
   line_len = #line
   if M.config.context > 0 and line_len > 0 then
     for i = 1, M.config.context, 1 do
-      local following_line =
-          vim.api.nvim_buf_get_lines(0, row, row + 1, false)[1]
+      local following_line = vim.api.nvim_buf_get_lines(0, row, row + 1, false)[1]
       line = (following_line and line .. following_line) or line
     end
   end
@@ -101,12 +95,7 @@ M.data.jump = function(pattern, reverse)
         continue = false
       else -- If it isn't, search after the end of the previous match (before if reverse).
         -- These values will be used on the next iteration of the loop.
-        left, right = M.data.find_patterns(
-          line,
-          pattern,
-          reverse,
-          reverse and left or right
-        )
+        left, right = M.data.find_patterns(line, pattern, reverse, reverse and left or right)
       end
     else -- If there's not a match on the current line, keep checking line-by-line
       -- Update row to search next line
@@ -119,8 +108,7 @@ M.data.jump = function(pattern, reverse)
       col = reverse and line_len or -1
       if line and M.config.context > 0 and line_len > 0 then
         for i = 1, M.config.context, 1 do
-          local following_line =
-              vim.api.nvim_buf_get_lines(0, row, row + 1, false)[1]
+          local following_line = vim.api.nvim_buf_get_lines(0, row, row + 1, false)[1]
           line = (following_line and line .. following_line) or line
         end
       end
@@ -155,18 +143,17 @@ M.data.go_to_heading = function(anchor_text, reverse)
   local in_fenced_code_block = utils.cursorInCodeBlock(starting_row, reverse)
   local row = (reverse and starting_row - 1) or starting_row + 1
   while continue do
-    local line = (
-      reverse and vim.api.nvim_buf_get_lines(0, row - 1, row, false)
-    ) or vim.api.nvim_buf_get_lines(0, row - 1, row, false)
+    local line = (reverse and vim.api.nvim_buf_get_lines(0, row - 1, row, false))
+        or vim.api.nvim_buf_get_lines(0, row - 1, row, false)
     -- If the line has contents, do the thing
     if line[1] then
       -- Are we in a code block?
-      if string.find(line[1], "^```") then
+      if string.find(line[1], '^```') then
         -- Flip the truth value
         in_fenced_code_block = not in_fenced_code_block
       end
       -- Does the line start with a hash?
-      local has_heading = string.find(line[1], "^#")
+      local has_heading = string.find(line[1], '^#')
       if has_heading and not in_fenced_code_block then
         if anchor_text == nil then
           -- Send the cursor to the heading
@@ -174,11 +161,10 @@ M.data.go_to_heading = function(anchor_text, reverse)
           continue = false
         else
           -- Format current heading to see if it matches our search term
-          local heading_as_anchor =
-              M.required["link"].formatLink(line[1], nil, 2)
+          local heading_as_anchor = M.required['link'].formatLink(line[1], nil, 2)
           if anchor_text == heading_as_anchor then
             -- Set a mark
-            vim.api.nvim_buf_set_mark(0, "`", position[1], position[2], {})
+            vim.api.nvim_buf_set_mark(0, '`', position[1], position[2], {})
             -- Send the cursor to the row w/ the matching heading
             vim.api.nvim_win_set_cursor(0, { row, 0 })
             continue = false
@@ -191,14 +177,12 @@ M.data.go_to_heading = function(anchor_text, reverse)
         if anchor_text == nil then
           local message = "⬇️  Couldn't find a heading to go to!"
           if not M.config.silent then
-            vim.api.nvim_echo({ { message, "WarningMsg" } }, true, {})
+            vim.api.nvim_echo({ { message, 'WarningMsg' } }, true, {})
           end
         else
-          local message = "⬇️  Couldn't find a heading matching "
-              .. anchor_text
-              .. "!"
+          local message = "⬇️  Couldn't find a heading matching " .. anchor_text .. '!'
           if not M.config.silent then
-            vim.api.nvim_echo({ { message, "WarningMsg" } }, true, {})
+            vim.api.nvim_echo({ { message, 'WarningMsg' } }, true, {})
           end
         end
       end
@@ -209,15 +193,15 @@ M.data.go_to_heading = function(anchor_text, reverse)
         in_fenced_code_block = false
       else
         M.config.continue = nil
-        local place = (reverse and "beginning") or "end"
-        local preposition = (reverse and "after") or "before"
-        local message = "⬇️  There are no more headings "
+        local place = (reverse and 'beginning') or 'end'
+        local preposition = (reverse and 'after') or 'before'
+        local message = '⬇️  There are no more headings '
             .. preposition
-            .. " the "
+            .. ' the '
             .. place
-            .. " of the document!"
+            .. ' of the document!'
         if not silent then
-          vim.api.nvim_echo({ { message, "WarningMsg" } }, true, {})
+          vim.api.nvim_echo({ { message, 'WarningMsg' } }, true, {})
         end
       end
     end
@@ -231,24 +215,22 @@ M.data.go_to_id = function(id, starting_row)
   local start, finish
   while continue and row <= line_count do
     local line = vim.api.nvim_buf_get_lines(0, row - 1, row, false)[1]
-    start, finish = line:find("%b[]%b{}")
+    start, finish = line:find('%b[]%b{}')
     -- Look for Pandoc-style ID attributes in headings if a bracketed span wasn't found
     if not start and not finish then
-      start, finish = line:find("%s*#+.*%b{}%s*$")
+      start, finish = line:find('%s*#+.*%b{}%s*$')
     end
     if start then
       local substring = string.sub(line, start, finish)
-      if substring:match("{[^%}]*" .. utils.luaEscape(id) .. "[^%}]*}") then
+      if substring:match('{[^%}]*' .. utils.luaEscape(id) .. '[^%}]*}') then
         continue = false
       else
         local continue_line = true
         while continue_line do
-          start, finish = line:find("%b[]%b{}", finish)
+          start, finish = line:find('%b[]%b{}', finish)
           if start then
             substring = string.sub(line, start, finish)
-            if
-                substring:match("{[^%}]*" .. utils.luaEscape(id) .. "[^%}]*}")
-            then
+            if substring:match('{[^%}]*' .. utils.luaEscape(id) .. '[^%}]*}') then
               continue_line = false
               continue = false
             end
@@ -279,20 +261,20 @@ M.data.changeHeadingLevel = function(change)
   local row = vim.api.nvim_win_get_cursor(0)[1]
   local line = vim.api.nvim_buf_get_lines(0, row - 1, row, false)
   -- See if the line starts with a hash
-  local is_heading = string.find(line[1], "^#")
+  local is_heading = string.find(line[1], '^#')
   if is_heading then
-    if change == "decrease" then
+    if change == 'decrease' then
       -- Add a hash
-      vim.api.nvim_buf_set_text(0, row - 1, 0, row - 1, 0, { "#" })
+      vim.api.nvim_buf_set_text(0, row - 1, 0, row - 1, 0, { '#' })
     else
       -- Remove a hash, but only if there's more than one
-      if not string.find(line[1], "^##") then
+      if not string.find(line[1], '^##') then
         local message = "⬇️  Can't increase this heading any more!"
         if not M.config.silent then
-          vim.api.nvim_echo({ { message, "WarningMsg" } }, true, {})
+          vim.api.nvim_echo({ { message, 'WarningMsg' } }, true, {})
         end
       else
-        vim.api.nvim_buf_set_text(0, row - 1, 0, row - 1, 1, { "" })
+        vim.api.nvim_buf_set_text(0, row - 1, 0, row - 1, 1, { '' })
       end
     end
   end
@@ -338,7 +320,7 @@ M.data.yankAsAnchorLink = function(full_path)
   local row = vim.api.nvim_win_get_cursor(0)[1]
   local line = vim.api.nvim_buf_get_lines(0, row - 1, row, false)
   -- See if the line starts with a hash
-  local is_heading = string.find(line[1], "^#")
+  local is_heading = string.find(line[1], '^#')
   local is_bracketed_span = M.required.link.getBracketedSpanPart()
   if is_heading then
     -- Format the line as an anchor link
@@ -347,8 +329,8 @@ M.data.yankAsAnchorLink = function(full_path)
     if full_path then
       -- Get the full buffer name and insert it before the hash
       local buffer = vim.api.nvim_buf_get_name(0)
-      local left = anchor_link:match("(%b[]%()#")
-      local right = anchor_link:match("%b[]%((#.*)$")
+      local left = anchor_link:match('(%b[]%()#')
+      local right = anchor_link:match('%b[]%((#.*)$')
       anchor_link = left .. buffer .. right
       vim.cmd('let @"="' .. anchor_link .. '"')
     else
@@ -356,23 +338,22 @@ M.data.yankAsAnchorLink = function(full_path)
       vim.cmd('let @"="' .. anchor_link .. '"')
     end
   elseif is_bracketed_span then
-    local name = M.required.link.getBracketedSpanPart("text")
+    local name = M.required.link.getBracketedSpanPart('text')
     local attr = is_bracketed_span
     local anchor_link
     if name and attr then
       if full_path then
         local buffer = vim.api.nvim_buf_get_name(0)
-        anchor_link = "[" .. name .. "]" .. "(" .. buffer .. attr .. ")"
+        anchor_link = '[' .. name .. ']' .. '(' .. buffer .. attr .. ')'
       else
-        anchor_link = "[" .. name .. "]" .. "(" .. attr .. ")"
+        anchor_link = '[' .. name .. ']' .. '(' .. attr .. ')'
       end
       vim.cmd('let @"="' .. anchor_link .. '"')
     end
   else
-    local message =
-    "⬇️  The current line is not a heading or bracketed span!"
+    local message = '⬇️  The current line is not a heading or bracketed span!'
     if not M.config.silent then
-      vim.api.nvim_echo({ { message, "WarningMsg" } }, true, {})
+      vim.api.nvim_echo({ { message, 'WarningMsg' } }, true, {})
     end
   end
 end

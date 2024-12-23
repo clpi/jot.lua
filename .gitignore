@@ -29,11 +29,11 @@ downls
 .pre-commit-config.yaml
 /doc/tags
 **ext/sublime
+**autoload/
 **ext/v
 **ext/oc
 **ext/helix
 **ext/zed
-# **ext/lsp
 **ext/rust-lsp
 **ext/nim
 **.book/

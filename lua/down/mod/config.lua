@@ -1,17 +1,19 @@
-local M = require("down.mod").modules(
+---@brief rest of modules are loaded
 ---@type string: name of config created
-  "config",
-  ---@brief rest of modules are loaded
-  "ui",
-  "edit",
-  "note",
-  "cmd",
-  "workspace",
-  "tool.telescope",
-  "tool.treesitter",
-  "data",
-  "lsp",
-  "edit"
+local M = require('down.mod').modules(
+  'config',
+  'ui',
+  'edit',
+  'data',
+  'note',
+  'cmd',
+  'workspace',
+  'tool.telescope',
+  'tool.treesitter',
+  'data',
+  'lsp',
+  'tool',
+  'edit'
 )
 
 return M
