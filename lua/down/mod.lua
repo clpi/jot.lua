@@ -10,26 +10,26 @@ local utils = require('down.util')
 -- TODO: remove global
 
 ---@return
----@class down.Mod
+---@class down
 Mod = setmetatable({}, {
   __index = Mod,
-  ---@param self down.Mod
-  ---@param other down.Mod
+  ---@param self down
+  ---@param other down
   __eq = function(self, other)
     return self.name == other.name
   end,
-  ---@param self down.Mod
+  ---@param self down
   __tostring = function(self)
     return self.name
   end,
 })
 
----@return down.Mod
+---@return down
 ---@param name string The name of the new mod
 Mod.default = function(name)
   return {
     setup = function()
-      ---@type down.mod.Setup
+      ---@type down.Setup
       return {
         loaded = true,
         requires = {},
@@ -52,7 +52,7 @@ Mod.default = function(name)
     on = function() end,
     post_load = function() end,
     name = 'config',
-    namespace = 'down.' .. name,
+    namespace = 'down.mod.' .. name,
     path = 'mod.config',
     version = require('down').config.version,
     data = {
@@ -71,11 +71,11 @@ Mod.default = function(name)
   }
 end
 
---- @param name string The name of the new init. Modake sure this is unique. The recommended naming convention is `category.modn` or `category.subcategory.modn`.
+--- @param name string The name of the new init. Modake sure this is unique. The recommended naming convention is `categoryn` or `category.subcategoryn`.
 --- @param imports? string[] A list of imports to attach to the init. Import data is requestable via `init.required`. Use paths relative to the current init.
---- @return down.Mod
+--- @return down
 function Mod.create(name, imports)
-  ---@type down.Mod
+  ---@type down
   local new = Mod.default(name)
   if imports then
     for _, imp in ipairs(imports) do
@@ -107,11 +107,11 @@ end
 --]]
 --- Constructs a default array of modules,
 --- NOTE: Specifically for the introductory `config` module
---- @param name string The name of the new metainit. Modake sure this is unique. The recommended naming convention is `category.modn` or `category.subcategory.modn`.
+--- @param name string The name of the new metainit. Modake sure this is unique. The recommended naming convention is `categoryn` or `category.subcategoryn`.
 --- @param ... string A list of init names to load.
---- @return down.Mod
-Mod.modules = function(name, ...)
-  ---@type down.Mod
+--- @return down
+local modules = function(name, ...)
+  ---@type down
   local m = Mod.create(name)
   m.config.enable = { ... }
   m.setup = function()
@@ -152,9 +152,9 @@ Mod.modules = function(name, ...)
   return m
 end
 Mod.loaded_mod_count = 0
---- @type { [string]: down.Mod }
+--- @type { [string]: down }
 Mod.loaded_mod = {}
---- @param m down.Mod The actual init to load.
+--- @param m down The actual init to load.
 --- @return boolean # Whether the init successfully loaded.
 function Mod.load_mod_from_table(m)
   log.info('Loading init with name' .. m.name)
@@ -166,7 +166,7 @@ function Mod.load_mod_from_table(m)
   end
 
   -- Invoke the setup function. This function returns whether or not the loading of the init was successful and some metadata.
-  ---@type down.mod.Setup
+  ---@type down.Setup
   local mod_load = m.setup and m.setup()
       or {
         loaded = true,
@@ -208,7 +208,7 @@ function Mod.load_mod_from_table(m)
       log.trace('Verifying' .. req_mod)
 
       if not Mod.is_mod_loaded(req_mod) then
-        if config.user.mod[req_mod] then
+        if config.user[req_mod] then
           log.trace(
             'Wanted init'
             .. req_mod
@@ -378,8 +378,8 @@ function Mod.load_mod(modn, cfg)
     modl.config.custom = cfg
     modl.config = utils.extend(modl.config, cfg)
   else
-    -- print(modl.config.custom, modl.config, config.mod[modn])
-    modl.config.custom = config.mod[modn]
+    -- print(modl.config.custom, modl.config, config[modn])
+    modl.config.custom = config[modn]
     modl.config =
     -- vim.tbl_extend("force", modl.config, modl.config.custom or {})
         utils.extend(modl.config, modl.config.custom or {})
@@ -390,8 +390,8 @@ function Mod.load_mod(modn, cfg)
 end
 
 --- Has the same principle of operation as load_mod_from_table(), except it then sets up the parent init's "required" table, allowing the parent to access the child as if it were a dependency.
---- @param md down.Mod A valid table as returned by mod.create()
---- @param parent_mod string|down.Mod If a string, then the parent is searched for in the loaded mod. If a table, then the init is treated as a valid init as returned by mod.create()
+--- @param md down A valid table as returned by mod.create()
+--- @param parent_mod string|down If a string, then the parent is searched for in the loaded mod. If a table, then the init is treated as a valid init as returned by mod.create()
 function Mod.load_mod_as_dependency_from_table(md, parent_mod)
   if Mod.load_mod_from_table(md) then
     if type(parent_mod) == 'string' then
@@ -408,7 +408,7 @@ end
 --- @param cfg? table A config that reflects the structure of down.config.user.setup["init.name"].config
 function Mod.load_mod_as_dependency(modn, parent_mod, cfg)
   if Mod.load_mod(modn, cfg) and Mod.is_mod_loaded(parent_mod) then
-    Mod.loaded_mod[parent_mod].required[modn] = Mod.mod_config(modn)
+    Mod.loaded_mod[parent_mod].required[modn] = Mod_config(modn)
   end
 end
 
@@ -428,7 +428,7 @@ end
 --- Returns the init.config table if the init is loaded
 --- @param modn string The name of the init to retrieve (init must be loaded)
 --- @return table?
-function Mod.mod_config(modn)
+function Mod_config(modn)
   if not Mod.is_mod_loaded(modn) then
     log.trace('Attempt to get init config with name' .. modn .. 'failed - init is not loaded.')
     return
@@ -500,7 +500,7 @@ function Mod.split_event_type(type)
 end
 
 --- Returns an event template defined in `init.events`.
---- @param m down.Mod A reference to the init invoking the function
+--- @param m down A reference to the init invoking the function
 --- @param type string A full path to a valid event type (e.g. `init.events.some_event`)
 --- @return down.Event?
 function Mod.get_event_template(m, type)
@@ -524,7 +524,7 @@ function Mod.get_event_template(m, type)
 end
 
 --- Creates a deep copy of the `mod.base_event` event and returns it with a custom type and referrer.
---- @param m down.Mod A reference to the init invoking the function.
+--- @param m down A reference to the init invoking the function.
 --- @param name string A relative path to a valid event template.
 --- @return down.Event
 function Mod.define_event(m, name)
@@ -556,7 +556,7 @@ function Mod.define_event(m, name)
 end
 
 --- Returns a copy of the event template provided by a init.
---- @param init down.Mod A reference to the init invoking the function
+--- @param init down A reference to the init invoking the function
 --- @param type string A full path to a valid .vent type (e.g. `init.events.some_event`)
 --- @param content table|any? The content of the event, can be anything from a string to a table to whatever you please.
 --- @param ev? table The original event data.
@@ -596,7 +596,7 @@ function Mod.create_event(m, type, content, ev)
   new_event.broadcast = true
   new_event.buffer = bufid
   new_event.window = winid
-  new_event.mode = vim.api.nvim_get_mode().mode
+  new_evente = vim.api.nvim_get_mode()
 
   return new_event
 end

@@ -57,16 +57,12 @@ the _familiar_, organized future for neovim and beyond!
     branch       = "master",
     config       = function()
       require "down".setup {
-        mod = {
-          workspace = {
-            config = {
-              default = "notes",
-              workspaces = {
-                default = "~/down",
-                notes = "~/notes",
-                personal = "~/home"
-              }
-            }
+        workspace = {
+          default = "notes",
+          workspaces = {
+            default = "~/down",
+            notes = "~/notes",
+            personal = "~/home"
           }
         }
       }
@@ -104,17 +100,13 @@ Plug "pysan3/pathlib.nvim"
 Plug "clpi/down.lua", {
     \ "branch" : "master",
     \ "do"     : ':lua require([[down]]).setup({
-    \   mod = {
     \     workspace = {
-    \       config = {
     \         workspaces = {
     \           wiki = [[~/wiki]],
     \           default = [[~/down]],
     \           notes = [[~/notes]]
     \         }
-    \       }
     \     }
-    \   }
     \ })'
     \ }
 ```
@@ -187,17 +179,13 @@ use {
   branch = 'master',
   config = function()
       require("down").setup({
-        mod = {
-          workspace = {
-            config = {
-              workspaces = {
-                default = "~/down",
-                home = "~/notes",
-                notes = "~/notes"
-              }
+        workspace = {
+            workspaces = {
+              default = "~/down",
+              home = "~/notes",
+              notes = "~/notes"
             }
           }
-        }
       })
   end,
 }

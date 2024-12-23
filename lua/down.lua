@@ -37,10 +37,7 @@ local a, f, ext = vim.api, vim.fn, vim.tbl_deep_extend
 --- Initializes down. Parses the supplied user config, initializes all selected mod and adds filetype checking for `.down`.
 --- @param conf down.config.UserMod? A table that reflects the structure of `config.user`.
 function W.setup(conf)
-  conf = conf or { mod = {} }
-  if conf.mod == nil then
-    conf.mod = {}
-  end
+  conf = conf or {}
   con.user = utils.extend(con.user, conf)
   -- log.new(con.user.logger or log.get_base_config(), true)
   require('down.config').setup_maps()
@@ -60,14 +57,14 @@ function W.setup(conf)
       end,
     })
   end
-  require 'down.util.lsp'.setup()
-  require 'down.util.lsp'.run()
+  -- require 'down.util.lsp'.setup()
+  -- require 'down.util.lsp'.run()
 end
 
 ---@param manual table
 ---@param args table
 function W.enter(manual, args)
-  local mods = con.user and con.user.mod or {}
+  local mods = con and con.user or {}
   if con.started or not mods or vim.tbl_isempty(mods) then ---@diagnostic disable-line
     return
   end
@@ -82,7 +79,7 @@ function W.enter(manual, args)
   end
 
   for name, lm in pairs(mods) do
-    con.mod[name] = utils.extend(con.mod[name] or {}, lm.config or {})
+    con[name] = utils.extend(con[name] or {}, lm or {})
   end
   for name, _ in pairs(mods) do
     if not m.load_mod(name) then

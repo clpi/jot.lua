@@ -4,12 +4,8 @@ local f = vim.fn
 
 --- @type down.Config
 C.config = {
-  ---@class down.config.User
+  ---@class down.mod.Config
   user = {
-    ---@class down.config.UserMod
-    mod = {
-      config = {},
-    },
   },
 
   -- data = f.stdpath("data") .. "/down.mpack",
@@ -22,9 +18,6 @@ C.config = {
     down = true,
   },
 
-  mod = {
-    config = {},
-  },
   manual = nil,
   args = {},
   version = "0.1.0",
