@@ -42,7 +42,7 @@ clean:
 	fd --no-ignore --glob "*-E" -x "rm" ./
 
 v:
-	nvim -u ./test/config/minit.lua # -c 'Lazy install'
+	nvim -u ./test/config/init.lua --noplugin # -c 'Lazy install'
 
 
 

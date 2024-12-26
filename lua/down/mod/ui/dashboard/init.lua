@@ -1,4 +1,4 @@
-local D = require("down.mod").create("ui.dashboard")
+local D = require("down.mod").new("ui.dashboard")
 
 D.setup = function()
   return {

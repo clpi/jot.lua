@@ -1,6 +1,6 @@
 local down = require("down")
 
-local M = down.mod.create("ui.icon.basic")
+local M = down.mod.new("ui.icon.basic")
 
 ---@class down.ui.icon.basic.Config
 M.config = {

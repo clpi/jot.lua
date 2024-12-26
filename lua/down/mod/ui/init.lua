@@ -1,11 +1,9 @@
 local mod = require("down.mod")
 ---@type down.Mod
-local M = mod.create('ui', {
+local M = mod.new('ui', {
   -- "icon",
   -- "win",
   'win',
-  'nav',
-  'chat',
   'sidebar',
   'dashboard',
   'popup',
@@ -222,11 +220,11 @@ M.data = {
       name = 'display/' .. name
 
       if split_type == 'vsplitl' then
-        return M.data.create_vsplit(name, true, {}, { split = 'left' })
+        return M.data.new_vsplit(name, true, {}, { split = 'left' })
       elseif split_type == 'vsplitr' then
-        return M.data.create_vsplit(name, true, {}, { split = 'right' })
+        return M.data.new_vsplit(name, true, {}, { split = 'right' })
       elseif split_type == 'split' then
-        return M.data.create_split(name, {})
+        return M.data.new_split(name, {})
       else
         local buf = vim.api.nvim_create_buf(true, true)
         vim.api.nvim_buf_set_name(buf, name)
@@ -332,11 +330,11 @@ M.data = {
       name = 'down/' .. name .. '.md'
 
       if split_type == 'vsplitl' then
-        return M.data.create_vsplit(name, true, {}, { split = 'left' })
+        return M.data.new_vsplit(name, true, {}, { split = 'left' })
       elseif split_type == 'vsplitr' then
-        return M.data.create_vsplit(name, true, {}, { split = 'right' })
+        return M.data.new_vsplit(name, true, {}, { split = 'right' })
       elseif split_type == 'split' then
-        return M.data.create_split(name, {})
+        return M.data.new_split(name, {})
       else
         local buf = vim.api.nvim_create_buf(true, true)
         vim.api.nvim_buf_set_name(buf, name)

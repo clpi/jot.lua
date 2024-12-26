@@ -6,7 +6,7 @@ local lib = require 'down.util.lib'
 local util = require 'down.util'
 
 ---@class down.mod.Cmd: down.Mod
-local M = mod.create('cmd')
+local M = mod.new('cmd')
 
 M.maps = function()
   Map.nmap(',wml', '<CMD>Down mod list<CR>')
@@ -115,7 +115,7 @@ M.data = {
 
     mod.broadcast(
       assert(
-        mod.create_event(
+        mod.new_event(
           M,
           table.concat({ 'cmd.events.', ref.name }),
           vim.list_slice(args, argument_index + 1)
@@ -321,7 +321,7 @@ M.data = {
   --- Rereads data from all mod and rebuild the list of available autocompletiinitinitons and commands
   sync = function()
     -- Loop through every loaded init and set up all their commands
-    for _, lm in pairs(mod.data.mods) do
+    for _, lm in pairs(mod.mods) do
       if lm.data.commands then
         M.data.add_commands_from_table(lm.data.commands)
       end
@@ -421,7 +421,7 @@ M.on = function(event)
 
     local lines = {}
 
-    for name, _ in pairs(mod.data.mods) do
+    for name, _ in pairs(mod.mods) do
       table.insert(lines, '- `' .. name .. '`')
     end
 

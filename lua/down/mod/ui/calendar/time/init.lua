@@ -1,4 +1,4 @@
-local T = require("down.mod").create("ui.calendar.time")
+local T = require("down.mod").new("ui.calendar.time")
 function T.setup()
   return {
     laoded = true

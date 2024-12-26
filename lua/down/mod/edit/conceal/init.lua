@@ -1,6 +1,6 @@
 local down = require("down")
 local mod, config = down.mod, down.cfg
-local M = mod.create("edit.conceal")
+local M = mod.new("edit.conceal")
 local fn, a, madd = vim.fn, vim.api, vim.fn.matchadd
 M.chars = require("down.mod.edit.conceal.chars")
 M.math = require("down.mod.edit.conceal.math")

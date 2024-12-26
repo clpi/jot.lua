@@ -1,7 +1,7 @@
 local down = require("down")
 local mod = down.mod
 
-local M = mod.create("cmd.rename")
+local M = mod.new("cmd.rename")
 
 M.setup = function()
   return { loaded = true, requires = { "cmd" } }

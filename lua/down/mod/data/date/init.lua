@@ -1,5 +1,5 @@
 ---@type down.Mod
-local M = require "down.mod".create("data.date", {
+local M = require "down.mod".new("data.date", {
 })
 
 --- The date data structure.

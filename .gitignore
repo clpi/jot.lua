@@ -9,7 +9,6 @@
 **ftplugin/
 **after/
 down-lsp
-down
 down-lsp.sh
 downls
 **.DS_Store

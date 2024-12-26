@@ -1,7 +1,7 @@
 local down = require("down")
 local mod = down.mod
 
-local M = mod.create("cmd.mod")
+local M = mod.new("cmd.mod")
 
 ---@class down.cmd.mod.Data
 M.data = {

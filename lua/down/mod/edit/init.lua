@@ -1,7 +1,7 @@
 ---@type down.Mod
-local M = require('down.mod').create('edit', {
+local M = require('down.mod').new('edit', {
   'toc',
-  'task',
+  -- 'task',
   -- "fold",
   -- "inline",
   -- "syntax",
@@ -90,8 +90,8 @@ M.data.jump = function(pattern, reverse)
     if left and right then
       -- If there is, see if the cursor is before the match (or after if rev = true)
       if
-          ((reverse and col + 1 > left) or ((not reverse) and col + 1 < left))
-          and left <= line_len
+        ((reverse and col + 1 > left) or ((not reverse) and col + 1 < left))
+        and left <= line_len
       then
         -- If it is, send the cursor to the start of the match
         vim.api.nvim_win_set_cursor(0, { row, left - 1 })
@@ -147,7 +147,7 @@ M.data.go_to_heading = function(anchor_text, reverse)
   local row = (reverse and starting_row - 1) or starting_row + 1
   while continue do
     local line = (reverse and vim.api.nvim_buf_get_lines(0, row - 1, row, false))
-        or vim.api.nvim_buf_get_lines(0, row - 1, row, false)
+      or vim.api.nvim_buf_get_lines(0, row - 1, row, false)
     -- If the line has contents, do the thing
     if line[1] then
       -- Are we in a code block?
@@ -199,10 +199,10 @@ M.data.go_to_heading = function(anchor_text, reverse)
         local place = (reverse and 'beginning') or 'end'
         local preposition = (reverse and 'after') or 'before'
         local message = '⬇️  There are no more headings '
-            .. preposition
-            .. ' the '
-            .. place
-            .. ' of the document!'
+          .. preposition
+          .. ' the '
+          .. place
+          .. ' of the document!'
         if not silent then
           vim.api.nvim_echo({ { message, 'WarningMsg' } }, true, {})
         end

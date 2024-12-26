@@ -1,11 +1,12 @@
 local Path = require('pathlib')
+local config = require "down.config"
 local util = require 'down.mod.workspace.util'
 local mod = require('down.mod')
-local down = require('down')
 local utils = require('down.util')
+local path = require("plenary.path")
 
 ---@class down.mod.Workspace: down.mod
-local M = require('down.mod').create('workspace')
+local M = mod.new('workspace')
 
 ---@todo TODO: Merge M.config.default and M.config.workspaces.default
 
@@ -14,11 +15,13 @@ M.config = {
   -- The list of active down workspaces.
   -- There is always an inbuilt workspace called `default`, whose loc is
   -- set to the Neovim current working directory on boot.
-  default = nil,
+  default = 'default',
   workspaces = {
-    default = Path.cwd(),
-    clp = '~/clp',
+    default = vim.fn.getcwd(0),
+    cwd = vim.fn.getcwd(0),
   },
+  -- default = vim.fn.getcwd(),
+  -- },
   ---- The active workspace
   active = Path.cwd(),
   --- The filetype of new douments, markdown is supported only for now
@@ -34,7 +37,7 @@ M.config = {
 M.setup = function()
   return {
     loaded = true,
-    requires = { 'ui', 'data', 'note', 'data.dirs' },
+    requires = { 'ui', 'data', 'note' },
   }
 end
 
@@ -88,7 +91,7 @@ M.data = {
   ---@type { [1]: string, [2]: PathlibPath }
   current_workspace = { 'default', Path.cwd() },
   history = { 'default' },
-  create_missing_file = function(path) end,
+  new_missing_file = function(path) end,
   current = function()
     return M.data.current_workspace
   end,
@@ -238,7 +241,7 @@ M.data = {
     -- Broadcast the wschanged event with all the necessary information
     require('down.mod').broadcast(
       assert(
-        mod.create_event(M, 'workspace.events.wschanged', { old = current_ws, new = new_workspace })
+        mod.new_event(M, 'workspace.events.wschanged', { old = current_ws, new = new_workspace })
       )
     )
 
@@ -257,8 +260,8 @@ M.data = {
     wspath = Path(wspath):resolve():to_absolute()
     -- Set the new workspace and its path accordingly
     M.config.workspaces[wsname] = wspath
-    -- Broadcast the wsadded event with the newly added workspace as the content
-    mod.broadcast(assert(mod.create_event(M, 'workspace.events.wsadded', { wsname, wspath })))
+    -- Broadcast the wsadded event with the newly added workspace as the body
+    mod.broadcast(assert(mod.new_event(M, 'workspace.events.wsadded', { wsname, wspath })))
 
     -- Sync autocompletions so the user can see the new workspace
     M.data.sync()
@@ -322,15 +325,15 @@ M.data = {
   end,
   select_workspace = function() end,
 
-  ---@class default.workspace.create_file_opts
+  ---@class default.workspace.CreateFileOpts
   ---@field ['opts.no_open']? boolean do not open the file after creation?
   ---@field ['opts.force']? boolean overwrite file if it already exists?
 
   --- Takes in a path (can include directories) and creates a .down file from that path
   ---@param path string|PathlibPath a path to place the .down file in
   ---@param workspace? string workspace name
-  ---@param opts? default.workspace.create_file_opts additional options
-  create_file = function(path, workspace, opts)
+  ---@param opts? default.workspace.CreateFileOpts
+  new_file = function(path, workspace, opts)
     opts = opts or {}
 
     -- Grab the current workspace's full path
@@ -361,7 +364,7 @@ M.data = {
     -- Broadcast file creation event
     local bufnr = M.data.get_file_bufnr(destination:tostring())
     mod.broadcast(
-      assert(mod.create_event(M, 'workspace.events.file_created', { buffer = bufnr, opts = opts }))
+      assert(mod.new_event(M, 'workspace.events.file_created', { buffer = bufnr, opts = opts }))
     )
 
     if not opts.no_open then
@@ -540,9 +543,9 @@ M.data = {
   end,
   new_note = function()
     if M.config.use_popup then
-      M.required.ui.create_prompt('downNewNote', 'New Note: ', function(text)
+      M.required.ui.new_prompt('downNewNote', 'New Note: ', function(text)
         -- Create the file that the user has entered
-        M.data.create_file(text)
+        M.data.new_file(text)
       end, {
         center_x = true,
         center_y = true,
@@ -555,28 +558,46 @@ M.data = {
     else
       vim.ui.input({ prompt = 'New Note: ' }, function(text)
         if text ~= nil and #text > 0 then
-          M.data.create_file(text)
+          M.data.new_file(text)
         end
       end)
     end
   end,
 }
 
+M.data.get_dir = function(wsname)
+  if not wsname then
+    return M.data.current_workspace[2]
+  else
+    return M.data.get_workspace(wsname)
+  end
+end
+
+M.data.subpath = function(path, wsname)
+  local wsp = M.data.get_dir(wsname)
+  return table.concat({ wsp, path }, config.pathsep)
+end
+
+M.data.is_subpath = function(path, wsname)
+  local wsp = M.data.get_dir(wsname)
+  return not not path:match("^" .. wsp)
+end
+
 M.on = function(event)
   -- If somebody has executed the :down workspace command then
   if event.type == 'cmd.events.workspace.workspace' then
     -- Have we supplied an argument?
-    if event.content[1] then
-      M.data.open_workspace(event.content[1])
+    if event.body[1] then
+      M.data.open_workspace(event.body[1])
 
       vim.schedule(function()
-        local new_workspace = M.data.get_workspace(event.content[1])
+        local new_workspace = M.data.get_workspace(event.body[1])
 
         if not new_workspace then
           return
         end
 
-        utils.notify('New workspace: ' .. event.content[1] .. ' -> ' .. new_workspace)
+        utils.notify('New workspace: ' .. event.body[1] .. ' -> ' .. new_workspace)
       end)
     else -- No argument supplied, simply print the current workspace
       -- Query the current workspace

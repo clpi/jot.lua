@@ -1,6 +1,8 @@
+local mod = require('down.mod')
+
 ---TODO: imelement
 ---@class down.mod.Tool: down.Mod
-local E = require('down.mod').create('tool')
+local E = mod.new('tool')
 
 --TODO: implement config to initialize sub tools depending on user confiE
 

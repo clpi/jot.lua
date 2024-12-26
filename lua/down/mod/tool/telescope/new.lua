@@ -1,5 +1,5 @@
 local mod = require("word.mod")
-local M = mod.create("tool.telescope")
+local M = mod.new("tool.telescope")
 local k = vim.keymap.set
 
 M.setup = function()

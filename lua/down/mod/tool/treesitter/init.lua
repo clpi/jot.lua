@@ -13,7 +13,7 @@ local u = require("nvim-treesitter.utils")
 local loc = require("nvim-treesitter.locals")
 local tsu = require("nvim-treesitter.ts_utils")
 
-local M = require("down.mod").create("tool.treesitter")
+local M = require("down.mod").new("tool.treesitter")
 
 ---@class down.tool.treesitter.Data
 M.data = {
@@ -70,6 +70,10 @@ M.data = {
 }
 
 M.setup = function()
+  return { loaded = true }
+end
+
+M.load = function()
   -- mod.await("cmd", function(downcmd)
   --   downcmd.add_commands_from_table({
   --     treesitter = {
@@ -78,11 +82,6 @@ M.setup = function()
   --     },
   --   })
   -- end)
-
-  return { loaded = true }
-end
-
-M.load = function()
   local success, ts_utils = pcall(require, "nvim-treesitter.ts_utils")
 
   assert(success, "Unable to load nvim-treesitter.ts_utils :(")
@@ -1033,8 +1032,39 @@ local function install_down_ts()
   end
 end
 
+M.data.query = function(query, lang)
+  local tsp = vim.treesitter.get_parser(0, lang or vim.bo.filetype)
+  local tss = tsp:parse()[1]
+  local tsr = tss:root()
+  local tpq = vim.treesitter.query.parse(lang or vim.bo.filetype, query)
+  return tpq:iter_matches(tsr, 0)
+end
+M.data.icon = {}
+M.data.quote = [[
+    (block_quote_marker) @quote
+                (block_quote (paragraph (inline (block_continuation) @quote)))
+                (block_quote (paragraph (block_continuation) @quote))
+                (block_quote (block_continuation) @quote)
+]]
+M.data.icon.quote = "┃"
+M.data.parser = function()
+  return vim.treesitter.get_parser(0)
+end
+
+M.data.cursor = function()
+  return require "nvim-treesitter.ts_utils".get_node_at_cursor()
+end
+
+M.data.root = function()
+  local lang = vim.bo.filetype
+  local langtree = vim.treesitter.get_parser(0, lang)
+  local tree = langtree:parse()
+  local root = tree[1]:root()
+  return tree, root
+end
+
 M.on = function(event)
-  if event.split_type[2] == "sync" then
+  if event.split[2] == "sync" then
     local ok, err = pcall(install_down_ts)
 
     if not ok then
@@ -1042,6 +1072,7 @@ M.on = function(event)
     end
 
     local install = require("nvim-treesitter.install")
+    install.commands.TSInstallSync["run!"]("markdown")
     install.commands.TSInstallSync["run!"]("markdown_inline")
   end
 end

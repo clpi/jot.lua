@@ -4,7 +4,7 @@ local mod = require("down.mod")
 local lib = require("down.util.lib")
 local u = require("down.mod.data.time.util")
 
-local M = mod.create("data.time")
+local M = mod.new("data.time")
 
 -- NOTE: Maybe encapsulate whole date parser in a single PEG grammar?
 local _, time_regex =

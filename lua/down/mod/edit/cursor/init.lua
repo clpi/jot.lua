@@ -1,4 +1,4 @@
-local L = require 'down.mod'.create('edit.cursor')
+local L = require 'down.mod'.new('edit.cursor')
 local tu = require('nvim-treesitter.ts_utils')
 
 function L.setup()

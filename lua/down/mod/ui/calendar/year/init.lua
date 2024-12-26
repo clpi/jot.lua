@@ -1,3 +1,3 @@
-local Y = require("down.mod").create("ui.calendar.year")
+local Y = require("down.mod").new("ui.calendar.year")
 
 return Y

@@ -1,9 +1,10 @@
 local mod = require("down.mod")
-local M = mod.create("tool.telescope")
+local M = mod.new("tool.telescope")
 local tok, t = pcall(require, "telescope")
 
 local k = vim.keymap.set
 
+---@return down.mod.Setup
 M.setup = function()
   if tok then
     return {
@@ -17,11 +18,12 @@ M.setup = function()
   end
 end
 
----@class down.tool.telescope.Data
+---@class down.mod.Data
 M.data = {
   picker_names = {
-    "linkable",
     "files",
+    "tags",
+    "links",
     -- "insert_link",
     -- "insert_file_link",
     -- "search_headings",
@@ -34,8 +36,18 @@ M.data = {
     -- "backlinks.header_backlinks",
   },
 }
----@class down.tool.telescope.Config
-M.config = {}
+---@class down.mod.Config
+M.config = {
+  enabled = {
+    ['backlinks'] = true,
+    ['workspace'] = true,
+    ['files'] = true,
+    ['tags'] = true,
+    ['links'] = true,
+    ['grep'] = true
+  }
+}
+
 M.data.pickers = function()
   local r = {}
   for _, pic in ipairs(M.data.picker_names) do
@@ -49,8 +61,11 @@ M.data.pickers = function()
 end
 M.subscribed = {
   cmd = {
-    ["tool.telescope.find.files"] = true,
-    ["tool.telescope.find.workspace"] = true,
+    ["find.files"] = true,
+    ["find"] = true,
+    ["find.links"] = true,
+    ["find.tags"] = true,
+    ["find.workspace"] = true,
   },
 }
 M.load = function()
@@ -59,14 +74,22 @@ M.load = function()
       cmd.add_commands_from_table({
         find = {
           args = 0,
-          name = "tool.telescope.find",
+          name = "find",
           subcommands = {
+            links = {
+              name = "find.links",
+              args = 0,
+            },
+            tags = {
+              name = "find.tags",
+              args = 0,
+            },
             files = {
-              name = "tool.telescope.find.files",
+              name = "find.files",
               args = 0,
             },
             workspace = {
-              name = "tool.telescope.find.workspace",
+              name = "find.workspace",
               args = 0,
             },
           },
@@ -76,7 +99,6 @@ M.load = function()
     assert(tok, t)
     t.load_extension("down")
     for _, pic in ipairs(M.data.picker_names) do
-      -- t.load_extension(pic)
       k("n", "<plug>down.telescope." .. pic .. "", M.data.pickers()[pic])
     end
   else
@@ -85,11 +107,26 @@ M.load = function()
 end
 
 M.on = function(event)
-  if event.type == "tool.telescope.find.files" then
-    vim.cmd([[Telescope down find_down]])
-  elseif event.type == "tool.telescope.find.workspace" then
-    vim.cmd([[Telescope down workspace]])
-    require("telescope._extensions.down.picker.workspace")()
+  if (event.split[1] == "cmd") then
+    if (event.split[2] == "find") then
+      require("telescope._extensions.down.picker.files")()
+    elseif (event.split[2] == "find.files") then
+      if M.config.enabled['files'] ~= nil then
+        require("telescope._extensions.down.picker.files")()
+      end
+    elseif (event.split[2] == "find.tags") then
+      if M.config.enabled['tags'] ~= nil then
+        require("telescope._extensions.down.picker.tags")()
+      end
+    elseif (event.split[2] == "find.links") then
+      if M.config.enabled['links'] ~= nil then
+        require("telescope._extensions.down.picker.links")()
+      end
+    elseif (event.split[2] == "find.workspace") then
+      if M.config.enabled['workspace'] ~= nil then
+        require("telescope._extensions.down.picker.workspace")()
+      end
+    end
   end
 end
 

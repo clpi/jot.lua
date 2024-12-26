@@ -13,6 +13,15 @@ U.ns = a.nvim_create_namespace
 U.win_valid = a.nvim_win_is_valid
 U.buf_ext = a.nvim_bug_get_extmarks
 
+U.tobool = function(str)
+  local bool = false
+  str = (str:gsub(' ', ''))
+  if str == 'true' then
+    bool = true
+  end
+  return bool
+end
+
 local version = vim.version() -- TODO: Move to a more local scope
 
 --- A version agnostic way to call the neovim treesitter query parser

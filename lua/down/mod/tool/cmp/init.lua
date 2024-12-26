@@ -1,6 +1,6 @@
 local mod = require "down.mod"
 
-local M = mod.create("tool.cmp")
+local M = mod.new("tool.cmp")
 
 local has_cmp, cmp = pcall(require, "cmp")
 

@@ -1,7 +1,7 @@
 local down = require("down")
 local mod, utils, log = down.mod, down.utils, down.log
 
-local M = mod.create("edit.toc")
+local M = mod.new("edit.toc")
 
 M.setup = function()
   -- mod.await("cmd", function(downcmd)
@@ -446,7 +446,7 @@ local function create_ui(tabpage, split_dir, enter)
   assert(tabpage == vim.api.nvim_get_current_tabpage())
 
   toc_namespace = toc_namespace or vim.api.nvim_create_namespace("down/toc")
-  local ui_buffer, ui_window = M.required["core.ui"].create_vsplit(
+  local ui_buffer, ui_window = M.required["core.ui"].new_vsplit(
     ("toc-%d"):format(tabpage),
     enter,
     { ft = "down" },

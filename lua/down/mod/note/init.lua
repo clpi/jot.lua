@@ -5,7 +5,15 @@ local util = require('down.util')
 local mod = require('down.mod')
 
 ---@class down.mod.Note: down.Mod
-local M = mod.create('note')
+local M = mod.new('note', {})
+
+M = setmetatable(M, {
+  __index = function(self, k)
+    return self.required[k]
+  end,
+})
+
+local W = M.required['workspace']
 
 M.maps = function()
   vim.api.nvim_set_keymap('n', ',wn', '<CMD>Down note today<CR>', { silent = true })
@@ -23,13 +31,13 @@ M.data = {
     local yr = os.date('%Y')
     local ws = M.config.workspace or M.required['workspace'].get_current_workspace()[1]
     local ws_path = M.required['workspace'].get_workspace(ws)
-    local ix = M.config.note_folder .. config.pathsep .. yr .. config.pathsep .. 'index.md'
+    local ix = M.config.note_folder .. config.pathsep .. yr .. config.pathsep .. M.config.index
     local path = ws_path .. config.pathsep .. ix
     local index_exists = M.required['workspace'].file_exists(path)
     if index_exists then
       M.required['workspace'].open_file(ws, ix)
     else
-      M.required['workspace'].create_file(ix, ws)
+      M.required['workspace'].new_file(ix, ws)
       M.required['workspace'].open_file(ws, ix)
     end
   end,
@@ -44,13 +52,13 @@ M.data = {
         .. config.pathsep
         .. mo
         .. config.pathsep
-        .. 'index.md'
+        .. M.config.index
     local path = ws_path .. config.pathsep .. ix
     local index_exists = M.required['workspace'].file_exists(path)
     if index_exists then
       M.required['workspace'].open_file(ws, ix)
     else
-      M.required['workspace'].create_file(ix, ws)
+      M.required['workspace'].new_file(ix, ws)
       M.required['workspace'].open_file(ws, ix)
     end
   end,
@@ -58,15 +66,13 @@ M.data = {
   note_index = function()
     local ws = M.config.workspace or M.required['workspace'].get_current_workspace()[1]
     local ws_path = M.required['workspace'].get_workspace(ws)
-    local ix = M.config.note_folder .. config.pathsep .. 'index.md'
+    local ix = M.config.note_folder .. config.pathsep .. M.config.index
     local path = ws_path .. config.pathsep .. ix
     local index_exists = M.required['workspace'].file_exists(path)
-    if index_exists then
-      M.required['workspace'].open_file(ws, ix)
-    else
-      M.required['workspace'].create_file(ix, ws)
-      M.required['workspace'].open_file(ws, ix)
+    if not index_exists then
+      M.required['workspace'].new_file(ix, ws)
     end
+    M.required['workspace'].open_file(ws, ix)
   end,
   --- Opens a note entry at the given time
   ---@param time? number #The time to open the note entry at as returned by `os.time()`
@@ -104,9 +110,8 @@ M.data = {
       workspace_path .. '/' .. folder_name .. config.pathsep .. path
     )
 
-    M.required['workspace'].create_file(folder_name .. config.pathsep .. path, workspace)
+    M.required['workspace'].new_file(folder_name .. config.pathsep .. path, workspace)
 
-    -- M.required["workspace"].create_file(folder_name..config.pathsep..path, workspace)
 
     if
         not note_file_exists
@@ -149,9 +154,7 @@ M.data = {
       workspace_path .. '/' .. folder_name .. config.pathsep .. path
     )
 
-    M.required['workspace'].create_file(folder_name .. config.pathsep .. path, workspace)
-
-    -- M.required["workspace"].create_file(folder_name..config.pathsep..path, workspace)
+    M.required['workspace'].new_file(folder_name .. config.pathsep .. path, workspace)
 
     if
         not note_file_exists
@@ -205,9 +208,10 @@ M.data = {
       workspace_path .. '/' .. folder_name .. config.pathsep .. path
     )
 
-    M.required['workspace'].create_file(folder_name .. config.pathsep .. path, workspace)
+    -- M.required['workspace'].new_file(folder_name .. config.pathsep .. path, workspace)
+    M.required['workspace'].new_file(folder_name .. config.pathsep .. path, workspace)
 
-    -- M.required["workspace"].create_file(folder_name..config.pathsep..path, workspace)
+    -- M.required["workspace"].new_file(folder_name..config.pathsep..path, workspace)
 
     if
         not note_file_exists
@@ -259,7 +263,7 @@ M.data = {
     local workspace = M.config.workspace
     local folder_name = M.config.note_folder
     local tmpl = M.config.template.month
-    M.required['workspace'].create_file(
+    M.required['workspace'].new_file(
       folder_name .. config.pathsep .. tmpl,
       workspace or M.required['workspace'].get_current_workspace()[1]
     )
@@ -269,7 +273,7 @@ M.data = {
     local workspace = M.config.workspace
     local folder_name = M.config.note_folder
     local tmpl = M.config.template.year
-    M.required['workspace'].create_file(
+    M.required['workspace'].new_file(
       folder_name .. config.pathsep .. tmpl,
       workspace or M.required['workspace'].get_current_workspace()[1]
     )
@@ -279,7 +283,7 @@ M.data = {
     local folder_name = M.config.note_folder
     local tmpl = M.config.template.day
 
-    M.required['workspace'].create_file(
+    M.required['workspace'].new_file(
       folder_name .. config.pathsep .. tmpl,
       workspace or M.required['workspace'].get_current_workspace()[1]
     )
@@ -295,7 +299,7 @@ M.data = {
     if M.required['workspace'].file_exists(folder_name .. config.pathsep .. index) then
       M.required['workspace'].open_file(workspace, folder_name .. config.pathsep .. index)
     else
-      M.data.create_toc()
+      M.data.new_toc()
     end
   end,
 
@@ -470,7 +474,7 @@ M.data = {
                 return output
               end
 
-          M.required['workspace'].create_file(
+          M.required['workspace'].new_file(
             folder_name .. config.pathsep .. index,
             workspace or M.required['workspace'].get_current_workspace()[1]
           )
@@ -495,6 +499,8 @@ M.config = {
 
   -- The name for the folder in which the note files are put.
   note_folder = 'note',
+
+  index = "index.md",
 
   -- The strategy to use to create directories.
   -- May be "flat" (`2022-03-02.down`), "nested" (`2022/03/02.down`),
@@ -527,37 +533,37 @@ M.config.strategies = {
 
 ---@param event down.Event
 M.on = function(event)
-  local ty = event.split_type[1]
-  local ev = event.split_type[2]
+  local ty = event.split[1]
+  local ev = event.split[2]
   if ty == 'cmd' then
     if ev == 'note' or ev == 'note.index' then
       M.data.note_index()
     elseif ev == 'note.week' or ev == 'note.week.index' then
       M.data.week_index()
-    elseif event.split_type[2] == 'note.week.previous' then
+    elseif event.split[2] == 'note.week.previous' then
       M.data.week_prev()
-    elseif event.split_type[2] == 'note.week.next' then
+    elseif event.split[2] == 'note.week.next' then
       M.data.week_next()
-    elseif event.split_type[2] == 'note.month.previous' then
+    elseif event.split[2] == 'note.month.previous' then
       print('TODO:month previous')
-    elseif event.split_type[2] == 'note.month.next' then
+    elseif event.split[2] == 'note.month.next' then
       print('TODO:month next')
-    elseif event.split_type[2] == 'note.year.previous' then
+    elseif event.split[2] == 'note.year.previous' then
       print('TODO:year prev')
-    elseif event.split_type[2] == 'note.year.next' then
+    elseif event.split[2] == 'note.year.next' then
       print('TODO:year next')
     elseif ev == 'note.year' or ev == 'note.year.index' then
       M.data.year_index()
     elseif ev == 'note.month' or ev == 'note.month.index' then
       M.data.month_index()
-    elseif event.split_type[2] == 'note.capture' then
+    elseif event.split[2] == 'note.capture' then
       M.data.capture()
-    elseif event.split_type[2] == 'note.tomorrow' then
+    elseif event.split[2] == 'note.tomorrow' then
       M.data.note_tomorrow()
-    elseif event.split_type[2] == 'note.yesterday' then
+    elseif event.split[2] == 'note.yesterday' then
       M.data.note_yesterday()
-    elseif event.split_type[2] == 'calendar' then
-      if not event.content[1] then
+    elseif event.split[2] == 'calendar' then
+      if not event.body[1] then
         local cal = M.required['ui.calendar']
         if not cal then
           print('[ERROR]: `ui.calendar` is not loaded!')
@@ -576,10 +582,10 @@ M.on = function(event)
           end),
         })
       else
-        M.data.open_note(nil, event.content[1])
+        M.data.open_note(nil, event.body[1])
       end
-    elseif event.split_type[2] == 'note.calendar' then
-      if not event.content[1] then
+    elseif event.split[2] == 'note.calendar' then
+      if not event.body[1] then
         local cal = M.required['ui.calendar']
         if not cal then
           print('[ERROR]: `ui.calendar` is not loaded!')
@@ -598,27 +604,27 @@ M.on = function(event)
           end),
         })
       else
-        M.data.open_note(nil, event.content[1])
+        M.data.open_note(nil, event.body[1])
       end
     elseif ev == 'note.today' then
       M.data.note_today()
     elseif ev == 'note.template' then
-      M.data.create_day_template()
+      M.data.new_day_template()
     elseif ev == 'note.template.day' then
-      M.data.create_template()
+      M.data.new_template()
     elseif ev == 'note.template.week' then
-      -- M.data.create_template()
+      -- M.data.new_template()
       print('TODO note template week index')
     elseif ev == 'note.template.month' then
-      -- M.data.create_template()
+      -- M.data.new_template()
       print('TODO note template month')
     elseif ev == 'note.template.year' then
-      -- M.data.create_template()
+      -- M.data.new_template()
       print('TODO note template year')
     elseif ev == 'note.toc.open' then
       M.data.open_toc()
     elseif ev == 'note.toc.update' then
-      M.data.create_toc()
+      M.data.new_toc()
     end
   end
 end

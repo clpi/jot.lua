@@ -1,5 +1,5 @@
 ---@type down.Mod
-local M = require "down.mod".create("data.task", {
+local M = require "down.mod".new("data.task", {
   "agenda"
 })
 

@@ -2,7 +2,7 @@ local down = require("down")
 local log, mod, utils = down.log, down.mod, down.utils
 local u = require("down.mod.ui.icon.util")
 
-local M = mod.create("ui.icon", {
+local M = mod.new("ui.icon", {
   "basic",
   "complex",
   "diamond",

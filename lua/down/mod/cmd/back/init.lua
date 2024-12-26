@@ -1,10 +1,10 @@
 local down = require('down')
 local mod = down.mod
 
-local M = mod.create('cmd.back')
+local M = require('down.mod').new('cmd.back')
 
 M.setup = function()
-  return { loaded = true, requires = {} }
+  return { loaded = true, requires = { 'data.history' } }
 end
 
 ---@class down.cmd.back.Data

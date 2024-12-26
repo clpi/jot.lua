@@ -1,4 +1,4 @@
-local M = require("down.mod").create("cmd.find")
+local M = require("down.mod").new("cmd.find")
 
 ---@class down.cmd.find.Config
 M.config = {}

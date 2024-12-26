@@ -1,4 +1,4 @@
-local M = require("down.mod").create("ui.popup")
+local M = require("down.mod").new("ui.popup")
 
 M.setup = function()
   return {

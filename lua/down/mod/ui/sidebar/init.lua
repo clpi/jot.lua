@@ -1,6 +1,6 @@
 local down = require("down")
 
-local S = require("down.mod").create("ui.sidebar")
+local S = require("down.mod").new("ui.sidebar")
 
 S.setup = function()
   return {

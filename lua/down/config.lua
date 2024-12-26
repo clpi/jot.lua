@@ -1,5 +1,5 @@
 local util = require('down.util')
-local lsp = require('down.util.lsp')
+-- local mod = require('down.util.mod')
 local os = util.get_os()
 
 ---@todo TODO: Setup configuration and parse user config
@@ -10,7 +10,9 @@ local os = util.get_os()
 local Config = {
   --- Start in dev mode
   dev = false,
-  workspace = {},
+  workspace = {
+    default = vim.fn.getcwd(0),
+  },
   --- The user config to load in
   ---@type down.config.User
   user = {},
@@ -30,46 +32,33 @@ local Config = {
       vim.o.conceallevel = 2
       vim.o.concealcursor = [[nc]]
     end,
-    lsp = lsp.setup,
   },
 }
 
 ---@param user down.config.User
-function Config.setup(user, ...)
+---@param default string[]
+---@return boolean
+function Config.setup(user, default, ...)
   if Config.started or not user or vim.tbl_isempty(user) then
-    return
+    return false
   end
-  Config.user = util.extend(Config.user, user or {})
+  user = util.extend(user, default)
+  Config.user = util.extend(Config.user, user)
   if Config.user.hook then
     Config.user.hook(...)
   end
-  for name, val in pairs(Config.user) do
-    if type(val) == 'table' then
-      if name == 'workspaces' then
-        for wsname, ws in pairs(val) do
-          Config.workspace[wsname] = ws
-        end
-      else
-        if name == 'workspace' then
-          val['workspaces'] = util.extend(val['workspaces'], Config.workspace or {})
-        end
-        Config.mod[name] = util.extend(Config.mod[name] or {}, val)
-      end
-    else
-      Config[name] = val
-    end
-  end
+end
+
+Config.post_load = function()
   Config.load.maps()
   Config.load.opts()
-  if Config.dev then
-    Config.load.lsp()
-  end
   Config.started = true
+  return Config.started
 end
 
 return setmetatable(Config, {
   __index = function(mode, keymap) end,
   __newindex = function(cfg, key, val)
-    Config[key] = val
+    Config.mod[key] = val
   end,
 })

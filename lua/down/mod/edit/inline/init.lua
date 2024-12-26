@@ -1,6 +1,6 @@
 local mod = require "down.mod"
 
-local M = mod.create("edit.inline")
+local M = mod.new("edit.inline")
 
 M.setup = function()
   return {

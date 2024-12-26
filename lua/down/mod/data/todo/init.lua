@@ -1,6 +1,6 @@
 local mod, map = require("down.mod"), require("down.util.maps")
 
-local M = mod.create("data.task")
+local M = mod.new("data.task")
 
 M.maps = function()
   map.nmap(",wt", "<CMD>Telescope down task<CR>")

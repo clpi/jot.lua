@@ -1,5 +1,5 @@
 local mod = require("down.mod")
-local M = require("down.mod").create("data.tag")
+local M = require("down.mod").new("data.tag")
 
 ---@return down.mod.Setup
 M.setup = function()

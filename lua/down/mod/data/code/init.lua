@@ -1,7 +1,7 @@
 local down = require("down")
 local lib, mod, utils, log = down.lib, down.mod, down.utils, down.log
 
-local M = require "down.mod".create("data.code", { "run", "snippet" })
+local M = require "down.mod".new("data.code", { "run", "snippet" })
 local Path = require("pathlib")
 
 M.setup = function()

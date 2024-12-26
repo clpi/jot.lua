@@ -2,7 +2,7 @@ local down = require('down')
 local util = require 'down.util'
 local mod = down.mod
 
-local G = require 'down.mod'.create('ui.calendar')
+local G = require 'down.mod'.new('ui.calendar')
 
 G.setup = function()
   return {
@@ -61,7 +61,7 @@ end
 G.data.open_window = function(options)
   local MIN_HEIGHT = 14
 
-  local buffer, window = G.required['ui'].create_split(
+  local buffer, window = G.required['ui'].new_split(
     'ui.calendar-' .. tostring(os.clock()):gsub('%.', '-'),
     {},
     options.height or MIN_HEIGHT + (options.padding or 0)
@@ -86,7 +86,7 @@ G.data.add_view = function(name, details)
   G.data.view[name] = details
 end
 
-G.data.create_calendar = function(buffer, window, options)
+G.data.new_calendar = function(buffer, window, options)
   local callback_and_close = function(result)
     if options.callback ~= nil then
       options.callback(result)
@@ -113,7 +113,7 @@ G.data.open = function(options)
 
   options.mode = 'standalone'
 
-  return G.data.create_calendar(buffer, window, options)
+  return G.data.new_calendar(buffer, window, options)
 end
 
 G.data.select_date = function(options)
@@ -121,7 +121,7 @@ G.data.select_date = function(options)
 
   options.mode = 'select_date'
 
-  return G.data.create_calendar(buffer, window, options)
+  return G.data.new_calendar(buffer, window, options)
 end
 
 G.data.select_date_range = function(options)
@@ -129,7 +129,7 @@ G.data.select_date_range = function(options)
 
   options.mode = 'select_range'
 
-  return G.data.create_calendar(buffer, window, options)
+  return G.data.new_calendar(buffer, window, options)
 end
 
 G.load = function()

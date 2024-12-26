@@ -4,7 +4,7 @@ local lib = util.lib
 local log, mod = util.log
 local mod = down.mod
 
-local M = mod.create('ui.calendar.month')
+local M = mod.new('ui.calendar.month')
 
 local function reformat_time(date)
   return os.date('*t', os.time(date))

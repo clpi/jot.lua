@@ -1,5 +1,5 @@
 local mod = require "down.mod"
-local M = mod.create("edit.indent")
+local M = mod.new("edit.indent")
 local ts = vim.treesitter
 
 M.maps = function()

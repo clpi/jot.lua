@@ -1,6 +1,6 @@
 local mod = require("down.mod")
 local io, os, bit = require("io"), require("os"), require("bit")
-local E = mod.create("data.encrypt")
+local E = mod.new("data.encrypt")
 
 
 E.setup = function()

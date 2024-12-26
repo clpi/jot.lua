@@ -1,6 +1,6 @@
 local mod = require 'down.mod'
 
-local F = mod.create('edit.fold')
+local F = mod.new('edit.fold')
 
 F.setup = function()
   return {

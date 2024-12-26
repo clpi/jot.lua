@@ -156,7 +156,6 @@
 ---   @field name string The name of the init.
 ---   @field namespace string The name of the init.
 ---   @field post_load? fun() Function that is invoked after all mod are loaded. Useful if you want the down environment to be fully set up before performing some task.
----   @field path string The full path to the init (a more verbose version of `name`). Moday be used in lua's `require()` statements.
 ---   @field public data? down.mod.Data Every init can expose any set of information it sees fit through this field. All functions and variables declared in this table will be to any other init loaded.
 ---   @field required? table<string, down.Mod.Data> Contains the public tables of all mod that were required via the `requires` array provided in the `setup()` function of this init.
 ---   @field setup? fun(): down.mod.Setup? Function that is invoked before any other loading occurs. Should perform preliminary startup tasks.
@@ -252,6 +251,7 @@
 --- @class (exact) down.Config
 ---   @field dev? boolean  Whether to start in dev mode
 ---   @field hook? fun()   A hook that is run when down is started
+---   @field workspace? string[]
 ---   @field mod table<string, down.Mod> Acts as a copy of the user's config that may be modified at runtime.
 ---   @field os down.Os                           The operating system that down is currently running under.
 ---   @field pathsep "\\"|"/"                                  The operating system that down is currently running under.
@@ -264,7 +264,7 @@
 ---     maps: fun(),
 ---     lsp: fun()
 ---   }
----   @field setup fun(user: down.config.User, ...: any) Loads user config
+---   @field setup fun(user: down.config.User, ...: any): boolean Loads user config
 
 --- Stores the config for the entirety of down.
 --- This includes not only the user config (passed to `setup()`), but also internal

@@ -1,6 +1,6 @@
 local mod = require("down.mod")
 
-local M = mod.create("ui.prompt")
+local M = mod.new("ui.prompt")
 
 M.setup = function()
   return {

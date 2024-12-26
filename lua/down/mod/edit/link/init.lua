@@ -1,7 +1,7 @@
 local down = require("down")
 local lib, mod, util = down.lib, down.mod
 
-local M = mod.create("edit.link")
+local M = mod.new("edit.link")
 M.setup = function()
   return {
     loaded = true,
@@ -435,8 +435,8 @@ link from the down under the cursor or a visual selection (if there is one).
       vim.api.nvim_echo({
         { "⬇️  Couldn't find a matching reference label!", "WarningMsg" },
       }, true, {})
-    elseif M.config.links.create_on_follow_fail then
-      M.data.createLink({ range = range })
+    elseif M.config.links.new_on_follow_fail then
+      M.data.newLink({ range = range })
     end
   end,
   transformPath = function(text)

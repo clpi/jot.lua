@@ -19,8 +19,8 @@ function C.on(event_name, callback, content_filter)
 end
 
 --- Used internally by down to call all C with an event.
---- @param event down.event An event as returned by `mod.create_event()`
---- @see mod.create_event
+--- @param event down.event An event as returned by `mod.new_event()`
+--- @see mod.new_event
 function C.handle(event)
   -- Query the list of registered C
   local callback_entry = C.callback_list[event.type]

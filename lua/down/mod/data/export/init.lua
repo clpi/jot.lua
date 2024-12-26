@@ -1,5 +1,5 @@
 local mod = require("down.mod")
-local E = Mod.create("data.export")
+local E = Mod.new("data.export")
 
 E.setup = function()
   mod.await("cmd", function(cmd)

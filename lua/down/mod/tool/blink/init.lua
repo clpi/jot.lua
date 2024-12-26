@@ -1,7 +1,7 @@
 local mod = require("down.mod")
 
 ---@type down.Mod
-local M = mod.create("tool.blink")
+local M = mod.new("tool.blink")
 
 local has_blink, blink = pcall(require, "blink.cmp")
 

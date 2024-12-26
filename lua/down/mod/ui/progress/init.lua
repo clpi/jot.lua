@@ -1,5 +1,5 @@
 -- TODO: code cleanup
-local Spinner = require("down.mod").create("ui.progress")
+local Spinner = require("down.mod").new("ui.progress")
 --> from fidget.nvim
 local list =
 { "⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏" }
