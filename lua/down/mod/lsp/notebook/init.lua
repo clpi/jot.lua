@@ -1,4 +1,4 @@
-local M = Mod.create("lsp.notebook")
+local M = require('down.mod').create('lsp.notebook')
 
 ---@class lsp.notebook
 M.data = {
@@ -12,18 +12,17 @@ M.data = {
     ---@type lsp.NotebookDocumentSyncClientCapabilities
     capabilities = {
       dynamicRegistration = true,
-      executionSummarySupport = true
+      executionSummarySupport = true,
     },
     ---@type lsp.NotebookDocumentSyncOptions
     opts = {
       save = true,
       notebookSelector = {
         include = {
-          language = "python",
-        }
+          language = 'python',
+        },
       },
-    }
-
+    },
   },
   handle = {
     ---@param params lsp.DidSaveNotebookDocumentParams
@@ -47,12 +46,12 @@ M.data = {
           {
             source = "print('Hello, World!')",
             kind = lsp.CellKind.Code,
-            language = "python",
+            language = 'python',
             outputs = {
               {
                 outputKind = lsp.CellOutputKind.Rich,
                 data = {
-                  ["text/plain"] = "Hello, World!",
+                  ['text/plain'] = 'Hello, World!',
                 },
               },
             },
@@ -83,12 +82,12 @@ M.data = {
           {
             source = "print('Hello, World!')",
             kind = lsp.CellKind.Code,
-            language = "python",
+            language = 'python',
             outputs = {
               {
                 outputKind = lsp.CellOutputKind.Rich,
                 data = {
-                  ["text/plain"] = "Hello, World!",
+                  ['text/plain'] = 'Hello, World!',
                 },
               },
             },
@@ -98,7 +97,7 @@ M.data = {
       callback(doc)
       notify_reply_callback(doc)
     end,
-  }
+  },
 }
 
 return M

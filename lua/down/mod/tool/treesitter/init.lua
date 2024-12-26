@@ -1,5 +1,10 @@
 local down = require("down")
-local lib, log, mod, utils = down.lib, down.log, down.mod, down.utils
+local config = require("down.config")
+local log = require "down.util.log"
+local mod = require "down.mod"
+local lib = require "down.util.lib"
+local util = require "down.util"
+
 local vt = vim.treesitter
 local q = vt.query
 
@@ -8,7 +13,7 @@ local u = require("nvim-treesitter.utils")
 local loc = require("nvim-treesitter.locals")
 local tsu = require("nvim-treesitter.ts_utils")
 
-local M = mod.create("tool.treesitter")
+local M = require("down.mod").create("tool.treesitter")
 
 ---@class down.tool.treesitter.Data
 M.data = {
@@ -74,7 +79,7 @@ M.setup = function()
   --   })
   -- end)
 
-  return { loaded = true, requires = { "edit.hl" } }
+  return { loaded = true }
 end
 
 M.load = function()

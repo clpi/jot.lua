@@ -1,6 +1,7 @@
 local mod = require("down.mod")
-local M = mod.create("data.tag")
+local M = require("down.mod").create("data.tag")
 
+---@return down.mod.Setup
 M.setup = function()
   -- mod.await("cmd", function(cmd)
   --   cmd.add_commands_from_table({
@@ -29,12 +30,13 @@ M.setup = function()
   }
 end
 
----@class down.data.tag.Data
+---@class down.mod.data.tag.Data
 M.data = {}
 
----@class down.data.tag.Config
+---@class down.mod.data.tag.Config
 M.config = {}
 
+---@class down.mod.data.tag.Subscribed
 M.subscribed = {
   cmd = {
     ["data.tag.delete"] = true,

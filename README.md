@@ -52,12 +52,10 @@ the _familiar_, organized future for neovim and beyond!
 -- Place in lazy.nvim spec
 {
     "clpi/down.lua",
-    lazy         = false,
     opts         = {
       workspace = {
         default = "notes",
         workspaces = {
-          default = "~/down",
           notes = "~/notes",
           personal = "~/home"
         }

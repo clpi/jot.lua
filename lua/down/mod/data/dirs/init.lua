@@ -1,4 +1,4 @@
-local D = Mod.create("data.dirs")
+local D = require("down.mod").create("data.dirs")
 
 local Path = require("pathlib")
 local path = require("plenary.path")

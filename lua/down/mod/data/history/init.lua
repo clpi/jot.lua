@@ -1,4 +1,4 @@
----@class down.Mod
+---@class type.Mod
 local M = require "down.mod".create("data.history", {
 
 })

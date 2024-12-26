@@ -1,3 +1,4 @@
+---@type down.Mod
 local M = require('down.mod').create('edit', {
   'toc',
   'task',
@@ -18,6 +19,7 @@ M.setup = function()
   }
 end
 
+---@class down.mod.edit.Config
 M.config = {
   silent = false,
   wrap = false,
@@ -26,6 +28,7 @@ M.config = {
   jump_patterns = { '%[.*%]%(.-%)' },
 }
 
+---@class down.mod.edit.Data
 M.data = {}
 
 M.data.find_patterns = function(str, patterns, reverse, init)

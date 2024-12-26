@@ -1,6 +1,7 @@
-local M = Mod.create("ui.win")
 local a, c = vim.api, vim.cmd
+local mod = require "down.mod"
 local buf = require("down.util.buf")
+local M = require('down.mod').create("ui.win")
 
 ---@class ui.win.Win
 ---@field win integer

@@ -1,7 +1,7 @@
 local down = require("down")
 local lib, mod, utils, log = down.lib, down.mod, down.utils, down.log
 
-local M = down.mod.create("data.code.run")
+local M = require "down.mod".create("data.code.run")
 
 M.setup = function()
   return {

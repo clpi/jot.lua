@@ -1,6 +1,7 @@
 local mod = require("down.mod")
 local M = mod.create("data.save")
 
+---@return down.mod.Setup
 M.setup = function()
   -- mod.await("cmd", function(cmd)
   --   cmd.add_commands_from_table({
@@ -19,6 +20,7 @@ M.setup = function()
   --     },
   --   })
   -- end)
+  ---@type down.mod.Setup
   return {
     loaded = true,
     required = {
@@ -34,6 +36,7 @@ M.config = {}
 ---@class down.data.save.Data
 M.data = {}
 
+---@class down
 M.subscribed = {
   cmd = {
     ["data.save.current"] = true,

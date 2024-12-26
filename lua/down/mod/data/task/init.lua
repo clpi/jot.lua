@@ -1,9 +1,9 @@
----@class down.Mod
+---@type down.Mod
 local M = require "down.mod".create("data.task", {
   "agenda"
 })
 
----@class down.data.task.Task
+---@class down.mod.data.task.Task
 M.Task = {
   title = "",
   about = "",
@@ -17,23 +17,26 @@ M.Task = {
     char = -1,
   }
 }
----@class down.data.task.Data
+---@class down.mod.data.task.Data
 M.data = {
 
 }
 
----@class table<down.data.task.Task>
+---@class table<integer, down.mod.data.task.Task>
 M.data.tasks = {
 
 }
 
----@class down.data.task.Config
+---@class down.mod.data.task.Config
 M.config = {
   store = {
     root = "data/task",
     agenda = "data/task/agenda",
   }
 }
+
+M.load = function()
+end
 
 ---@return down.mod.Setup
 M.setup = function()

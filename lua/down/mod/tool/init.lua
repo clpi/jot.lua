@@ -1,9 +1,10 @@
 ---TODO: imelement
+---@class down.mod.Tool: down.Mod
 local E = require('down.mod').create('tool')
 
---TODO: implement config to initialize sub tools depending on user config
+--TODO: implement config to initialize sub tools depending on user confiE
 
----@class down.tool.Config
+---@class down.mod.tool.Config
 E.config = {
   ---@brief List of tools to disable (relative to the tool dir)
   disabled = {
@@ -12,11 +13,10 @@ E.config = {
   ---@brief List of tools to enable (relative to the tool dir)
   enabled = {
     "telescope",
-    "treesitter",
   }
 }
 
----@class down.tool.Data
+---@class down.mod.tool.Data
 E.data = {
 
 }
@@ -48,13 +48,15 @@ end
 --- @return down.mod.Setup
 E.data.setup = function(ext, req)
   local ok, e = E.data.has(ext)
-  if ok then return {
-    requies = req,
-    loaded = true
-  }
-  else return {
-    loaded = false
-  }
+  if ok then
+    return {
+      requies = req,
+      loaded = true
+    }
+  else
+    return {
+      loaded = false
+    }
   end
 end
 

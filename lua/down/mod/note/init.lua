@@ -1,93 +1,71 @@
-local down = require("down")
-local u = require "down.mod.note.util"
-local config, lib, log, mod =
-    require("down.config").config, down.lib, down.log, down.mod
+local down = require('down')
+local u = require 'down.mod.note.util'
+local config = require('down.config')
+local util = require('down.util')
+local mod = require('down.mod')
 
-local M = mod.create("note")
+---@class down.mod.Note: down.Mod
+local M = mod.create('note')
+
 M.maps = function()
-  vim.api.nvim_set_keymap(
-    "n",
-    ",wn",
-    "<CMD>Down note today<CR>",
-    { silent = true }
-  )
-  vim.api.nvim_set_keymap(
-    "n",
-    ",wy",
-    "<CMD>Down note yesterday<CR>",
-    { silent = true }
-  )
-  vim.api.nvim_set_keymap(
-    "n",
-    ",wc",
-    "<CMD>Down note capture<CR>",
-    { silent = true }
-  )
-  vim.api.nvim_set_keymap(
-    "n",
-    ",wt",
-    "<CMD>Down note tomorrow<CR>",
-    { silent = true }
-  )
+  vim.api.nvim_set_keymap('n', ',wn', '<CMD>Down note today<CR>', { silent = true })
+  vim.api.nvim_set_keymap('n', ',wy', '<CMD>Down note yesterday<CR>', { silent = true })
+  vim.api.nvim_set_keymap('n', ',wc', '<CMD>Down note capture<CR>', { silent = true })
+  vim.api.nvim_set_keymap('n', ',wt', '<CMD>Down note tomorrow<CR>', { silent = true })
 end
+
+---@class down.mod.note.Data
 M.data = {
   week_index = function()
-    local wk = os.date("%V")
+    local wk = os.date('%V')
   end,
   year_index = function()
-    local yr = os.date("%Y")
-    local ws = M.config.workspace
-        or M.required["workspace"].get_current_workspace()[1]
-    local ws_path = M.required["workspace"].get_workspace(ws)
-    local ix = M.config.note_folder
-        .. config.pathsep
-        .. yr
-        .. config.pathsep
-        .. "index.md"
+    local yr = os.date('%Y')
+    local ws = M.config.workspace or M.required['workspace'].get_current_workspace()[1]
+    local ws_path = M.required['workspace'].get_workspace(ws)
+    local ix = M.config.note_folder .. config.pathsep .. yr .. config.pathsep .. 'index.md'
     local path = ws_path .. config.pathsep .. ix
-    local index_exists = M.required["workspace"].file_exists(path)
+    local index_exists = M.required['workspace'].file_exists(path)
     if index_exists then
-      M.required["workspace"].open_file(ws, ix)
+      M.required['workspace'].open_file(ws, ix)
     else
-      M.required["workspace"].create_file(ix, ws)
-      M.required["workspace"].open_file(ws, ix)
+      M.required['workspace'].create_file(ix, ws)
+      M.required['workspace'].open_file(ws, ix)
     end
   end,
   month_index = function()
-    local yr = os.date("%Y")
-    local mo = os.date("%m")
-    local ws = M.config.workspace
-        or M.required["workspace"].get_current_workspace()[1]
-    local ws_path = M.required["workspace"].get_workspace(ws)
+    local yr = os.date('%Y')
+    local mo = os.date('%m')
+    local ws = M.config.workspace or M.required['workspace'].get_current_workspace()[1]
+    local ws_path = M.required['workspace'].get_workspace(ws)
     local ix = M.config.note_folder
         .. config.pathsep
         .. yr
         .. config.pathsep
         .. mo
         .. config.pathsep
-        .. "index.md"
+        .. 'index.md'
     local path = ws_path .. config.pathsep .. ix
-    local index_exists = M.required["workspace"].file_exists(path)
+    local index_exists = M.required['workspace'].file_exists(path)
     if index_exists then
-      M.required["workspace"].open_file(ws, ix)
+      M.required['workspace'].open_file(ws, ix)
     else
-      M.required["workspace"].create_file(ix, ws)
-      M.required["workspace"].open_file(ws, ix)
+      M.required['workspace'].create_file(ix, ws)
+      M.required['workspace'].open_file(ws, ix)
     end
   end,
   select_month = function() end,
   note_index = function()
-    local ws = M.config.workspace
-        or M.required["workspace"].get_current_workspace()[1]
-    local ws_path = M.required["workspace"].get_workspace(ws)
-    local ix = M.config.note_folder .. config.pathsep .. "index.md"
+    local ws = M.config.workspace or M.required['workspace'].get_current_workspace()[1]
+    local ws_path = M.required['workspace'].get_workspace(ws)
+    local ix = M.config.note_folder .. config.pathsep .. 'index.md'
     local path = ws_path .. config.pathsep .. ix
-    local index_exists = M.required["workspace"].file_exists(path)
+    local index_exists = M.required['workspace'].file_exists(path)
     if index_exists then
-      M.required["workspace"].open_file(ws, ix)
+      M.required['workspace'].open_file(ws, ix)
     else
-      M.required["workspace"].create_file(ix, ws)
-      M.required["workspace"].open_file(ws, ix)
+      M.required['workspace'].create_file(ix, ws)
+      M.required['workspace'].open_file(ws, ix)
     end
   end,
   --- Opens a note entry at the given time
@@ -95,17 +73,16 @@ M.data = {
   ---@param custom_date? string #A YYYY-mm-dd string that specifies a date to open the note at instead
   open_year = function(time, custom_date)
     -- TODO(vhyrro): Change this to use down dates!
-    local workspace = M.config.workspace
-        or M.required["workspace"].get_current_workspace()[1]
-    local workspace_path = M.required["workspace"].get_workspace(workspace)
+    local workspace = M.config.workspace or M.required['workspace'].get_current_workspace()[1]
+    local workspace_path = M.required['workspace'].get_workspace(workspace)
     local folder_name = M.config.note_folder
     local tmpl = M.config.template.year
 
     if custom_date then
-      local year, _month, _day = custom_date:match("^(%d%d%d%d)-(%d%d)-(%d%d)$")
+      local year, _month, _day = custom_date:match('^(%d%d%d%d)-(%d%d)-(%d%d)$')
 
       if not year then
-        log.error("Wrong date format: use YYYY-mm-dd")
+        log.error('Wrong date format: use YYYY-mm-dd')
         return
       end
 
@@ -114,59 +91,44 @@ M.data = {
         month = 1,
         day = 1,
       })
-      local y = os.date("%Y")
+      local y = os.date('%Y')
     end
 
     local path = os.date(
-      type(M.config.strategy) == "function"
-      and M.config.strategy(os.date("*t", time))
+      type(M.config.strategy) == 'function' and M.config.strategy(os.date('*t', time))
       or M.config.strategy,
       time
     )
 
-    local note_file_exists = M.required["workspace"].file_exists(
-      workspace_path .. "/" .. folder_name .. config.pathsep .. path
+    local note_file_exists = M.required['workspace'].file_exists(
+      workspace_path .. '/' .. folder_name .. config.pathsep .. path
     )
 
-    M.required["workspace"].create_file(
-      folder_name .. config.pathsep .. path,
-      workspace
-    )
+    M.required['workspace'].create_file(folder_name .. config.pathsep .. path, workspace)
 
     -- M.required["workspace"].create_file(folder_name..config.pathsep..path, workspace)
 
     if
         not note_file_exists
         and M.config.template.enable
-        and M.required["workspace"].file_exists(
-          workspace_path .. "/" .. folder_name .. "/" .. tmpl
-        )
+        and M.required['workspace'].file_exists(workspace_path .. '/' .. folder_name .. '/' .. tmpl)
     then
-      vim.cmd(
-        "$read "
-        .. workspace_path
-        .. "/"
-        .. folder_name
-        .. "/"
-        .. tmpl
-        .. "| silent! w"
-      )
+      vim.cmd('$read ' .. workspace_path .. '/' .. folder_name .. '/' .. tmpl .. '| silent! w')
     end
   end,
   ---@param time? number #The time to open the note entry at as returned by `os.time()`
   ---@param custom_date? string #A YYYY-mm-dd string that specifies a date to open the note at instead
   open_month = function(time, custom_date)
-    local workspace = M.config.workspace
-        or M.required["workspace"].get_current_workspace()[1]
-    local workspace_path = M.required["workspace"].get_workspace(workspace)
+    local workspace = M.config.workspace or M.required['workspace'].get_current_workspace()[1]
+    local workspace_path = M.required['workspace'].get_workspace(workspace)
     local folder_name = M.config.note_folder
     local tmpl = M.config.template.month
 
     if custom_date then
-      local year, month, day = custom_date:match("^(%d%d%d%d)-(%d%d)-(%d%d)$")
+      local year, month, day = custom_date:match('^(%d%d%d%d)-(%d%d)-(%d%d)$')
 
       if not year or not month or not day then
-        log.error("Wrong date format: use YYYY-mm-dd")
+        log.error('Wrong date format: use YYYY-mm-dd')
         return
       end
 
@@ -178,43 +140,29 @@ M.data = {
     end
 
     local path = os.date(
-      type(M.config.strategy) == "function"
-      and M.config.strategy(os.date("*t", time))
+      type(M.config.strategy) == 'function' and M.config.strategy(os.date('*t', time))
       or M.config.strategy,
       time
     )
 
-    local note_file_exists = M.required["workspace"].file_exists(
-      workspace_path .. "/" .. folder_name .. config.pathsep .. path
+    local note_file_exists = M.required['workspace'].file_exists(
+      workspace_path .. '/' .. folder_name .. config.pathsep .. path
     )
 
-    M.required["workspace"].create_file(
-      folder_name .. config.pathsep .. path,
-      workspace
-    )
+    M.required['workspace'].create_file(folder_name .. config.pathsep .. path, workspace)
 
     -- M.required["workspace"].create_file(folder_name..config.pathsep..path, workspace)
 
     if
         not note_file_exists
         and M.config.template.enable
-        and M.required["workspace"].file_exists(
-          workspace_path .. "/" .. folder_name .. "/" .. tmpl
-        )
+        and M.required['workspace'].file_exists(workspace_path .. '/' .. folder_name .. '/' .. tmpl)
     then
-      vim.cmd(
-        "$read "
-        .. workspace_path
-        .. "/"
-        .. folder_name
-        .. "/"
-        .. tmpl
-        .. "| silent! w"
-      )
+      vim.cmd('$read ' .. workspace_path .. '/' .. folder_name .. '/' .. tmpl .. '| silent! w')
     end
   end,
   capture = function()
-    local b, w = M.required["ui.win"].win("today", "note", "Down note today")
+    local b, w = M.required['ui.win'].win('today', 'note', 'Down note today')
     -- vim.cmd
 
     -- Mod.get_mod("ui.win").cmd(w, function()
@@ -227,17 +175,16 @@ M.data = {
   ---@param custom_date? string #A YYYY-mm-dd string that specifies a date to open the note at instead
   open_note = function(time, custom_date)
     -- TODO(vhyrro): Change this to use down dates!
-    local workspace = M.config.workspace
-        or M.required["workspace"].get_current_workspace()[1]
-    local workspace_path = M.required["workspace"].get_workspace(workspace)
+    local workspace = M.config.workspace or M.required['workspace'].get_current_workspace()[1]
+    local workspace_path = M.required['workspace'].get_workspace(workspace)
     local folder_name = M.config.note_folder
     local tmpl = M.config.template.day
 
     if custom_date then
-      local year, month, day = custom_date:match("^(%d%d%d%d)-(%d%d)-(%d%d)$")
+      local year, month, day = custom_date:match('^(%d%d%d%d)-(%d%d)-(%d%d)$')
 
       if not year or not month or not day then
-        log.error("Wrong date format: use YYYY-mm-dd")
+        log.error('Wrong date format: use YYYY-mm-dd')
         return
       end
 
@@ -249,39 +196,25 @@ M.data = {
     end
 
     local path = os.date(
-      type(M.config.strategy) == "function"
-      and M.config.strategy(os.date("*t", time))
+      type(M.config.strategy) == 'function' and M.config.strategy(os.date('*t', time))
       or M.config.strategy,
       time
     )
 
-    local note_file_exists = M.required["workspace"].file_exists(
-      workspace_path .. "/" .. folder_name .. config.pathsep .. path
+    local note_file_exists = M.required['workspace'].file_exists(
+      workspace_path .. '/' .. folder_name .. config.pathsep .. path
     )
 
-    M.required["workspace"].create_file(
-      folder_name .. config.pathsep .. path,
-      workspace
-    )
+    M.required['workspace'].create_file(folder_name .. config.pathsep .. path, workspace)
 
     -- M.required["workspace"].create_file(folder_name..config.pathsep..path, workspace)
 
     if
         not note_file_exists
         and M.config.template.enable
-        and M.required["workspace"].file_exists(
-          workspace_path .. "/" .. folder_name .. "/" .. tmpl
-        )
+        and M.required['workspace'].file_exists(workspace_path .. '/' .. folder_name .. '/' .. tmpl)
     then
-      vim.cmd(
-        "$read "
-        .. workspace_path
-        .. "/"
-        .. folder_name
-        .. "/"
-        .. tmpl
-        .. "| silent! w"
-      )
+      vim.cmd('$read ' .. workspace_path .. '/' .. folder_name .. '/' .. tmpl .. '| silent! w')
     end
   end,
 
@@ -326,9 +259,9 @@ M.data = {
     local workspace = M.config.workspace
     local folder_name = M.config.note_folder
     local tmpl = M.config.template.month
-    M.required["workspace"].create_file(
+    M.required['workspace'].create_file(
       folder_name .. config.pathsep .. tmpl,
-      workspace or M.required["workspace"].get_current_workspace()[1]
+      workspace or M.required['workspace'].get_current_workspace()[1]
     )
   end,
   --- Creates a template file
@@ -336,9 +269,9 @@ M.data = {
     local workspace = M.config.workspace
     local folder_name = M.config.note_folder
     local tmpl = M.config.template.year
-    M.required["workspace"].create_file(
+    M.required['workspace'].create_file(
       folder_name .. config.pathsep .. tmpl,
-      workspace or M.required["workspace"].get_current_workspace()[1]
+      workspace or M.required['workspace'].get_current_workspace()[1]
     )
   end,
   create_day_template = function()
@@ -346,29 +279,21 @@ M.data = {
     local folder_name = M.config.note_folder
     local tmpl = M.config.template.day
 
-    M.required["workspace"].create_file(
+    M.required['workspace'].create_file(
       folder_name .. config.pathsep .. tmpl,
-      workspace or M.required["workspace"].get_current_workspace()[1]
+      workspace or M.required['workspace'].get_current_workspace()[1]
     )
   end,
 
   --- Opens the toc file
   open_toc = function()
-    local workspace = M.config.workspace
-        or M.required["workspace"].get_current_workspace()[1]
-    local index = mod.mod_config("workspace").index
+    local workspace = M.config.workspace or M.required['workspace'].get_current_workspace()[1]
+    local index = mod.mod_config('workspace').index
     local folder_name = M.config.note_folder
 
     -- If the toc exists, open it, if not, create it
-    if
-        M.required["workspace"].file_exists(
-          folder_name .. config.pathsep .. index
-        )
-    then
-      M.required["workspace"].open_file(
-        workspace,
-        folder_name .. config.pathsep .. index
-      )
+    if M.required['workspace'].file_exists(folder_name .. config.pathsep .. index) then
+      M.required['workspace'].open_file(workspace, folder_name .. config.pathsep .. index)
     else
       M.data.create_toc()
     end
@@ -376,11 +301,10 @@ M.data = {
 
   --- Creates or updates the toc file
   create_toc = function()
-    local workspace = M.config.workspace
-        or M.required["workspace"].get_current_workspace()[1]
-    local index = mod.mod_config("workspace").index
-    local workspace_path = M.required["workspace"].get_workspace(workspace)
-    local workspace_name_for_link = M.config.workspace or ""
+    local workspace = M.config.workspace or M.required['workspace'].get_current_workspace()[1]
+    local index = mod.mod_config('workspace').index
+    local workspace_path = M.required['workspace'].get_workspace(workspace)
+    local workspace_name_for_link = M.config.workspace or ''
     local folder_name = M.config.note_folder
 
     -- Each entry is a table that contains tables like { yy, mm, dd, link, title }
@@ -389,25 +313,13 @@ M.data = {
     -- Get a filesystem handle for the files in the note folder
     -- path is for each subfolder
     local get_fs_handle = function(path)
-      path = path or ""
+      path = path or ''
       local handle = vim.loop.fs_scandir(
-        workspace_path
-        .. config.pathsep
-        .. folder_name
-        .. config.pathsep
-        .. path
+        workspace_path .. config.pathsep .. folder_name .. config.pathsep .. path
       )
 
-      if type(handle) ~= "userdata" then
-        error(
-          lib.lazy_string_concat(
-            "Failed to scan directory '",
-            workspace,
-            path,
-            "': ",
-            handle
-          )
-        )
+      if type(handle) ~= 'userdata' then
+        error(lib.lazy_string_concat("Failed to scan directory '", workspace, path, "': ", handle))
       end
 
       return handle
@@ -415,14 +327,9 @@ M.data = {
 
     -- Gets the title from the metadata of a file, must be called in a vim.schedule
     local get_title = function(file)
-      local buffer = vim.fn.bufadd(
-        workspace_path
-        .. config.pathsep
-        .. folder_name
-        .. config.pathsep
-        .. file
-      )
-      local meta = M.required["workspace"].get_document_metadata(buffer)
+      local buffer =
+          vim.fn.bufadd(workspace_path .. config.pathsep .. folder_name .. config.pathsep .. file)
+      local meta = M.required['workspace'].get_document_metadata(buffer)
       return meta.title
     end
 
@@ -431,12 +338,7 @@ M.data = {
       function(err, handle)
         assert(
           not err,
-          lib.lazy_string_concat(
-            "Unable to generate TOC for directory '",
-            folder_name,
-            "' - ",
-            err
-          )
+          lib.lazy_string_concat("Unable to generate TOC for directory '", folder_name, "' - ", err)
         )
 
         while true do
@@ -448,7 +350,7 @@ M.data = {
           end
 
           -- Handle nested entries
-          if type == "directory" then
+          if type == 'directory' then
             local years_handle = get_fs_handle(name)
             while true do
               -- mname is the month
@@ -458,9 +360,8 @@ M.data = {
                 break
               end
 
-              if mtype == "directory" then
-                local months_handle =
-                    get_fs_handle(name .. config.pathsep .. mname)
+              if mtype == 'directory' then
+                local months_handle = get_fs_handle(name .. config.pathsep .. mname)
                 while true do
                   -- dname is the day
                   local dname, dtype = vim.loop.fs_scandir_next(months_handle)
@@ -470,18 +371,14 @@ M.data = {
                   end
 
                   -- If it's a .down file, also ensure it is a day entry
-                  if dtype == "file" and string.match(dname, "%d%d%.md") then
+                  if dtype == 'file' and string.match(dname, '%d%d%.md') then
                     -- Split the file name
-                    local file = vim.split(dname, ".", { plain = true })
+                    local file = vim.split(dname, '.', { plain = true })
 
                     vim.schedule(function()
                       -- Get the title from the metadata, else, it just base to the name of the file
                       local title = get_title(
-                        name
-                        .. config.pathsep
-                        .. mname
-                        .. config.pathsep
-                        .. dname
+                        name .. config.pathsep .. mname .. config.pathsep .. dname
                       ) or file[1]
 
                       -- Insert a new entry
@@ -489,7 +386,7 @@ M.data = {
                         tonumber(name),
                         tonumber(mname),
                         tonumber(file[1]),
-                        "{:$"
+                        '{:$'
                         .. workspace_name_for_link
                         .. config.pathsep
                         .. M.config.note_folder
@@ -499,7 +396,7 @@ M.data = {
                         .. mname
                         .. config.pathsep
                         .. file[1]
-                        .. ":}",
+                        .. ':}',
                         title,
                       })
                     end)
@@ -513,10 +410,10 @@ M.data = {
           -- If it is a .down file, but it's not any user generated file.
           -- The match is here to avoid handling files made by the user, like a template file, or
           -- the toc file
-          if type == "file" and string.match(name, "%d+-%d+-%d+%.md") then
+          if type == 'file' and string.match(name, '%d+-%d+-%d+%.md') then
             -- Split yyyy-mm-dd to a table
-            local file = vim.split(name, ".", { plain = true })
-            local parts = vim.split(file[1], "-")
+            local file = vim.split(name, '.', { plain = true })
+            local parts = vim.split(file[1], '-')
 
             -- Convert the parts into numbers
             for k, v in pairs(parts) do
@@ -532,13 +429,13 @@ M.data = {
                 parts[1],
                 parts[2],
                 parts[3],
-                "{:$"
+                '{:$'
                 .. workspace_name_for_link
                 .. config.pathsep
                 .. M.config.note_folder
                 .. config.pathsep
                 .. file[1]
-                .. ":}",
+                .. ':}',
                 title,
               })
             end)
@@ -559,26 +456,23 @@ M.data = {
                   if not current_year or current_year < entry[1] then
                     current_year = entry[1]
                     current_month = nil
-                    table.insert(output, "* " .. current_year)
+                    table.insert(output, '* ' .. current_year)
                   end
                   if not current_month or current_month < entry[2] then
                     current_month = entry[2]
-                    table.insert(output, "** " .. months_text[current_month])
+                    table.insert(output, '** ' .. months_text[current_month])
                   end
 
                   -- Prints the file link
-                  table.insert(
-                    output,
-                    "   " .. entry[4] .. string.format("[%s]", entry[5])
-                  )
+                  table.insert(output, '   ' .. entry[4] .. string.format('[%s]', entry[5]))
                 end
 
                 return output
               end
 
-          M.required["workspace"].create_file(
+          M.required['workspace'].create_file(
             folder_name .. config.pathsep .. index,
-            workspace or M.required["workspace"].get_current_workspace()[1]
+            workspace or M.required['workspace'].get_current_workspace()[1]
           )
 
           -- The current buffer now must be the toc file, so we set our toc entries there
@@ -590,7 +484,7 @@ M.data = {
   end,
 }
 
----@class down.note.Config
+---@class (exact) down.mod.note.Config
 M.config = {
   -- Which workspace to use for the note files, the base behaviour
   -- is to use the current workspace.
@@ -600,23 +494,23 @@ M.config = {
   workspace = nil,
 
   -- The name for the folder in which the note files are put.
-  note_folder = "note",
+  note_folder = 'note',
 
   -- The strategy to use to create directories.
   -- May be "flat" (`2022-03-02.down`), "nested" (`2022/03/02.down`),
   -- a lua string with the format given to `os.date()` or a lua function
   -- that returns a lua string with the same format.
-  strategy = "nested",
+  strategy = 'nested',
 
   -- The name of the template file to use when running `:down note template`.
   template = {
 
     enable = true,
-    day = "day.md",
-    month = "month.md",
-    year = "month.md",
-    week = "week.md",
-    default = "note.md",
+    day = 'day.md',
+    month = 'month.md',
+    year = 'month.md',
+    week = 'week.md',
+    default = 'note.md',
   },
 
   -- Formatter function used to generate the toc file.
@@ -627,254 +521,258 @@ M.config = {
 }
 
 M.config.strategies = {
-  flat = "%Y-%m-%d.md",
-  nested = "%Y" .. config.pathsep .. "%m" .. config.pathsep .. "%d.md",
+  flat = '%Y-%m-%d.md',
+  nested = '%Y' .. config.pathsep .. '%m' .. config.pathsep .. '%d.md',
 }
 
+---@param event down.Event
 M.on = function(event)
   local ty = event.split_type[1]
   local ev = event.split_type[2]
-  if ty == "cmd" then
-    if ev == "note" or ev == "note.index" then
+  if ty == 'cmd' then
+    if ev == 'note' or ev == 'note.index' then
       M.data.note_index()
-    elseif ev == "note.week" or ev == "note.week.index" then
+    elseif ev == 'note.week' or ev == 'note.week.index' then
       M.data.week_index()
-    elseif event.split_type[2] == "note.week.previous" then
+    elseif event.split_type[2] == 'note.week.previous' then
       M.data.week_prev()
-    elseif event.split_type[2] == "note.week.next" then
+    elseif event.split_type[2] == 'note.week.next' then
       M.data.week_next()
-    elseif event.split_type[2] == "note.month.previous" then
-      print("TODO:month previous")
-    elseif event.split_type[2] == "note.month.next" then
-      print("TODO:month next")
-    elseif event.split_type[2] == "note.year.previous" then
-      print("TODO:year prev")
-    elseif event.split_type[2] == "note.year.next" then
-      print("TODO:year next")
-    elseif ev == "note.year" or ev == "note.year.index" then
+    elseif event.split_type[2] == 'note.month.previous' then
+      print('TODO:month previous')
+    elseif event.split_type[2] == 'note.month.next' then
+      print('TODO:month next')
+    elseif event.split_type[2] == 'note.year.previous' then
+      print('TODO:year prev')
+    elseif event.split_type[2] == 'note.year.next' then
+      print('TODO:year next')
+    elseif ev == 'note.year' or ev == 'note.year.index' then
       M.data.year_index()
-    elseif ev == "note.month" or ev == "note.month.index" then
+    elseif ev == 'note.month' or ev == 'note.month.index' then
       M.data.month_index()
-    elseif event.split_type[2] == "note.capture" then
+    elseif event.split_type[2] == 'note.capture' then
       M.data.capture()
-    elseif event.split_type[2] == "note.tomorrow" then
+    elseif event.split_type[2] == 'note.tomorrow' then
       M.data.note_tomorrow()
-    elseif event.split_type[2] == "note.yesterday" then
+    elseif event.split_type[2] == 'note.yesterday' then
       M.data.note_yesterday()
-    elseif event.split_type[2] == "calendar" then
+    elseif event.split_type[2] == 'calendar' then
       if not event.content[1] then
-        local cal = M.required["ui.calendar"]
+        local cal = M.required['ui.calendar']
         if not cal then
-          print("[ERROR]: `ui.calendar` is not loaded!")
+          print('[ERROR]: `ui.calendar` is not loaded!')
           return
         end
         cal.select_date({
           callback = vim.schedule_wrap(function(osdate)
             M.data.open_note(
               nil,
-              string.format("%04d", osdate.year)
-              .. "-"
-              .. string.format("%02d", osdate.month)
-              .. "-"
-              .. string.format("%02d", osdate.day)
+              string.format('%04d', osdate.year)
+              .. '-'
+              .. string.format('%02d', osdate.month)
+              .. '-'
+              .. string.format('%02d', osdate.day)
             )
           end),
         })
       else
         M.data.open_note(nil, event.content[1])
       end
-    elseif event.split_type[2] == "note.calendar" then
+    elseif event.split_type[2] == 'note.calendar' then
       if not event.content[1] then
-        local cal = M.required["ui.calendar"]
+        local cal = M.required['ui.calendar']
         if not cal then
-          print("[ERROR]: `ui.calendar` is not loaded!")
+          print('[ERROR]: `ui.calendar` is not loaded!')
           return
         end
         cal.select_date({
           callback = vim.schedule_wrap(function(osdate)
             M.data.open_note(
               nil,
-              string.format("%04d", osdate.year)
-              .. "-"
-              .. string.format("%02d", osdate.month)
-              .. "-"
-              .. string.format("%02d", osdate.day)
+              string.format('%04d', osdate.year)
+              .. '-'
+              .. string.format('%02d', osdate.month)
+              .. '-'
+              .. string.format('%02d', osdate.day)
             )
           end),
         })
       else
         M.data.open_note(nil, event.content[1])
       end
-    elseif ev == "note.today" then
+    elseif ev == 'note.today' then
       M.data.note_today()
-    elseif ev == "note.template" then
+    elseif ev == 'note.template' then
       M.data.create_day_template()
-    elseif ev == "note.template.day" then
+    elseif ev == 'note.template.day' then
       M.data.create_template()
-    elseif ev == "note.template.week" then
+    elseif ev == 'note.template.week' then
       -- M.data.create_template()
-      print("TODO note template week index")
-    elseif ev == "note.template.month" then
+      print('TODO note template week index')
+    elseif ev == 'note.template.month' then
       -- M.data.create_template()
-      print("TODO note template month")
-    elseif ev == "note.template.year" then
+      print('TODO note template month')
+    elseif ev == 'note.template.year' then
       -- M.data.create_template()
-      print("TODO note template year")
-    elseif ev == "note.toc.open" then
+      print('TODO note template year')
+    elseif ev == 'note.toc.open' then
       M.data.open_toc()
-    elseif ev == "note.toc.update" then
+    elseif ev == 'note.toc.update' then
       M.data.create_toc()
     end
   end
 end
 
-M.setup = function()
+M.load = function()
   if M.config.strategies[M.config.strategy] then
-    M.config.strategy =
-        M.config.strategies[M.config.strategy]
+    M.config.strategy = M.config.strategies[M.config.strategy]
   end
-
-  mod.await("cmd", function(cmd)
+  require('down.mod').await('cmd', function(cmd)
     cmd.add_commands_from_table({
       calendar = {
         max_args = 1,
-        name = "calendar",
+        name = 'calendar',
       }, -- format :yyyy-mm-dd
       note = {
         min_args = 1,
         max_args = 2,
         subcommands = {
-          index = { args = 0, name = "note.index" },
+          index = { args = 0, name = 'note.index' },
           month = {
             max_args = 1,
-            name = "note.month",
+            name = 'note.month',
             subcommands = {
-              index = { args = 0, name = "note.month.index" },
+              index = { args = 0, name = 'note.month.index' },
               previous = {
                 args = 0,
-                name = "note.month.previous",
+                name = 'note.month.previous',
               },
               next = {
                 args = 0,
-                name = "note.month.next",
+                name = 'note.month.next',
               },
             },
           },
           week = {
             subcommands = {
-              index = { args = 0, name = "note.week.index" },
+              index = { args = 0, name = 'note.week.index' },
               previous = {
                 args = 0,
-                name = "note.week.previous",
+                name = 'note.week.previous',
               },
               next = {
                 args = 0,
-                name = "note.week.next",
+                name = 'note.week.next',
               },
             },
             max_args = 1,
-            name = "note.week",
+            name = 'note.week',
           },
           year = {
             max_args = 1,
-            name = "note.year",
+            name = 'note.year',
             subcommands = {
-              index = { args = 0, name = "note.year.index" },
+              index = { args = 0, name = 'note.year.index' },
               previous = {
                 args = 0,
-                name = "note.year.previous",
+                name = 'note.year.previous',
               },
               next = {
                 args = 0,
-                name = "note.year.next",
+                name = 'note.year.next',
               },
             },
           },
-          capture = { args = 0, name = "note.capture" },
-          tomorrow = { args = 0, name = "note.tomorrow" },
-          yesterday = { args = 0, name = "note.yesterday" },
-          today = { args = 0, name = "note.today" },
+          capture = { args = 0, name = 'note.capture' },
+          tomorrow = { args = 0, name = 'note.tomorrow' },
+          yesterday = { args = 0, name = 'note.yesterday' },
+          today = { args = 0, name = 'note.today' },
           calendar = {
             max_args = 1,
-            name = "note.calendar"
+            name = 'note.calendar',
           }, -- format :yyyy-mm-dd
           template = {
             subcommands = {
               year = {
-                name = "notes.template.year",
+                name = 'notes.template.year',
                 args = 0,
               },
               week = {
-                name = "notes.template.week",
+                name = 'notes.template.week',
                 args = 0,
               },
               month = {
-                name = "notes.template.month",
+                name = 'notes.template.month',
                 args = 0,
               },
               day = {
-                name = "notes.template.day",
+                name = 'notes.template.day',
                 args = 0,
               },
             },
             args = 0,
-            name = "note.template",
+            name = 'note.template',
           },
           toc = {
             args = 1,
-            name = "note.toc",
+            name = 'note.toc',
             subcommands = {
-              open = { args = 0, name = "note.toc.open" },
-              update = { args = 0, name = "note.toc.update" },
+              open = { args = 0, name = 'note.toc.open' },
+              update = { args = 0, name = 'note.toc.update' },
             },
           },
         },
       },
     })
   end)
+end
+
+---@return down.mod.Setup
+M.setup = function()
   return {
     loaded = true,
     requires = {
-      "ui.win",
-      "ui.calendar",
-      "data",
-      "data.template",
-      "workspace",
-      "tool.treesitter",
+      'cmd',
+      'ui.win',
+      'ui.calendar',
+      'data',
+      'data.template',
+      'workspace',
+      'tool.treesitter',
     },
   }
 end
 
+---@class down.mod.note.Subscribed
 M.subscribed = {
   cmd = {
-    ["note.index"] = true,
-    ["note.month"] = true,
-    ["note.week"] = true,
-    ["note.year"] = true,
-    ["note"] = true,
-
-    ["note.month.previous"] = true,
-    ["note.week.previous"] = true,
-    ["note.year.previous"] = true,
-    ["note.month.next"] = true,
-    ["note.week.next"] = true,
-    ["note.year.next"] = true,
-    ["note.month.index"] = true,
-    ["note.week.index"] = true,
-    ["note.year.index"] = true,
-    ["note.yesterday"] = true,
-    ["note.tomorrow"] = true,
-    ["note.capture"] = true,
-    ["note.today"] = true,
-    ["calendar"] = true,
-    ["note.calendar"] = true,
-    ["note.template"] = true,
-    ["note.template.day"] = true,
-    ["note.template.month"] = true,
-    ["note.template.week"] = true,
-    ["note.template.year"] = true,
-    ["note.toc.update"] = true,
-    ["note.toc.open"] = true,
+    ['note.index'] = true,
+    ['note.month'] = true,
+    ['note.week'] = true,
+    ['note.year'] = true,
+    ['note'] = true,
+    ['note.month.previous'] = true,
+    ['note.week.previous'] = true,
+    ['note.year.previous'] = true,
+    ['note.month.next'] = true,
+    ['note.week.next'] = true,
+    ['note.year.next'] = true,
+    ['note.month.index'] = true,
+    ['note.week.index'] = true,
+    ['note.year.index'] = true,
+    ['note.yesterday'] = true,
+    ['note.tomorrow'] = true,
+    ['note.capture'] = true,
+    ['note.today'] = true,
+    ['calendar'] = true,
+    ['note.calendar'] = true,
+    ['note.template'] = true,
+    ['note.template.day'] = true,
+    ['note.template.month'] = true,
+    ['note.template.week'] = true,
+    ['note.template.year'] = true,
+    ['note.toc.update'] = true,
+    ['note.toc.open'] = true,
   },
 }
 

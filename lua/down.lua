@@ -7,113 +7,60 @@
 ---@brief neovim note-taking plugin with the
 ---@brief comfort of mmarkdown and the power of org
 
----TODO: make variety of commands on autocmd load markdown only
-
----@class down.down
-local W = {
-  cfg = require('down.config').config,
-  mod = require('down.mod'),
+---@class down.Down
+local Down = {
   config = require('down.config'),
-  callbacks = require('down.util.event.callback'),
-  log = require('down.util.log'),
-  health = require('down.health'),
-  core = require('down.core'),
-  util = {
-    util = require('down.util'),
-    log = require('down.util.log'),
-    buf = require('down.util.buf'),
-    -- cb = require("down.event.cb"),
-  },
-  utils = require('down.util'),
-  lib = require('down.util.lib'),
+  mod = require('down.mod'),
+  event = require('down.event'),
+  util = require('down.util'),
 }
 
--- local e = require("down")
-local con, log, m, utils = require('down.config').config, W.log, W.mod, W.utils
-local a, f, ext = vim.api, vim.fn, vim.tbl_deep_extend
-
---- @init "down.config"
-
---- Initializes down. Parses the supplied user config, initializes all selected mod and adds filetype checking for `.down`.
---- @param conf down.config.UserMod? A table that reflects the structure of `config.user`.
-function W.setup(conf)
-  conf = conf or {}
-  con.user = utils.extend(con.user, conf)
-  -- log.new(con.user.logger or log.get_base_config(), true)
-  require('down.config').setup_maps()
-  require('down.config').setup_opts()
-
-  if W.util.buf.check_md() or not con.user.lazy then
-    W.enter(false)
-  else
-    -- a.nvim_create_user_command("downInit", function()
-    --   vim.cmd.delcommand("downInit")
-    --   W.enter(true)
-    -- end, {})
-    a.nvim_create_autocmd('BufAdd', {
-      pattern = { 'markdown' },
-      callback = function()
-        W.enter(false)
-      end,
-    })
+--- Load the user configuration, and load into config
+--- defined modules specifieed and workspaces
+--- @param user down.config.User user config to load
+--- @param ... any The arguments to pass into an optional user hook
+function Down.setup(user, ...)
+  Down.config.setup(user, ...)
+  for name, usermod in pairs(Down.config.user) do
+    if type(usermod) == 'table' then
+      if name == 'workspaces' then
+      elseif not Down.mod.load_mod(name, usermod) then
+        if Down.config.dev then
+          print('error loading ', name)
+        end
+        Down.mod.delete(name)
+      end
+    end
   end
-  if conf.config and conf.config.dev then
-    require 'down.util.lsp'.setup()
-    require 'down.util.lsp'.run()
+  for _, l in pairs(Down.mod.data.mods) do
+    l.post_load()
   end
+  Down.broadcast('started')
 end
 
----@param manual table
----@param args table
-function W.enter(manual, args)
-  local mods = con and con.user or {}
-  if con.started or not mods or vim.tbl_isempty(mods) then ---@diagnostic disable-line
-    return
-  end
-  if con.hook then
-    con.hook(manual, args)
-  end
-  con.manual = manual
-  if args and args:len() > 0 then
-    for key, value in args:gmatch('([%w%W]+)=([%w%W]+)') do
-      con.args[key] = value
-    end
-  end
-
-  for name, lm in pairs(mods) do
-    con[name] = utils.extend(con[name] or {}, lm or {})
-  end
-  for name, _ in pairs(mods) do
-    if not m.load_mod(name) then
-      log.warn('Error recovery')
-      m.loaded_mod[name] = nil
-    end
-  end
-  for _, lm in pairs(m.loaded_mod) do
-    lm.post_load()
-  end
-  con.started = true
-
-  m.broadcast({
-    type = 'started',
-    split_type = {
-      'started',
+---@param e string
+function Down.broadcast(e, ...)
+  Down.mod.broadcast({ ---@type down.Event
+    type = e, ---@diagnostic disable-line
+    split = {
+      e,
     },
-    filename = '',
-    filehead = '',
-    cursor_position = { 0, 0 },
-    referrer = 'config',
-    topic = 'started',
-    line_content = '',
+
+    file = vim.fn.expand('%:p'),
+    dir = vim.fn.getcwd(),
+    ref = 'Down:broadcast',
+    topic = e,
     broadcast = true,
-    buffer = a.nvim_get_current_buf(),
-    window = a.nvim_get_current_win(),
-    mode = f.mode(),
-  })
-  vim.api.nvim_exec_autocmds('User', {
-    pattern = 'downLoaded', --
+    line = vim.api.nvim_get_current_line(),
+    position = vim.api.nvim_win_get_position(0),
+    buf = vim.api.nvim_get_current_buf(),
+    win = vim.api.nvim_get_current_win(),
+    mode = vim.fn.mode(),
   })
 end
 
--- require("telescope").setup_extension("down")
-return W
+return setmetatable(Down, {
+  __call = function(down, user, ...)
+    Down.setup(user, ...)
+  end,
+})

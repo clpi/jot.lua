@@ -1,34 +1,37 @@
----@class down.Mod
+---@type down.Mod
 local M = require "down.mod".create("data.task.agenda", {
 })
 
 ---@class down.data.task.agenda.Agenda
 M.Agenda = {
 
+  ---@type lsp.URI
   uri = "",
 
-  store = "",
+  ---@type down.Store
+  store = {},
 
-  tasks = {
-
-  }
+  ---@type down.Store
+  tasks = {}
 }
----@class down.data.task.agenda.Data
+---@class down.mod.data.task.agenda.Data
 M.data = {
 
 }
 
----@class table<down.data.task.agenda.Agenda>
+---@class table<down.mod.data.task.agenda.Agenda>
 M.data.agendas = {
 
 }
 
----@class down.data.task.agenda.Config
+---@class down.mod.data.task.agenda.Config
 M.config = {
 
 
+  ---@type lsp.URI
   uri = "",
 
+  ---@type down.Store
   store = "data/agendas"
 
 }
@@ -42,6 +45,10 @@ M.setup = function()
     },
     loaded = true,
   }
+end
+
+M.load = function()
+
 end
 
 

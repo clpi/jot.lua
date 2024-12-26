@@ -162,9 +162,9 @@ function U.parse_version_string(version_string)
 
   -- Define variables that split the version up into 3 slices
   local split_version, versions, ret =
-    vim.split(version_string, ".", { plain = true }),
-    { "major", "minor", "patch" },
-    { major = 0, minor = 0, patch = 0 }
+      vim.split(version_string, ".", { plain = true }),
+      { "major", "minor", "patch" },
+      { major = 0, minor = 0, patch = 0 }
 
   -- If the sliced version string has more than 3 elements error out
   if #split_version > 3 then
@@ -259,7 +259,8 @@ function U.truncate_by_cell(str, col_limit)
   return short
 end
 
-U.get_os_info = function()
+---@return down.Os
+function U.get_os()
   local os = vim.loop.os_uname().sysname:lower()
 
   if os:find("windows_nt") then

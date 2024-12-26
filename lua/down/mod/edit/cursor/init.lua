@@ -1,11 +1,11 @@
-local L = Mod.create("edit.cursor")
-local tu = require("nvim-treesitter.ts_utils")
+local L = require 'down.mod'.create('edit.cursor')
+local tu = require('nvim-treesitter.ts_utils')
 
 function L.setup()
   return {
     requires = {
-      "tool.treesitter",
-      "workspace",
+      'tool.treesitter',
+      'workspace',
     },
     loaded = true,
   }
@@ -31,7 +31,7 @@ L.data = {
 ---@class edit.cursor.Node
 L.data.node = {}
 function L.data.node:captures()
-  return require("vim.treesitter").get_captures_at_cursor(0)
+  return require('vim.treesitter').get_captures_at_cursor(0)
 end
 
 ---@return table

@@ -10,9 +10,34 @@ local fn, uv, v = vim.fn, vim.uv or vim.loop, vim.v
 B.lines = function()
   return vim
 end
+B.ft = {
+  ---@return boolean
+  markdown = function(ext)
+    return (ext or vim.fn.expand("%:e")) == "md"
+  end,
+  ---@return boolean
+  down = function(ext)
+    ext = ext or vim.fn.expand("%:e")
+    return ext == "dn"
+        or ext == "down"
+        or ext == "downrc"
+        or ext == "dd"
+  end
+}
+B.check_dn = function()
+  local ext = fn.expand("%:e")
+  return ext == "md"
+      or ext == "dn"
+      or ext == "do"
+      or ext == "docd"
+      or ext == "ddoc"
+      or ext == "down"
+      or ext == "downrc"
+end
 ---@return boolean
 B.check_md = function()
-  return fn.expand("%:e") == "md"
+  local ext = fn.expand("%:e")
+  return ext == "md" or ext == "mdx"
 end
 
 ---@return boolean

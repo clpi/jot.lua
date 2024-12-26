@@ -1,12 +1,14 @@
-local d = require("down")
-local lib, Mod, utils = d.lib, d.mod, d.utils
+local down = require("down")
+local util = require("down.util")
+local mod = require("down.mod")
+local lib = require("down.util.lib")
 local u = require("down.mod.data.time.util")
 
-local M = Mod.create("data.time")
+local M = mod.create("data.time")
 
 -- NOTE: Maybe encapsulate whole date parser in a single PEG grammar?
 local _, time_regex =
-  pcall(vim.re.compile, [[{%d%d?} ":" {%d%d} ("." {%d%d?})?]])
+    pcall(vim.re.compile, [[{%d%d?} ":" {%d%d} ("." {%d%d?})?]])
 
 ---@alias Date {weekday: {name: string, number: number}?, day: number?, month: {name: string, number: number}?, year: number?, timezone: string?, time: {hour: number, minute: number, second: number?}?}
 
@@ -21,11 +23,11 @@ M.data = {
 
         return vim.trim(
           d(date_table.weekday and date_table.weekday.name)
-            .. d(date_table.day)
-            .. d(date_table.month and date_table.month.name)
-            .. d(date_table.year and string.format("%04d", date_table.year))
-            .. d(date_table.time and tostring(date_table.time))
-            .. d(date_table.timezone)
+          .. d(date_table.day)
+          .. d(date_table.month and date_table.month.name)
+          .. d(date_table.year and string.format("%04d", date_table.year))
+          .. d(date_table.time and tostring(date_table.time))
+          .. d(date_table.timezone)
         )
       end,
     })
@@ -94,9 +96,9 @@ M.data = {
           end
 
           return tostring(osdate.hour)
-            .. ":"
-            .. tostring(string.format("%02d", osdate.min))
-            .. (osdate.sec ~= 0 and ("." .. tostring(osdate.sec)) or "")
+              .. ":"
+              .. tostring(string.format("%02d", osdate.min))
+              .. (osdate.sec ~= 0 and ("." .. tostring(osdate.sec)) or "")
         end,
       }) or nil,
     })
@@ -167,7 +169,7 @@ M.data = {
           local count = vim.tbl_count(valid_months)
           if count > 1 then
             return "Ambiguous month name! Possible interpretations: "
-              .. table.concat(vim.tbl_keys(valid_months), ",")
+                .. table.concat(vim.tbl_keys(valid_months), ",")
           elseif count == 1 then
             local valid_month_name, valid_month_number = next(valid_months)
 
@@ -195,10 +197,10 @@ M.data = {
           local count = vim.tbl_count(valid_weekdays)
           if count > 1 then
             return "Ambiguous weekday name! Possible interpretations: "
-              .. table.concat(vim.tbl_keys(valid_weekdays), ",")
+                .. table.concat(vim.tbl_keys(valid_weekdays), ",")
           elseif count == 1 then
             local valid_weekday_name, valid_weekday_number =
-              next(valid_weekdays)
+                next(valid_weekdays)
 
             output.weekday = {
               name = lib.title(valid_weekday_name),
@@ -210,8 +212,8 @@ M.data = {
         end
 
         return "Unidentified string: `"
-          .. down
-          .. "` - make sure your locale and language are set correctly if you are using a language other than English!"
+            .. down
+            .. "` - make sure your locale and language are set correctly if you are using a language other than English!"
       end
 
       ::continue::
@@ -257,7 +259,7 @@ M.data = {
     if Mod.is_mod_loaded("ui.calendar") then
       vim.cmd.stopinsert()
       Mod.get_mod("ui.calendar")
-        .select({ callback = vim.schedule_wrap(callback) })
+          .select({ callback = vim.schedule_wrap(callback) })
     else
       vim.ui.input({
         prompt = "Date: ",
@@ -277,6 +279,12 @@ M.maps = function()
     "<Plug>(down.time.insert-date.insert-mode)",
     lib.wrap(M.data.insert_date, true)
   )
+end
+
+function M.setup()
+  return {
+    laoded = true
+  }
 end
 
 return M

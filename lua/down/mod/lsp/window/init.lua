@@ -1,12 +1,10 @@
-local W = Mod.create("lsp.window", {
-  "msg",
-})
+local W = require 'down.mod'.create('lsp.window', {})
 
 function W.setup()
   return {
     requires = {
-      "workspace",
-      "lsp.workspace",
+      'workspace',
+      'lsp.workspace',
     },
     loaded = true,
   }
@@ -20,22 +18,12 @@ W.data = {}
 
 W.data.handlers = {
 
-  ["telemetry/event"] = function(p)
-  end,
-  ["$/cancelRequest"] = function(p)
-  end,
-  ["$/progress"] = function(p)
-
-  end,
-  ["$/logTrace"] = function(p)
-  end,
-  ["window/logMessage"] = function(p)
-
-  end,
-  ["window/showMessage"] = function(p)
-
-  end
-
+  ['telemetry/event'] = function(p) end,
+  ['$/cancelRequest'] = function(p) end,
+  ['$/progress'] = function(p) end,
+  ['$/logTrace'] = function(p) end,
+  ['window/logMessage'] = function(p) end,
+  ['window/showMessage'] = function(p) end,
 }
 
 return W

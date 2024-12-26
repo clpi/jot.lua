@@ -1,18 +1,18 @@
-local M = Mod.create("lsp.workspace", {
-  "lens",
-  "tag",
-  "config",
-  "folders",
-  "edit",
-  "diagnostic",
-  "file",
-  "symbol",
+local M = require('down.mod').create('lsp.workspace', {
+  'lens',
+  'tag',
+  'config',
+  'folders',
+  'edit',
+  'diagnostic',
+  'file',
+  'symbol',
 })
 
 function M.setup()
   return {
     requires = {
-      "workspace",
+      'workspace',
     },
     loaded = true,
   }
@@ -37,13 +37,13 @@ M.data = {
 ---@field default boolean: Is default workspace
 ---@field ext string: extension
 M.data.workspace = {
-  notesDir = "notes",
-  logDir = "log",
-  path = "~/",
+  notesDir = 'notes',
+  logDir = 'log',
+  path = '~/',
   default = true,
-  ext = "md",
-  name = "default",
-  index = "index",
+  ext = 'md',
+  name = 'default',
+  index = 'index',
 }
 
 return M

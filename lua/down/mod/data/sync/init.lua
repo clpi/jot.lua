@@ -1,7 +1,7 @@
-local mod = require("down.mod")
+---@type down.Mod
+local M = require "down.mod".create("data.sync")
 
-local M = mod.create("data.sync")
-
+---@return down.mod.Setup
 M.setup = function()
   --   mod.await("cmd", function(cmd)
   --     cmd.add_commands_from_table({
@@ -20,6 +20,7 @@ M.setup = function()
   --       },
   --     })
   --   end)
+  ---@type down.mod.Setup
   return {
     loaded = true,
     requires = {
@@ -29,12 +30,16 @@ M.setup = function()
   }
 end
 
----@class down.data.sync.Data
+---@class down.mod.data.sync.Data
 M.data = {}
 
----@class down.data.sync.Config
+---@class down.mod.data.sync.Config
 M.config = {}
 
+---@return down.mod.data.sync.Events
+M.events = {}
+
+---@class down.mod.data.sync.Subscribed
 M.subscribed = {
   cmd = {
     ["sync.insert"] = true,

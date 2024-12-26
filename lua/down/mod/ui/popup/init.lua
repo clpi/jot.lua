@@ -1,11 +1,10 @@
---[[
-    File for creating text popups for the user.
---]]
+local M = require("down.mod").create("ui.popup")
 
-local down = require("down")
-local mod = down.mod
-
-local M = mod.create("ui.popup")
+M.setup = function()
+  return {
+    loaded = true
+  }
+end
 
 ---@class base.ui.popup
 M.data = {
@@ -550,10 +549,10 @@ M.data = {
 
     -- Apply any custom modifiers that the user has specified
     window_config =
-      assert(mod.get_mod("ui"), "ui is not loaded!").apply_custom_options(
-        modifiers,
-        vim.tbl_extend("force", window_config, config or {})
-      )
+        assert(mod.get_mod("ui"), "ui is not loaded!").apply_custom_options(
+          modifiers,
+          vim.tbl_extend("force", window_config, config or {})
+        )
 
     local buf = vim.api.nvim_create_buf(false, true)
 

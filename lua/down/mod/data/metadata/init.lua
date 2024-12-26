@@ -1,6 +1,6 @@
 local mod = require("down.mod")
 
-local M = mod.create("data.metadata")
+local M = require("down.mod").create("data.metadata")
 
 ---@return down.mod.Setup
 M.setup = function()

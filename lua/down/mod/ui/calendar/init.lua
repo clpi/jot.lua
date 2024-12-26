@@ -1,14 +1,15 @@
-local down = require("down")
+local down = require('down')
+local util = require 'down.util'
 local mod = down.mod
 
-local G = mod.create("ui.calendar")
+local G = require 'down.mod'.create('ui.calendar')
 
 G.setup = function()
   return {
     requires = {
-      "ui",
-      "ui.calendar.month",
-      "ui.calendar.time",
+      'ui',
+      'ui.calendar.month',
+      'ui.calendar.time',
     },
   }
 end
@@ -27,17 +28,17 @@ G.data = {
       return cur_mode
     end
 
-    print("Error: mode not set or not available")
+    print('Error: mode not set or not available')
   end,
 }
 
 G.data.get_view = function(name)
-  local n = name or "month"
+  local n = name or 'month'
   if G.data.view[n] ~= nil then
     return G.data.view[name]
   end
 
-  print("Error: view not set or not available")
+  print('Error: view not set or not available')
 end
 
 G.data.extract_ui_info = function(buffer, window)
@@ -60,15 +61,15 @@ end
 G.data.open_window = function(options)
   local MIN_HEIGHT = 14
 
-  local buffer, window = G.required["ui"].create_split(
-    "ui.calendar-" .. tostring(os.clock()):gsub("%.", "-"),
+  local buffer, window = G.required['ui'].create_split(
+    'ui.calendar-' .. tostring(os.clock()):gsub('%.', '-'),
     {},
     options.height or MIN_HEIGHT + (options.padding or 0)
   )
 
-  vim.api.nvim_create_autocmd({ "WinClosed", "BufDelete" }, {
+  vim.bo.filetype = 'calendar'
+  vim.api.nvim_create_autocmd({ 'WinClosed', 'BufDelete' }, {
     buffer = buffer,
-
     callback = function()
       pcall(vim.api.nvim_win_close, window, true)
       pcall(vim.api.nvim_buf_delete, buffer, { force = true })
@@ -102,15 +103,15 @@ G.data.create_calendar = function(buffer, window, options)
 
   local ui_info = G.data.extract_ui_info(buffer, window)
 
-  local v = G.data.get_view(options.view or "month")
+  local v = G.data.get_view(options.view or 'month')
 
-  v.setup(ui_info, mode, options.date or os.date("*t"), options)
+  v.setup(ui_info, mode, options.date or os.date('*t'), options)
 end
 
 G.data.open = function(options)
   local buffer, window = G.data.open_window(options)
 
-  options.mode = "standalone"
+  options.mode = 'standalone'
 
   return G.data.create_calendar(buffer, window, options)
 end
@@ -118,7 +119,7 @@ end
 G.data.select_date = function(options)
   local buffer, window = G.data.open_window(options)
 
-  options.mode = "select_date"
+  options.mode = 'select_date'
 
   return G.data.create_calendar(buffer, window, options)
 end
@@ -126,18 +127,18 @@ end
 G.data.select_date_range = function(options)
   local buffer, window = G.data.open_window(options)
 
-  options.mode = "select_range"
+  options.mode = 'select_range'
 
   return G.data.create_calendar(buffer, window, options)
 end
 
 G.load = function()
   -- Add base calendar modes
-  G.data.add_mode("standalone", function(_)
+  G.data.add_mode('standalone', function(_)
     return {}
   end)
 
-  G.data.add_mode("select_date", function(callback)
+  G.data.add_mode('select_date', function(callback)
     return {
       on_select = function(_, date)
         if callback then
@@ -148,7 +149,7 @@ G.load = function()
     }
   end)
 
-  G.data.add_mode("select_range", function(callback)
+  G.data.add_mode('select_range', function(callback)
     return {
       range_start = nil,
       range_end = nil,
@@ -159,9 +160,7 @@ G.load = function()
           return true
         else
           if os.time(date) <= os.time(self.range_start) then
-            print(
-              "Error: you should choose a date that is after the starting day."
-            )
+            print('Error: you should choose a date that is after the starting day.')
             return false
           end
 
@@ -174,7 +173,7 @@ G.load = function()
       get_day_highlight = function(self, date, base_highlight)
         if self.range_start ~= nil then
           if os.time(date) < os.time(self.range_start) then
-            return "@comment"
+            return '@comment'
           end
         end
         return base_highlight

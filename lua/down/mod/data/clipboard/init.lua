@@ -1,3 +1,4 @@
+---@class down.mod.data.Clipboard: down.Mod
 local C = require("down.mod").create("data.clipboard")
 
 C.setup = function()

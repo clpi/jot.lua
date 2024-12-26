@@ -21,13 +21,24 @@
 ---
 ---   @field ['lsp.completion']? down.lsp.completion.Data lsp.completion
 ---
---- The entire mod configuration
 --- @class (exact) down.mod.Config
 ---   @field public lsp? lsp.Config
 ---
 
 --- The scope of an entity.
---- @class down.mod.Mods
+--- @class down.mod.Mods: {
+---   ui?: down.mod.ui.Config,
+---   note?: down.mod.note.Config,
+---   workspace?: down.mod.workspace.Config,
+---   lsp?: down.mod.lsp.Config,
+---   edit?: down.mod.edit.Config,
+---   data?: down.mod.data.Config,
+---   tool?: down.mod.tool.Config,
+---   tool?: down.mod.tool.Config,
+---   cmd?: down.mod.cmd.Config,
+---   config?: down.mod.cmd.Config,
+--- }
+---
 ---   @field ['lsp.document']? lsp.document.Data
 ---   @field ['lsp.workspace']? lsp.workspace.Data
 ---   @field ['lsp.completion']? lsp.completion.Data
@@ -94,7 +105,7 @@
 --- down.Mods
 --- @alias down.Mods down.mod.Mods
 ---
---- @class (exact) down.mod.config.Config: table
+--- @class (exact) down.mod.config.Cfg: table
 ---   @field [string]? { [string]?: any }
 ---   @field enabled? boolean
 --- @alias down.mod.Config down.mod.Modconfig.Config
@@ -131,7 +142,7 @@
 
 --- @class (exact) down.Mod
 ---   @field public [string]? down.mod.Data
----   @field hook? fun(manual: boolean, arguments?: string)    A user-defined function that is invoked whenever down starts up. May be used to e.g. set custom keybindings.
+---   @field hook? fun(arguments?: string)    A user-defined function that is invoked whenever down starts up. May be used to e.g. set custom keybindings.
 ---   @field config? down.mod.Config The config for the init.
 ---   @field events? down.mod.Events Describes all information related to events for this init.
 ---   @field import? table<string, down.Mod> Imported submod of the given init. Contrary to `required`, which only exposes the public API of a init, imported mod can be accessed in their entirety.
@@ -140,13 +151,14 @@
 ---   @field maps? fun() Function that adds all the mappings for the init.
 ---   @field load? fun() Function that is invoked once the init is considered "stable", i.e. after all dependencies are loaded. Perform your main loading routine here.
 ---   @field test? fun() Function that is invoked when the init is being tested.
+---   @field version? string
 ---   @field bench? fun() Function that is invoked when the init is being benchmarked.
 ---   @field name string The name of the init.
 ---   @field namespace string The name of the init.
 ---   @field post_load? fun() Function that is invoked after all mod are loaded. Useful if you want the down environment to be fully set up before performing some task.
 ---   @field path string The full path to the init (a more verbose version of `name`). Moday be used in lua's `require()` statements.
 ---   @field public data? down.mod.Data Every init can expose any set of information it sees fit through this field. All functions and variables declared in this table will be to any other init loaded.
----   @field required? down.mod.Mods Contains the public tables of all mod that were required via the `requires` array provided in the `setup()` function of this init.
+---   @field required? table<string, down.Mod.Data> Contains the public tables of all mod that were required via the `requires` array provided in the `setup()` function of this init.
 ---   @field setup? fun(): down.mod.Setup? Function that is invoked before any other loading occurs. Should perform preliminary startup tasks.
 ---   @field replaced? boolean If `true`, this means the init is a replacement for a base init. This flag is set automatically whenever `setup().replaces` is set to a value.
 ---   @field on fun(event: down.Event) A callback that is invoked any time an event the init has subscribed to has fired.
@@ -162,31 +174,97 @@
 --- TODO:     #field [string]? down.config.UserMod
 ---
 --- @class (exact) down.config.User
----   @field [string]? down.config.UserMod
----   @field mod down.config.UserMod
+---   @field [string]? down.config.mod.Config
+---   @field hook? fun(args?: string) Hook to optionally run on load
+---   @field dev? boolean Whether to start in dev mode
 ---
 --- TODO: make down.config.UserMod? table
 --- TODO:   down.config.UserMod.config ->
 --- TODO:     #field [string]? down.Mod
 ---
---- @class (exact) down.config.UserMod { config?: table }
----   @field [string]? table
----   @field config? table
+--- The entire mod configuration
+--- @alias down.config.Mod
+---   | down.mod.Lsp
+---   | down.mod.Edit
+---   | down.mod.Data
+---   | down.mod.Cmd
+---   | down.mod.Tool
+---   | down.mod.Workspace
+---   | down.mod.Note
+---   | down.mod.Ui
+---
+--- The entire mod configuration
+--- @alias down.config.mod.Config
+---   | down.mod.lsp.Config
+---   | down.mod.data.Config
+---   | down.mod.edit.Config
+---   | down.mod.config.Config
+---   | down.mod.cmd.Config
+---   | down.mod.tool.Config
+---   | down.mod.workspace.Config
+---   | down.mod.note.Config
+---   | down.mod.ui.Config
+---
+--- @alias down.Mod.Data
+---   | down.mod.lsp.Data
+---   | down.mod.data.Data
+---   | down.mod.edit.Data
+---   | down.mod.cmd.Data
+---   | down.mod.tool.Data
+---   | down.mod.workspace.Data
+---   | down.mod.note.Data
+---   | down.mod.ui.Data
+---
+--- @alias down.Mod.Config
+---   | down.mod.lsp.Config
+---   | down.mod.data.Config
+---   | down.mod.edit.Config
+---   | down.mod.config.Config
+---   | down.mod.cmd.Config
+---   | down.mod.tool.Config
+---   | down.mod.workspace.Config
+---   | down.mod.note.Config
+---   | down.mod.ui.Config
+---
+--- The base configuration
+--- @class (exact) down.config.BaseConfig: {
+---   [string]?: any,
+---   dev?: boolean,
+--- }
+---
+--- @class (exact) down.config.UserConfig: down.config.BaseConfig, {
+---   lsp?: down.mod.lsp.Config,
+---   data?: down.mod.data.Config,
+---   edit?: down.mod.edit.Config,
+---   config?: down.mod.config.Config,
+---   cmd?: down.mod.cmd.Config,
+---   tool?: down.mod.tool.Config,
+---   workspace?: down.mod.worksspace.Config,
+---   note?: down.mod.note.Config,
+---   ui?: down.mod.ui.Config,
+---   config?: down.mod.config.Config,
+--- }
 
 --- TODO: make mod field merge to [string]: down.Mod
 --- TODO:   down.Config.mod ->
 --- TODO:     #field [string]? down.Mod
 ---
 --- @class (exact) down.Config
----   @field args table<string, string>                   A list of arguments provided to the `:downStart` function in the form of `key=value` pairs. Only applicable when `user_config.lazy_loading` is `true`.
----   @field manual boolean?                                   Used if down was manually loaded via `:downStart`. Only applicable when `user_config.lazy_loading` is `true`.
+---   @field dev? boolean  Whether to start in dev mode
+---   @field hook? fun()   A hook that is run when down is started
 ---   @field mod table<string, down.Mod> Acts as a copy of the user's config that may be modified at runtime.
----   @field os OperatingSystem                           The operating system that down is currently running under.
+---   @field os down.Os                           The operating system that down is currently running under.
 ---   @field pathsep "\\"|"/"                                  The operating system that down is currently running under.
 ---   @field started boolean                                   Set to `true` when down is fully initialized.
 ---   @field user down.config.User              Stores the config provided by the user.
 ---   @field version string                                    The version of down that is currently active. Automatically updated by CI on every release.
 ---   @field public [string]? down.Mod
+---   @field load {
+---     opts: fun(),
+---     maps: fun(),
+---     lsp: fun()
+---   }
+---   @field setup fun(user: down.config.User, ...: any) Loads user config
 
 --- Stores the config for the entirety of down.
 --- This includes not only the user config (passed to `setup()`), but also internal
@@ -196,16 +274,16 @@
 ---
 --- @class (exact) down.Event
 ---   @field type string The type of the event. Exists in the format of `category.name`.
----   @field split_type string[] The event type, just split on every `.` character, e.g. `{ "category", "name" }`.
----   @field content? table|any The content of the event. The data found here is specific to each individual event. Can be thought of as the payload.
----   @field referrer string The name of the init that triggered the event.
+---   @field split string[] The event type, just split on every `.` character, e.g. `{ "category", "name" }`.
+---   @field body? table|any The content of the event. The data found here is specific to each individual event. Can be thought of as the payload.
+---   @field ref string The name of the init that triggered the event.
 ---   @field broadcast boolean Whether the event was broadcast to all mod. `true` is so, `false` if the event was specifically sent to a single recipient.
----   @field cursor_position { [1]: number, [2]: number } The position of the cursor at the moment of broadcasting the event.
----   @field filename string The name of the file that the user was in at the moment of broadcasting the event.
----   @field filehead string The directory the user was in at the moment of broadcasting the event.
----   @field line_content string The content of the line the user was editing at the moment of broadcasting the event.
----   @field buffer number The buffer ID of the buffer the user was in at the moment of broadcasting the event.
----   @field window number The window ID of the window the user was in at the moment of broadcasting the event.
+---   @field position { [1]: number, [2]: number } The position of the cursor at the moment of broadcasting the event.
+---   @field file string The name of the file that the user was in at the moment of broadcasting the event.
+---   @field dir string The name of the file that the user was in at the moment of broadcasting the event.
+---   @field line string The content of the line the user was editing at the moment of broadcasting the event.
+---   @field buf number The buffer ID of the buffer the user was in at the moment of broadcasting the event.
+---   @field win number The window ID of the window the user was in at the moment of broadcasting the event.
 ---   @field mode Mode The mode Neovim was in at the moment of broadcasting the event.
 ---
 --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---

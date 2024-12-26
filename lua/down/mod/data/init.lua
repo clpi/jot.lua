@@ -1,24 +1,22 @@
----brief TODO: refactor mod/schema of modules so submodules can
----            load on `data` load also require the data module
----            for generic function, maybe implement in separate
----            util.lua file that is required for submodules
-local M = require("down.mod").create("data", {
-  "log",
-  "store",
-  "task",
-  "mod",
-  "sync",
-  "dirs",
-  "tag",
-  "clipboard",
-  "media",
-  "template",
-  "metadata",
-  "todo",
-  "save",
+local mod = require("down.mod")
+---@type down.Mod
+local M = mod.create("data", {
+  -- "log",
+  -- "store",
+  -- "task",
+  -- "mod",
+  -- "sync",
+  -- "dirs",
+  -- "tag",
+  -- "clipboard",
+  -- "media",
+  -- "template",
+  -- "metadata",
+  -- "todo",
+  -- "task",
+  -- "save"
   -- "code",
 })
-
 
 ---@type down.Store<down.File>
 local files = {
@@ -48,15 +46,14 @@ M.setup = function()
   }
 end
 
----@class down.data.Config
+---@class down.mod.data.Config
 M.config = {
   path = vim.fn.stdpath("data") .. "/down.mpack",
 }
 
----@class down.data.Data
+---@class down.mod.data.Data
 M.data = {
   data = {
-    data = {},
   },
   directory_map = function(path, callback)
     for name, type in vim.fs.dir(path) do

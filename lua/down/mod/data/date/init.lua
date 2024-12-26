@@ -1,4 +1,4 @@
----@class down.Mod
+---@type down.Mod
 local M = require "down.mod".create("data.date", {
 })
 

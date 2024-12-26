@@ -1,7 +1,7 @@
 local down = require("down")
 local config, lib, log, mod = down.cfg, down.lib, down.log, down.mod
 
-local M = mod.create("data.log")
+local M = require "down.mod".create("data.log")
 
 M.setup = function()
   if M.config.strategies[M.config.strategy] then

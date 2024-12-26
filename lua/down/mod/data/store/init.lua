@@ -1,8 +1,8 @@
----@class down.Mod
+---@type down.Mod
 local M = require "down.mod".create("data.store", {
 })
 
----@class down.data.store.Store
+---@class down.mod.data.store.Store
 M.Store = {
   title = "",
   about = "",
@@ -15,17 +15,17 @@ M.Store = {
     char = -1,
   }
 }
----@class down.data.store.Data
+---@class down.mod.data.store.Data
 M.data = {
 
 }
 
----@class table<down.data.store.Store>
+---@class table<down.mod.data.store.Store>
 M.data.stores = {
 
 }
 
----@class down.data.store.Config
+---@class down.mod.data.store.Config
 M.config = {
 
   store = "data/stores"

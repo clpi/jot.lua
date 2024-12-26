@@ -4,7 +4,8 @@ local tsu = require("nvim-treesitter.ts_utils")
 local tq, vl = vim.treesitter.query, vim.lsp
 local ll, lu, lb = vl.log, vl.util, vl.buf
 
-local M = mod.create("lsp", {
+---@type down.Mod
+local M = require 'down.mod'.create("lsp", {
   "notebook",
   "reference",
   "window",
@@ -113,7 +114,7 @@ M.setup = function()
   }
 end
 
----@class down.lsp.Data
+---@class down.mod.lsp.Data
 M.data = {
   experimentalCapabilities = {
     followLinks = true,
@@ -170,7 +171,7 @@ M.data = {
   ws_folders = Mod.get_mod("lsp.workspace.folders"),
 }
 
----@class down.lsp.Config
+---@class down.mod.lsp.Config
 M.config = {
   diagnostic = { enable = true },
   format = { enable = true },

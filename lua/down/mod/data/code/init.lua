@@ -1,7 +1,7 @@
 local down = require("down")
 local lib, mod, utils, log = down.lib, down.mod, down.utils, down.log
 
-local M = Mod.create("data.code", { "run", "snippet" })
+local M = require "down.mod".create("data.code", { "run", "snippet" })
 local Path = require("pathlib")
 
 M.setup = function()
@@ -27,7 +27,7 @@ M.setup = function()
 
   if M.config.code_on_write then
     local augroup =
-      vim.api.nvim_create_augroup("down_auto_code", { clear = true })
+        vim.api.nvim_create_augroup("down_auto_code", { clear = true })
     vim.api.nvim_create_autocmd("BufWritePost", {
       desc = "code the current file on write",
       pattern = "*.markdown",
@@ -61,11 +61,11 @@ M.data = {
     ---@type base.treesitter
     local treesitter = M.required["tool.treesitter"]
     local parsed_document_metadata = treesitter.get_document_metadata(buffer)
-      or {}
+        or {}
     local code_settings = parsed_document_metadata.code or {}
     local options = {
       languages = code_settings.languages or code_settings,
-      scope = code_settings.scope or "all", -- "all" | "tagged" | "main"
+      scope = code_settings.scope or "all",             -- "all" | "tagged" | "main"
       delimiter = code_settings.delimiter or "newline", -- "newline" | "heading" | "file-content" | "none"
     }
 
@@ -161,11 +161,11 @@ M.data = {
               if options.filenames_only then
                 for _, filename in ipairs(options.filenames_only) do
                   if
-                    declared_filetype
-                    == vim.filetype.match({
-                      filename = filename,
-                      contents = block_content,
-                    }) ---@diagnostic disable-line -- TODO: type error workaround <pysan3>
+                      declared_filetype
+                      == vim.filetype.match({
+                        filename = filename,
+                        contents = block_content,
+                      }) ---@diagnostic disable-line -- TODO: type error workaround <pysan3>
                   then
                     file_to_code_to = filename
                     break
@@ -188,13 +188,13 @@ M.data = {
           if path_lib_path:is_relative() then
             local buf_path = Path.new(buf_name)
             file_to_code_to =
-              tostring(buf_path:parent():child(file_to_code_to):resolve())
+                tostring(buf_path:parent():child(file_to_code_to):resolve())
           end
 
           local delimiter_content
           if
-            options.delimiter == "heading"
-            or options.delimiter == "file-content"
+              options.delimiter == "heading"
+              or options.delimiter == "file-content"
           then
             local language
             if filename_to_languages[file_to_code_to] then
@@ -230,22 +230,22 @@ M.data = {
               if heading and heading:named_child(1) then
                 local srow, scol, erow, ecol = heading:named_child(1):range()
                 heading_string =
-                  vim.api.nvim_buf_get_text(0, srow, scol, erow, ecol, {})[1]
+                    vim.api.nvim_buf_get_text(0, srow, scol, erow, ecol, {})[1]
               end
 
               -- don't reuse the same header more than once
               if
-                heading_string
-                and language
-                and previous_headings[language] ~= heading
+                  heading_string
+                  and language
+                  and previous_headings[language] ~= heading
               then
                 previous_headings[language] = heading
                 if codes[file_to_code_to] then
                   delimiter_content =
-                    { "", commentstrings[language]:format(heading_string), "" }
+                  { "", commentstrings[language]:format(heading_string), "" }
                 else
                   delimiter_content =
-                    { commentstrings[language]:format(heading_string), "" }
+                  { commentstrings[language]:format(heading_string), "" }
                 end
               elseif codes[file_to_code_to] then
                 delimiter_content = { "" }
@@ -257,7 +257,7 @@ M.data = {
               local start = file_content_line_start[file_to_code_to]
               local srow, _, erow, _ = node:range()
               delimiter_content =
-                vim.api.nvim_buf_get_lines(buffer, start, srow, true)
+                  vim.api.nvim_buf_get_lines(buffer, start, srow, true)
               file_content_line_start[file_to_code_to] = erow + 1
               for idx, line in ipairs(delimiter_content) do
                 if line ~= "" then
@@ -288,7 +288,7 @@ M.data = {
       for filename, start in pairs(file_content_line_start) do
         local language = filename_to_languages[filename]
         local delimiter_content =
-          vim.api.nvim_buf_get_lines(buffer, start, -1, true)
+            vim.api.nvim_buf_get_lines(buffer, start, -1, true)
         for idx, line in ipairs(delimiter_content) do
           if line ~= "" then
             delimiter_content[idx] = commentstrings[language]:format(line)
@@ -308,7 +308,7 @@ M.data = {
     end
     local lines = reverse
         and vim.api.nvim_buf_get_lines(0, cursor_row - 1, -1, false)
-      or vim.api.nvim_buf_get_lines(0, 0, cursor_row, false)
+        or vim.api.nvim_buf_get_lines(0, 0, cursor_row, false)
     local fences = 0
     for _, line_text in ipairs(lines) do
       local _, count = string.gsub(line_text, "^```", "```")
@@ -355,7 +355,7 @@ M.on = function(event)
       local relative_file, upward_count = string.gsub(file, "%.%.[\\/]", "")
       if upward_count > 0 then
         local base_dir =
-          vim.fn.expand("%:p" .. string.rep(":h", upward_count + 1)) --[[@as string]]
+            vim.fn.expand("%:p" .. string.rep(":h", upward_count + 1)) --[[@as string]]
         file = vim.fs.joinpath(base_dir, relative_file)
       end
 

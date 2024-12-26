@@ -1,7 +1,11 @@
 local down = require("down")
-local config, lib, log, mod = down.cfg, down.lib, down.log, down.mod
+local config = require("down.config")
+local log = require "down.util.log"
+local mod = require "down.mod"
+local lib = require "down.util.lib"
 
-local M = mod.create("data.template")
+---@class down.mod.data.Template: down.Mod
+local M = require "down.mod".create("data.template")
 
 M.setup = function()
   if M.config.strategies[M.config.strategy] then
@@ -43,6 +47,7 @@ M.setup = function()
   }
 end
 
+---@class (exact) down.mod.data.template.Config
 M.config = {
 
   strategies = {
@@ -78,7 +83,7 @@ M.config = {
   toc_format = nil,
 }
 
----@class template
+---@class down.mod.data.template.Data
 M.data = {
 
   data = {
