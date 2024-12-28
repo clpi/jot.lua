@@ -1,4 +1,5 @@
 local util = require('down.util')
+local print = require('down.util.print')
 -- local mod = require('down.util.mod')
 local os = util.get_os()
 
@@ -25,8 +26,8 @@ local Config = {
   pathsep = os == 'windows' and '\\' or '/',
   load = {
     maps = function()
-      vim.api.nvim_set_keymap('n', ',wl', '<cmd>down lsp lens<cr>', { silent = true })
-      vim.api.nvim_set_keymap('n', ',wa', '<cmd>down lsp action<cr>', { silent = true })
+      vim.api.nvim_set_keymap('n', ',di', '<cmd>Down index<cr>', { silent = true })
+      vim.api.nvim_set_keymap('n', ',dw', '<cmd>Telescope down workspace<cr>', { silent = true })
     end,
     opts = function()
       vim.o.conceallevel = 2
@@ -57,7 +58,9 @@ Config.post_load = function()
 end
 
 return setmetatable(Config, {
-  __index = function(mode, keymap) end,
+  __index = function(mode, key)
+    return Config.mod[key]
+  end,
   __newindex = function(cfg, key, val)
     Config.mod[key] = val
   end,

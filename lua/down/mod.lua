@@ -77,7 +77,7 @@ Mod.default.mod = function(n)
     events = {
       subscribed = { -- The events that the init is subscribed to
       },
-      defined = {    -- The events that the init itself has defined
+      defined = { -- The events that the init itself has defined
       },
     },
     required = {},
@@ -135,9 +135,6 @@ Mod.load_mod_from_table = function(m, cfg)
     return Mod.mods[m.name]
   end
   local mod_load = m.setup and m.setup() or Mod.default.setup()
-  -- if mod_load.loaded == false then
-  --   return nil
-  -- end
   ---@type down.Mod
   local mod_to_replace
   if mod_load.replaces and mod_load.replaces ~= '' then
@@ -166,7 +163,7 @@ Mod.load_mod_from_table = function(m, cfg)
           return Mod.delete(m.name)
         end
       else
-        log.trace('already loaded ', m.name)
+        log.trace('already loaded ' .. m.name)
       end
       m.required[req] = Mod.mods[req].data
     end
@@ -191,21 +188,11 @@ end
 --- @return down.Mod|nil # Whether the init was successfully loaded.
 function Mod.load_mod(modn, cfg)
   if Mod.mods[modn] and cfg == nil then
-    -- if modn == 'workspace' then
-    -- for w, ws in pairs(Mod.mods[modn].config.workspaces) do
-    -- end
-    -- Mod.mods[modn].config = util.extend(cfg or {}, Mod.mods[modn].config)
-    -- return Mod.mods[modn]
-    -- end
     return Mod.mods[modn]
   elseif Mod.mods[modn] and cfg ~= nil then
     Mod.mods[modn].config = util.extend(cfg or {}, Mod.mods[modn].config)
     return Mod.mods[modn]
   end
-  --   return Mod.mods[modn]
-  -- elseif cfg ~= nil and Mod.mods[modn] then
-  --   return Mod.mods[modn]
-  -- end
   local modl = require('down.mod.' .. modn)
   if not modl then
     print('Mod.load_mod: could not load mod ' .. modn)
@@ -218,12 +205,6 @@ function Mod.load_mod(modn, cfg)
   if cfg and not vim.tbl_isempty(cfg) then
     modl.config = util.extend(modl.config, cfg)
   end
-
-  --   modl.config.workspaces = cfg.workspaces
-  --   for w, ws in pairs(modl.config.workspaces) do
-  --     print('workspace', w, ws)
-  --   end
-  -- end
   return Mod.load_mod_from_table(modl)
 end
 

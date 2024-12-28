@@ -39,13 +39,17 @@ function Down.setup(user, ...)
   for name, usermod in pairs(Down.config.user) do
     if type(usermod) == 'table' then
       if name == 'lsp' and Down.config.dev == false then
+        goto continue
       elseif name == 'workspaces' then
+        goto continue
       elseif name == 'workspace' then
+        goto continue
       elseif Down.mod.load_mod(name, usermod) == nil then
       end
     else
       Down.config[name] = usermod
     end
+    ::continue::
   end
   Down.config.mod = Down.mod.mods
   for _, l in pairs(Down.mod.mods) do
@@ -56,6 +60,7 @@ function Down.setup(user, ...)
 end
 
 ---@param e string
+---@param ... any
 function Down.broadcast(e, ...)
   Down.mod.broadcast({ ---@type down.Event
     type = e, ---@diagnostic disable-line
@@ -74,6 +79,14 @@ function Down.broadcast(e, ...)
     win = vim.api.nvim_get_current_win(),
     mode = vim.fn.mode(),
   })
+end
+
+--- Test all modules loaded
+function Down.test()
+  for m, d in pairs(Down.mod.mods) do
+    print('Testing mod: ' .. m)
+    d.test()
+  end
 end
 
 return setmetatable(Down, {

@@ -1,5 +1,6 @@
 local config = require 'down.config'
 local mod = require 'down.mod'
+local util = require 'down.util'
 
 ---@class down.mod.data.Link: down.Mod
 local Link = mod.new('data.link')
@@ -12,11 +13,13 @@ Link.setup = function()
   return {
     loaded = true,
     requires = {
-      'tool.treesitter',
+      'tool.treesitter', --- For treesitter node parsing
+      'workspace', --- For checking filetype and index file names of current workspace
     },
   }
 end
 
+--- TODO: <tab> and <s-tab> for next and previous links
 Link.maps = function()
   vim.keymap.set('n', '<bs>', ':edit #<cr>', { silent = true })
   vim.api.nvim_set_keymap(
@@ -32,17 +35,16 @@ Link.data = {
   parser = function() end,
   mk = {},
   follow = {},
-}
-
----@enum down.mod.data.link.Type
----@alias down.mod.data.link.Tyoe
----| "local"
----| "web"
----| "heading"
-Link.data.type = {
-  ['local'] = true,
-  ['heading'] = true,
-  ['web'] = true,
+  ---@enum down.mod.data.link.Type
+  ---@alias down.mod.data.link.Tyoe
+  ---| "local"
+  ---| "web"
+  ---| "heading"
+  type = {
+    ['local'] = true,
+    ['heading'] = true,
+    ['web'] = true,
+  },
 }
 
 Link.data.dir = function(dir)
@@ -87,18 +89,18 @@ end
 Link.data.children = function(node)
   return tsu.get_named_children(node)
 end
+
 Link.data.cursor = function()
   local node = tsu.get_node_at_cursor()
-  local type = node:type()
-  return node, type
+  return node, node:type()
 end
 
 Link.data.parent = function(node)
-  local parent = node:parent(node)
+  local parent = node:parent()
   return parent, parent:type()
 end
 
-Link.data.next = function(node)
+Link.data.next_node = function(node)
   local next = tsu.get_next_node(node)
   return next, next:type()
 end
@@ -110,7 +112,7 @@ end
 Link.data.ref = function(node)
   local link_label = Link.data.text(node)
   for _, captures, _ in
-  Link.required['tool.treesitter'].query([[
+    Link.required['tool.treesitter'].query([[
     (link_reference_definition
       (link_label) @label (#eq? @label "]] .. link_label .. [[")
       (link_destination) @link_destination
@@ -129,20 +131,52 @@ Link.data.query = function(n, lang)
   return pq:iter_matches(sr, 0)
 end
 
+--- Checks whether a node is a wikilink, and if not, checks if parent is a wikilink
+--- If either are, then returns the link destination, otherwise nil
+--- @return string|nil
+Link.data.iswikilink = function(node, parent)
+  if not node then
+    return nil
+  elseif not parent then
+    local wikilink = vim.treesitter.get_node_text(node, 0):iswikilink()
+    if wikilink then
+      return wikilink
+    end
+  end
+  local wikilink = vim.treesitter.get_node_text(parent, 0):iswikilink()
+  if wikilink then
+    return wikilink
+  end
+  return nil
+end
+
 Link.data.destination = function()
   local node, nodety = Link.data.cursor()
-  local parent, party = Link.data.parent(node)
-  if not (node and parent) then
+  local parent = node:parent()
+  local wikilink = Link.data.iswikilink(node, parent)
+  if wikilink then
+    return wikilink
+  end
+  if not parent then
+    if not node then
+      return
+    end
     return
-  elseif nodety == 'link_destination' then
+  end
+  local parentty = parent:type()
+  if nodety == 'link_destination' then
     return Link.data.text(node)
   elseif nodety == 'link_label' or nodety == 'shortcut_link' then
     return Link.data.ref(node)
   elseif nodety == 'link_text' then
-    if party == 'shortcut_link' then
-      return Link.data.ref(parent)
+    if parentty == 'shortcut_link' then -- Could be wikilink
+      local ref = Link.data.ref(parent)
+      if ref then
+        return ref
+      end
+      return Link.data.text(node)
     end
-    local next, nextty = Link.data.next(node)
+    local next, nextty = Link.data.next_node(node)
     if nextty == 'link_destination' then
       return Link.data.text(next)
     elseif nextty == 'link_label' then
