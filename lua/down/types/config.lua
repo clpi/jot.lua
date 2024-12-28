@@ -32,7 +32,7 @@
 ---
 --- @brief down.config.global
 ---
---- @brief down.onfig.init
+--- @brief down.handlefig.init
 ---
 --- The important store value object
 --- @class (exact) down.config.Init Init

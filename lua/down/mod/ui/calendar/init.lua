@@ -4,10 +4,17 @@ local mod = down.mod
 
 local G = require 'down.mod'.new('ui.calendar')
 
+G.maps = function()
+  vim.keymap.set('n', ',d.', '<CMD>Down calendar<CR>')
+  vim.keymap.set('n', ',do', '<CMD>Down calendar<CR>')
+  vim.keymap.set('n',',dl', '<CMD>Down calendar<CR>')
+end
+
 G.setup = function()
   return {
     requires = {
       'ui',
+      'ui.calendar.day',
       'ui.calendar.month',
       'ui.calendar.time',
     },

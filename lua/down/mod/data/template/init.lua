@@ -16,6 +16,7 @@ M.load = function()
       template = {
         min_args = 1,
         max_args = 2,
+        name = 'data.template',
         subcommands = {
           index = { args = 0, name = 'data.template.index' },
           month = { max_args = 1, name = 'data.template.month' },
@@ -41,6 +42,7 @@ M.setup = function()
   return {
     loaded = true,
     requires = {
+      'cmd',
       'workspace',
       'tool.treesitter',
     },
@@ -374,7 +376,7 @@ M.data = {
   },
 }
 
-M.on = function(event)
+M.handle = function(event)
   if event.split_type[1] == 'cmd' then
     if event.split_type[2] == 'data.template.index' then
       M.data.data.open_index()

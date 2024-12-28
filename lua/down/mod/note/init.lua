@@ -1,5 +1,6 @@
 local down = require('down')
 local u = require 'down.mod.note.util'
+local log = require 'down.util.log'
 local map = require 'down.util.maps'
 local config = require('down.config')
 local util = require('down.util')
@@ -532,7 +533,7 @@ M.config.strategies = {
 }
 
 ---@param event down.Event
-M.on = function(event)
+M.handle = function(event)
   local ty = event.split[1]
   local ev = event.split[2]
   if ty == 'cmd' then

@@ -116,7 +116,7 @@ function U.get_language_shorthands(reverse_lookup)
     ['c_sharp'] = { 'csharp', 'cs' },
     ['clojure'] = { 'clj' },
     ['cmake'] = { 'cmake.in' },
-    ['commonlisp'] = { 'cl' },
+    ['coM.handlelisp'] = { 'cl' },
     ['cpp'] = { 'hpp', 'cc', 'hh', 'c++', 'h++', 'cxx', 'hxx' },
     ['dockerfile'] = { 'docker' },
     ['erlang'] = { 'erl' },

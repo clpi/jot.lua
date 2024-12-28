@@ -701,42 +701,42 @@ M.config = {
       done = {
         icon = "󰄬",
         nodes = { "todo_item_done" },
-        render = M.data.icon_renderers.on_left,
+        render = M.data.icon_renderers.handle_left,
       },
       pending = {
         icon = "󰥔",
         nodes = { "todo_item_pending" },
-        render = M.data.icon_renderers.on_left,
+        render = M.data.icon_renderers.handle_left,
       },
       undone = {
         icon = " ",
         nodes = { "todo_item_undone" },
-        render = M.data.icon_renderers.on_left,
+        render = M.data.icon_renderers.handle_left,
       },
       uncertain = {
         icon = "",
         nodes = { "todo_item_uncertain" },
-        render = M.data.icon_renderers.on_left,
+        render = M.data.icon_renderers.handle_left,
       },
       on_hold = {
         icon = "",
-        nodes = { "todo_item_on_hold" },
-        render = M.data.icon_renderers.on_left,
+        nodes = { "todo_iteM.handle_hold" },
+        render = M.data.icon_renderers.handle_left,
       },
       cancelled = {
         icon = "",
         nodes = { "todo_item_cancelled" },
-        render = M.data.icon_renderers.on_left,
+        render = M.data.icon_renderers.handle_left,
       },
       recurring = {
         icon = "↺",
         nodes = { "todo_item_recurring" },
-        render = M.data.icon_renderers.on_left,
+        render = M.data.icon_renderers.handle_left,
       },
       urgent = {
         icon = "⚠",
         nodes = { "todo_item_urgent" },
-        render = M.data.icon_renderers.on_left,
+        render = M.data.icon_renderers.handle_left,
       },
     },
 
@@ -820,17 +820,17 @@ M.config = {
           "single_definition_prefix",
           concealed = { "link_target_definition" },
         },
-        render = M.data.icon_renderers.on_left,
+        render = M.data.icon_renderers.handle_left,
       },
       multi_prefix = {
         icon = "⋙ ",
         nodes = { "multi_definition_prefix" },
-        render = M.data.icon_renderers.on_left,
+        render = M.data.icon_renderers.handle_left,
       },
       multi_suffix = {
         icon = "⋘ ",
         nodes = { "multi_definition_suffix" },
-        render = M.data.icon_renderers.on_left,
+        render = M.data.icon_renderers.handle_left,
       },
     },
 
@@ -845,18 +845,18 @@ M.config = {
           "single_footnote_prefix",
           concealed = { "link_target_footnote" },
         },
-        render = M.data.icon_renderers.on_left,
+        render = M.data.icon_renderers.handle_left,
         render_concealed = M.data.icon_renderers.footnote_concealed,
       },
       multi_prefix = {
         icon = "⁑ ",
         nodes = { "multi_footnote_prefix" },
-        render = M.data.icon_renderers.on_left,
+        render = M.data.icon_renderers.handle_left,
       },
       multi_suffix = {
         icon = "⁑ ",
         nodes = { "multi_footnote_suffix" },
-        render = M.data.icon_renderers.on_left,
+        render = M.data.icon_renderers.handle_left,
       },
     },
 
@@ -1473,7 +1473,7 @@ local event_handlers = {
   ["cmd.events.icon.toggle"] = handle_toggle_prettifier,
 }
 
-M.on = function(event)
+M.handle = function(event)
   if not M.data.enabled and (event.type ~= "cmd.events.icon.toggle") then
     return
   end

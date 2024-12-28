@@ -92,7 +92,7 @@ M.data = {
   ---@param  config table? a table of <option> = <value> keypairs signifying buffer-local options for the buffer contained within the split
   ---@param  height number? the height of the new split
   ---@return number?, number? #Both the buffer ID and window ID
-  create_split = function(name, config, height)
+  new_split = function(name, config, height)
     vim.validate({
       name = { name, 'string' },
       { config, 'table', true },
@@ -155,7 +155,7 @@ M.data = {
   ---@param buf_config table a table of <option> = <value> keypairs signifying buffer-local options for the buffer contained within the split
   ---@param win_config table table of <option>=<value> keypairs for `nvim_open_win`, must provide `win`
   ---@return number?, number? #The buffer and window numbers of the vertical split
-  create_vsplit = function(name, enter, buf_config, win_config)
+  new_vsplit = function(name, enter, buf_config, win_config)
     vim.validate({
       name = { name, 'string' },
       enter = { enter, 'boolean', true },
@@ -204,7 +204,7 @@ M.data = {
   ---@param name string #The name of the display
   ---@param split_type string #"vsplitl"|"vsplitr"|"split"|"nosplit" - if suffixed with "l" vertical split will be spawned on the left, else on the right. "split" is a horizontal split.
   ---@param content table #A table of content for the display
-  create_display = function(name, split_type, content)
+  new_display = function(name, split_type, content)
     if not vim.tbl_contains({ 'nosplit', 'vsplitl', 'vsplitr', 'split' }, split_type) then
       log.error(
         "Unable to create display. Expected one of 'vsplitl', 'vsplitr', 'split' or 'nosplit', got",
@@ -299,7 +299,7 @@ M.data = {
   ---@param opts table|nil
   ---   - opts.keys (boolean)             if false, will not use the base keys
   ---   - opts.del_on_autocmd (table)    delete buffer on specified autocmd
-  create_markdown_buffer = function(name, split_type, config, opts)
+  new_markdown_buffer = function(name, split_type, config, opts)
     vim.validate({
       name = { name, 'string' },
       split_type = { split_type, 'string' },

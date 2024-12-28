@@ -62,7 +62,7 @@ M.data.directory_map = function(path, callback)
   end
 end
 
---- Recursively copies a directory from one path to another
+--- Recursively copies a directory froM.handlee path to another
 ---@param old_path string #The path to copy
 ---@param new_path string #The new location. This function will not
 --- succeed if the directory already exists.

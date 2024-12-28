@@ -27,41 +27,38 @@ Down.default = {
 --- @param user down.config.User user config to load
 --- @param ... any The arguments to pass into an optional user hook
 function Down.setup(user, ...)
-  if Down.config.started or not user or vim.tbl_isempty(user) then
-    return false
-  end
-  user = Down.util.extend(user, Down.default)
-  Down.config.user = Down.util.extend(Down.config.user, user)
-  if Down.config.user.hook then
-    Down.config.user.hook(...)
-  end
-  Down.mod.load_mod('workspace', Down.config.user.workspace or {})
-  for name, usermod in pairs(Down.config.user) do
+  Down.config.setup(Down.config, user, Down.default)
+  Down.start(Down)
+end
+
+function Down:start()
+  self.mod.load_mod('workspace', self.config.user.workspace or {})
+  for name, usermod in pairs(self.config.user) do
     if type(usermod) == 'table' then
-      if name == 'lsp' and Down.config.dev == false then
+      if name == 'lsp' and self.config.dev == false then
         goto continue
       elseif name == 'workspaces' then
         goto continue
       elseif name == 'workspace' then
         goto continue
-      elseif Down.mod.load_mod(name, usermod) == nil then
+      elseif self.mod.load_mod(name, usermod) == nil then
       end
     else
-      Down.config[name] = usermod
+      self.config[name] = usermod
     end
     ::continue::
   end
-  Down.config.mod = Down.mod.mods
-  Down.config:post_load()
-  Down:post_load()
-  Down:broadcast('started')
+  self.config.mod = self.mod.mods
+  self.config:post_load()
+  self:post_load()
+  self:broadcast('started')
 end
 
 function Down:post_load()
   for _, l in pairs(self.mod.mods) do
-    l.maps()
-    l.cmds()
-    l.opts()
+    -- l.maps()
+    -- l.cmds()
+    -- l.opts()
     l.post_load()
   end
 end
@@ -97,13 +94,13 @@ function Down.test()
 end
 
 return setmetatable(Down, {
-  __call = function(down, user, ...)
-    Down.setup(user, ...)
-  end,
-  __index = function(self, key)
-    return Down.mod.mods[key]
-  end,
-  __newindex = function(self, key, val)
-    Down.mod.mods[key] = val
-  end,
+  -- __call = function(down, user, ...)
+  --   Down.setup(user, ...)
+  -- end,
+  -- __index = function(self, key)
+  --   return Down.mod.mods[key]
+  -- end,
+  -- __newindex = function(self, key, val)
+  --   Down.mod.mods[key] = val
+  -- end,
 })

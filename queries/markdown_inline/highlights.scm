@@ -96,7 +96,7 @@
 
 (entity_reference) @nospell
 
-; Replace common HTML entities.
+; Replace coM.handle HTML entities.
 ((entity_reference) @character.special
   (#eq? @character.special "&nbsp;")
   (#set! conceal " "))

@@ -241,7 +241,7 @@ M.data = {
     end
 
     -- Broadcast the wschanged event with all the necessary information
-    require('down.mod').broadcast(
+    mod.broadcast(
       assert(
         mod.new_event(M, 'workspace.events.wschanged', { old = current_ws, new = new_workspace })
       )
@@ -624,7 +624,7 @@ M.data.is_subpath = function(path, wsname)
   return not not path:match('^' .. wsp)
 end
 
-M.on = function(event)
+M.handle = function(event)
   if event.type == 'cmd.events.workspace.workspace' then
     if event.body[1] then
       M.data.open_workspace(event.body[1])
@@ -639,13 +639,6 @@ M.on = function(event)
         utils.notify('New workspace: ' .. event.body[1] .. ' -> ' .. new_workspace)
       end)
     else -- No argument supplied, simply print the current workspace
-      -- Query the current workspace
-      -- local current_ws = M.data.get_current_workspace()
-      -- Nicely print it. We schedule_wrap here because people with a configured logger will have this message
-      -- silenced by other trace logs
-      -- vim.schedule(function()
-      -- utils.notify('Current workspace: ' .. current_ws[1] .. ' -> ' .. current_ws[2])
-      -- end)
       M.data.select()
     end
 

@@ -17,7 +17,7 @@ M.data = {
   },
 }
 
-M.on = function(event)
+M.handle = function(event)
   if event.type == 'cmd.events.back' then
     -- Get all the buffers
     local buffers = vim.api.nvim_list_bufs()

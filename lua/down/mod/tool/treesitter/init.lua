@@ -1063,7 +1063,7 @@ M.data.root = function()
   return tree, root
 end
 
-M.on = function(event)
+M.handle = function(event)
   if event.split[2] == "sync" then
     local ok, err = pcall(install_down_ts)
 

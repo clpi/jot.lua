@@ -306,7 +306,7 @@ require('lazy').setup({
     },
   },
 })
--- vim.lsp.on_attach(function(client, bufnr)
+-- vim.lsp.handle_attach(function(client, bufnr)
 --   local opts = { buffer = bufnr, remap = false }
 --
 --   if client.name == "eslint" then

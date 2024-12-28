@@ -389,7 +389,7 @@ M.data = {
   end,
 }
 
-M.on = function(event)
+M.handle = function(event)
   if event.split_type[1] == 'cmd' then
     if event.split_type[2] == 'log.index' then
       M.data.open_index()

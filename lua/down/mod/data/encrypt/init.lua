@@ -37,7 +37,7 @@ E.config = {}
 ---@class down.data.encrypt.Data
 E.data = {}
 
-E.on = function(e) end
+E.handle = function(e) end
 
 E.subscribed = {
   cmd = {

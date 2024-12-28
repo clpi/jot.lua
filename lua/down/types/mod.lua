@@ -20,7 +20,7 @@
 ---   @field required? table<string, down.Mod.Data> Contains the public tables of all mod that were required via the `requires` array provided in the `setup()` function of this mod.
 ---   @field setup? fun(): down.mod.Setup? Function that is invoked before any other loading occurs. Should perform preliminary startup tasks.
 ---   @field replaced? boolean If `true`, this means the mod is a replacement for a base mod. This flag is set automatically whenever `setup().replaces` is set to a value.
----   @field on fun(event: down.Event) A callback that is invoked any time an event the mod has subscribed to has fired.
+---   @field handle fun(event: down.Event) A callback that is invoked any time an event the mod has subscribed to has fired.
 ---   @field test? fun() Function that is invoked when the mod is being tested.
 ---
 --- @class (exact) down.mod.Setup: {

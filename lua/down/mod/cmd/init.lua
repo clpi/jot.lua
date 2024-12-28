@@ -375,7 +375,7 @@ M.config = {
 
 M.post_load = M.data.sync
 
-M.on = function(event)
+M.handle = function(event)
   if event.type == 'cmd.events.mod.setup' then
     local ok = pcall(mod.load_mod, event.content[1])
 

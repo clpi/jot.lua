@@ -82,7 +82,7 @@ M.data = {
       vim.keymap.set('n', '<cr>', function()
         local should_redraw = false
 
-        if view.current_mode.on_select ~= nil then
+        if view.current_mode.handle_select ~= nil then
           should_redraw = view.current_mode:on_select(date)
         end
 
@@ -589,7 +589,7 @@ M.data = {
 
           local should_redraw = false
 
-          if view.current_mode.on_select ~= nil then
+          if view.current_mode.handle_select ~= nil then
             should_redraw = view.current_mode:on_select(lua_date)
           end
 

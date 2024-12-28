@@ -103,8 +103,8 @@ M.config = {
     -- In case of errors in the syntax tree, use the following highighlightight.
     error = "+Error",
 
-    -- highlight for defMions (`$ DefMion`).
-    defMions = {
+    -- highlight for defM.handles (`$ DefM.handle`).
+    defM.handles = {
       prefix = "+@punctuation.delimiter",
       suffix = "+@punctuation.delimiter",
       title = "+@markup.strong",
@@ -121,7 +121,7 @@ M.config = {
 
     -- highlight for TODO items.
     --
-    -- This strictly covers the `( )` component of any detached modifier. In other downs, these
+    -- This strictly covers the `( )` coM.handleent of any detached modifier. In other downs, these
     -- highlight only bother with highighlightighting the brackets and the content within, but not the
     -- object containing the TODO item itself.
     todo_items = {
@@ -176,7 +176,7 @@ M.config = {
         [""] = "+@markup.link.label",
         delimiter = "+NonText",
       },
-      defMion = {
+      defM.handle = {
         delimiter = "+NonText",
       },
     },
@@ -212,9 +212,9 @@ M.config = {
           prefix = "+@down.markers.prefix",
         },
 
-        defMion = {
-          [""] = "+@down.defMions.title",
-          prefix = "+@down.defMions.prefix",
+        defM.handle = {
+          [""] = "+@down.defM.handles.title",
+          prefix = "+@down.defM.handles.prefix",
         },
 
         footnote = {

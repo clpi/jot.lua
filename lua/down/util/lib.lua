@@ -397,10 +397,10 @@ function lib.number_wrap(value, min, max)
   return wrapped_value
 end
 
---- Split a path into its components.
+--- Split a path into its coM.handleents.
 --- Example: `/my/cool/path/file.txt` --> `{ my, cool, path, file.txt }`
 --- @param path string The path to split.
---- @return string[] # The path components.
+--- @return string[] # The path coM.handleents.
 function lib.tokenize_path(path)
   local tokens = {}
   for capture in path:gmatch("[^/\\]+") do

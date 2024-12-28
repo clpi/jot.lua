@@ -106,7 +106,7 @@ M.load = function()
   end
 end
 
-M.on = function(event)
+M.handle = function(event)
   if (event.split[1] == "cmd") then
     if (event.split[2] == "find") then
       require("telescope._extensions.down.picker.files")()

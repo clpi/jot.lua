@@ -45,6 +45,6 @@ M.subscribed = {
   },
 }
 
-M.on = function(e) end
+M.handle = function(e) end
 
 return M

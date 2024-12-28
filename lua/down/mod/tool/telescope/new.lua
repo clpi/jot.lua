@@ -111,7 +111,7 @@ M.load = function()
   end
 end
 
-M.on = function(event)
+M.handle = function(event)
   if event.type == "tool.telescope" then
   elseif event.type == "tool.telescope.link" then
     vim.cmd([[Telescope down find_down]])

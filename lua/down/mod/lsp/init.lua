@@ -109,7 +109,7 @@ Lsp.data.ft = function(ft)
 end
 
 ---@param e down.Event
-Lsp.on = function(e)
+Lsp.handle = function(e)
   print(e)
   local es = e.split
 end

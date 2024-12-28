@@ -31,30 +31,32 @@ local Mod = {
         wants = {},
       }
     end,
-    ---@type fun(r: string, e:string, b: string): down.Event
-    event = function(r, e, b)
-      return {
-        payload = b,
-        topic = e,
-        type = e,
-        split = {},
-        body = b,
-        ref = r,
-        broadcast = true,
-        position = {},
-        file = '',
-        dir = '',
-        line = vim.api.nvim_get_current_line(),
-        buf = vim.api.nvim_get_current_buf(),
-        win = vim.api.nvim_get_current_win(),
-        mode = vim.fn.mode(),
-      }
-    end,
   },
 }
 
+---@type fun(modn: string, type:string, body: string): down.Event
+Mod.default.event = function(modn, name, body)
+  return {
+    payload = body,
+    topic = name,
+    type = modn .. '.events.' .. name,
+    ref = modn,
+    split = {},
+    body = body,
+    broadcast = true,
+    position = vim.api.nvim_win_get_cursor(0),
+    file = vim.fn.expand('%:p'),
+    dir = vim.fn.getcwd(),
+    line = vim.api.nvim_get_current_line(),
+    buf = vim.api.nvim_get_current_buf(),
+    win = vim.api.nvim_get_current_win(),
+    mode = vim.fn.mode(),
+  }
+end
+
 ---@return down.Mod
 Mod.default.mod = function(n)
+  ---@type down.Mod
   return setmetatable({
     setup = Mod.default.setup,
     cmds = function() end,
@@ -67,21 +69,15 @@ Mod.default.mod = function(n)
     end,
     opts = function() end,
     maps = function() end,
-    on = function(e)
+    handle = function(e)
       -- print('load' .. e)
     end,
     name = n,
-    namespace = 'down.mod.' .. n,
-    path = 'mod.' .. n,
-    version = '0.1.2-alpha',
+    namespace = vim.api.nvim_create_namespace('down.mod.' .. n),
     data = {},
     config = {},
-    events = {
-      subscribed = { -- The events that the init is subscribed to
-      },
-      defined = { -- The events that the init itself has defined
-      },
-    },
+    events = {},
+    subscribed = {},
     required = {},
     import = {},
     tests = {},
@@ -89,12 +85,18 @@ Mod.default.mod = function(n)
     __call = function(self, fun, ...)
       return self.data[fun](...)
     end,
-    __index = function(self, k)
-      return self.data[k]
-    end,
+    -- __index = function(self, k)
+    --   return self.required[k]
+    -- end,
     __newindex = function(self, k, v)
       self.data[k] = v
     end,
+    __eq = function(m1, m2)
+      return m1.name == m2.name
+    end,
+    -- __tostring = function(m)
+    --   return m.name
+    -- end,
   })
 end
 
@@ -110,13 +112,6 @@ Mod.new = function(nm, im)
         assert(false)
       end
       n.import[fp] = Mod.mods[fp]
-    end
-  end
-  if nm then
-    n.name = nm
-    n.namespace = 'down.mod.' .. nm
-    if n.namespace then
-      vim.api.nvim_create_namespace(n.namespace)
     end
   end
   return n
@@ -140,6 +135,7 @@ Mod.delete = function(mod)
   Mod.mods[mod] = nil
   return nil
 end
+
 --- @param m down.Mod The actual init to load.
 --- @return down.Mod|nil # Whether the init successfully loaded.
 Mod.load_mod_from_table = function(m, cfg)
@@ -199,15 +195,15 @@ end
 --- @param cfg table? A config that reflects the structure of `down.config.user.setup["init.name"].config`.
 --- @return down.Mod|nil # Whether the init was successfully loaded.
 function Mod.load_mod(modn, cfg)
-  if Mod.mods[modn] and cfg == nil then
-    return Mod.mods[modn]
-  elseif Mod.mods[modn] and cfg ~= nil then
-    Mod.mods[modn].config = util.extend(cfg or {}, Mod.mods[modn].config)
+  if Mod.mods[modn] then
+    if cfg ~= nil then
+      Mod.mods[modn].config = util.extend(cfg or {}, Mod.mods[modn].config)
+    end
     return Mod.mods[modn]
   end
   local modl = require('down.mod.' .. modn)
   if not modl then
-    print('Mod.load_mod: could not load mod ' .. modn)
+    log.error('Mod.load_mod: could not load mod ' .. modn)
     return nil
   end
   if modl == true then
@@ -286,7 +282,7 @@ function Mod.await(modn, callback)
     return
   end
 
-  cb.on('mod_loaded', function(_, m)
+  cb.handle('mod_loaded', function(_, m)
     callback(m.data)
   end, function(event)
     return event.body.name == modn
@@ -334,15 +330,11 @@ end
 --- @param name string A relative path to a valid event template.
 --- @return down.Event
 function Mod.define_event(m, name)
-  if name then
-    m.type = m.name .. '.events.' .. name
-  end
-  m.ref = m.name
-  return m
+  return Mod.default.event(m.name, name, m)
 end
 
 --- Returns a copy of the event template provided by a init.
---- @param init down A reference to the init invoking the function
+--- @param m down.Mod A reference to the init invoking the function
 --- @param type string A full path to a valid .vent type (e.g. `init.events.some_event`)
 --- @param body table|any? The body of the event, can be anything from a string to a table to whatever you please.
 --- @param ev? table The original event data.
@@ -350,7 +342,6 @@ end
 function Mod.new_event(m, type, body, ev)
   -- Get the init that contains the event
   local modn = Mod.split_event_type(type)[1]
-
   -- Retrieve the template from init.events
   local event_template = Mod.get_event_template(Mod.mods[modn] or { name = '' }, type)
 
@@ -375,6 +366,8 @@ function Mod.new_event(m, type, body, ev)
   if winid == -1 then
     winid = vim.api.nvim_get_current_win()
   end
+  -- vim.print(mn)
+  --
   mn.position = vim.api.nvim_win_get_cursor(winid)
   local row_1b = mn.position[1]
   mn.line = vim.api.nvim_buf_get_lines(bufid, row_1b - 1, row_1b, true)[1]
@@ -391,6 +384,7 @@ end
 --- @param callback function? A callback to be invoked after all events have been asynchronously broadcast
 function Mod.broadcast(event, callback)
   -- Broadcast the event to all mod
+  -- vim.print(event)
   if not event.split then
     log.error('Unable to broadcast event of type' .. event.type .. '- invalid event name')
     return
@@ -402,7 +396,7 @@ function Mod.broadcast(event, callback)
     if cm.subscribed and cm.subscribed[event.split[1]] then
       local evt = cm.subscribed[event.split[1]][event.split[2]]
       if evt ~= nil and evt == true then
-        cm.on(event)
+        cm.handle(event)
       end
     end
   end
@@ -426,7 +420,7 @@ function Mod.send_event(recv, ev)
   if modl.subscribed and modl.subscribed[ev.split[1]] then
     local evt = modl.subscribed[ev.split[1]][ev.split[2]]
     if evt ~= nil and evt == true then
-      modl.on(ev)
+      modl.handle(ev)
     end
   end
 end
@@ -438,6 +432,9 @@ function Mod.mod_load(m)
   end
   if m.maps then
     m.maps()
+  end
+  if m.opts then
+    m.opts()
   end
   if m.load then
     m.load()

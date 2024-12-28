@@ -196,7 +196,7 @@ M.data = {
 
       if counts.uncertain > 0 and counts.done + counts.uncertain == counter then
         resulting_char = '='
-      elseif counts.on_hold > 0 and counts.done + counts.on_hold + counts.uncertain == counter then
+      elseif counts.handle_hold > 0 and counts.done + counts.handle_hold + counts.uncertain == counter then
         resulting_char = '='
       elseif counts.pending > 0 then
         resulting_char = '-'

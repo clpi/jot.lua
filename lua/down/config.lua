@@ -26,7 +26,11 @@ local Config = {
   started = false,
   pathsep = osinfo == 'windows' and '\\' or '/',
   load = {
-    maps = function() end,
+    maps = function()
+      vim.keymap.set('n', ',dw', '<CMD>Down<CR>', { silent = true })
+      vim.keymap.set('n', ',D', '<CMD>Down<CR>', { silent = true })
+      vim.keymap.set('n', '~', '<CMD>Down<CR>', { silent = true })
+    end,
     opts = function()
       vim.o.conceallevel = 2
       vim.o.concealcursor = [[nc]]
@@ -37,19 +41,24 @@ local Config = {
 --- @param ... string
 --- @return string
 function Config.vimdir(...)
-  return vim.fs.joinpath(vim.fn.stdpath('data'), 'down/', ...)
+  local d = vim.fs.joinpath(vim.fn.stdpath('data'), 'down/')
+  vim.fn.mkdir(d, 'p')
+  local dir = vim.fs.joinpath('data', ...)
+  return dir
 end
 
 --- @param ... string
 --- @return string
 function Config.homedir(...)
-  return vim.fs.joinpath(os.getenv('HOME') or '~/', '.down/', ...)
+  local d = vim.fs.joinpath(os.getenv('HOME') or '~/', '.down/', ...)
+  vim.fn.mkdir(d, 'p')
+  return d
 end
 
 --- @param file string | nil
 --- @return string
-function Config.file(file)
-  return vim.fs.joinpath(file or Config.vimdir('down.json'))
+function Config.file(fp)
+  local f = vim.fs.joinpath(fp or Config.vimdir('down.json'))
 end
 
 --- @param f string | nil
@@ -62,21 +71,26 @@ end
 
 --- @param f string | nil
 function Config:save(f)
-  return vim.fn.writefile(self.user, Config.file(f))
+  local json = vim.json.encode(self.user)
+  json = vim.fn.str2list(json)
+  return vim.fn.writefile(json, self.file(f), 'S')
 end
 
+--- @param self down.Config
 ---@param user down.config.User
 ---@param default string[]
 ---@return boolean
-function Config.setup(user, default, ...)
-  if Config.started or not user or vim.tbl_isempty(user) then
+function Config.setup(self, user, default, ...)
+  if self.started or not user or vim.tbl_isempty(user) then
     return false
   end
   user = util.extend(user, default)
-  Config.user = util.extend(Config.user, user)
-  if Config.user.hook then
-    Config.user.hook(...)
+  self.user = util.extend(self.user, user)
+  if self.user.hook then
+    self.user.hook(...)
   end
+  -- self:save()
+  return true
 end
 
 function Config:post_load()

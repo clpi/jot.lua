@@ -485,7 +485,7 @@ local function enter_toc_win()
   return do_enter
 end
 
-M.on = function(event)
+M.handle = function(event)
   if event.split_type[2] ~= M.name then
     return
   end

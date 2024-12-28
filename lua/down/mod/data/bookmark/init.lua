@@ -51,7 +51,7 @@ B.load = function()
   })
 end
 
-B.on = function(e)
+B.handle = function(e)
   local es = e.split
   if es[2] == "bookmark" then
     print("es2")
