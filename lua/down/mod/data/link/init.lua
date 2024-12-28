@@ -14,7 +14,7 @@ Link.setup = function()
     loaded = true,
     requires = {
       'tool.treesitter', --- For treesitter node parsing
-      'workspace', --- For checking filetype and index file names of current workspace
+      'workspace',       --- For checking filetype and index file names of current workspace
     },
   }
 end
@@ -106,13 +106,13 @@ Link.data.next_node = function(node)
 end
 
 Link.data.text = function(node)
-  return vim.split(vim.treesitter.get_node_text(node, 0), '\n')[1]
+  return vim.split(ts.get_node_text(node, 0), '\n')[1]
 end
 
 Link.data.ref = function(node)
   local link_label = Link.data.text(node)
   for _, captures, _ in
-    Link.required['tool.treesitter'].query([[
+  Link.required['tool.treesitter'].query([[
     (link_reference_definition
       (link_label) @label (#eq? @label "]] .. link_label .. [[")
       (link_destination) @link_destination
@@ -215,9 +215,10 @@ Link.data.follow.loc = function(ln)
       return vim.cmd(string.format('edit %s', vim.fn.fnameescape(ix)))
     end
   end
-  if path:sub(-3) ~= '.md' and vim.fn.glob(path) == '' then
-    mod_ln = path .. '.md'
-  elseif path:sub(-3) ~= '.md' and vim.fn.glob(path) ~= '' then
+  if path:sub(-3) ~= '.md' then
+    if vim.fn.glob(path) == '' then
+      mod_ln = path .. '.md'
+    end
     mod_ln = path .. '.md'
   else
     mod_ln = path

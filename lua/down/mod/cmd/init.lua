@@ -1,6 +1,7 @@
 local down = require('down')
 local config = require('down.config')
 local log = require 'down.util.log'
+local map = require 'down.util.maps'
 local mod = require 'down.mod'
 local lib = require 'down.util.lib'
 local util = require 'down.util'
@@ -9,8 +10,8 @@ local util = require 'down.util'
 local M = mod.new('cmd')
 
 M.maps = function()
-  Map.nmap(',wml', '<CMD>Down mod list<CR>')
-  Map.nmap(',wmL', '<CMD>Down mod load<CR>')
+  map.n(',dml', '<CMD>Down mod list<CR>')
+  map.n(',dmL', '<CMD>Down mod load<CR>')
 end
 M.setup = function()
   return { loaded = true, requires = {} }

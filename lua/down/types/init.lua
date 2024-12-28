@@ -177,7 +177,11 @@
 ---     maps: fun(),
 ---     lsp: fun()
 ---   }
----   @field setup fun(user: down.config.User, ...: any): boolean Loads user config
+---   @field setup fun(user: down.config.User, default: string[], ...: any): boolean Loads user config
+---   @field homedir fun(...: string): string
+---   @field vimdir fun(...: string): string
+---   @field file fun(file: string | nil): string
+---   @field fromfile fun(f: string | nil): down.config.User
 
 --- Stores the config for the entirety of down.
 --- This includes not only the user config (passed to `setup()`), but also internal

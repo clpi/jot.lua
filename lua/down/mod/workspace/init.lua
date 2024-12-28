@@ -1,9 +1,11 @@
 local Path = require('pathlib')
-local config = require "down.config"
+local config = require 'down.config'
+local log = require 'down.util.log'
 local util = require 'down.mod.workspace.util'
-local mod = require('down.mod')
-local utils = require('down.util')
-local path = require("plenary.path")
+local map = require 'down.util.maps'
+local mod = require 'down.mod'
+local utils = require 'down.util'
+local path = require 'plenary.path'
 
 ---@class down.mod.Workspace: down.mod
 local M = mod.new('workspace')
@@ -12,16 +14,14 @@ local M = mod.new('workspace')
 
 ---@class down.mod.workspace.Config
 M.config = {
+  default = 'default',
   -- The list of active down workspaces.
   -- There is always an inbuilt workspace called `default`, whose loc is
   -- set to the Neovim current working directory on boot.
-  default = 'default',
   workspaces = {
     default = vim.fn.getcwd(0),
     cwd = vim.fn.getcwd(0),
   },
-  -- default = vim.fn.getcwd(),
-  -- },
   ---- The active workspace
   active = Path.cwd(),
   --- The filetype of new douments, markdown is supported only for now
@@ -42,9 +42,11 @@ M.setup = function()
 end
 
 M.maps = function()
-  Map.nmap(',ww', '<CMD>Telescope down workspace<CR>')
-  Map.nmap(',w,', '<CMD>down workspace default<CR>')
-  Map.nmap(',wd', '<CMD>down workspace default<CR>')
+  map.n(',di', '<cmd>Down index<cr>')
+  map.n(',dw', '<CMD>Telescope down workspace<CR>')
+  map.n(',dw', '<CMD>Down workspace<CR>')
+  map.n(',d,', '<CMD>Down workspace default<CR>')
+  map.n(',dd', '<CMD>Down workspace cwd<CR>')
 end
 
 M.load = function()
@@ -70,7 +72,7 @@ M.load = function()
   if M.config.open_last_workspace and vim.fn.argc(-1) == 0 then
     if M.config.open_last_workspace == 'default' then
       if not M.config.default then
-        require 'down.util.log'.log.warn(
+        log.warn(
           'Configuration error in `default.workspace`: the `open_last_workspace` option is set to "default", but no default workspace is provided in the `default_workspace` configuration variable. defaulting to opening the last known workspace.'
         )
         M.data.set_last_workspace()
@@ -323,7 +325,45 @@ M.data = {
       })
     end)
   end,
-  select_workspace = function() end,
+  --- @param prompt? string | nil
+  --- @param fmt? fun(item: string): string
+  --- @param fn? fun(item: number|string, idx: number|string)|nil
+  select = function(prompt, fmt, fn)
+    local workspaces = M.data.get_workspaces()
+    local format = fmt
+      or function(item)
+        local current = M.data.get_current_workspace()
+        if item == current then
+          return '• ' .. item
+        end
+        return item
+      end
+    local func = fn
+      or function(item, idx)
+        local current = M.data.get_current_workspace()
+        print(item, idx)
+        if item == current then
+          utils.notify('Already in workspace ' .. current)
+          print(item, idx)
+          M.data.open_workspace(item)
+        else
+          print(item, idx)
+          M.data.set_workspace(item)
+          M.data.open_workspace(item)
+          utils.notify('Workspace set to ' .. item)
+        end
+      end
+    return vim.ui.select(vim.tbl_keys(workspaces), {
+      prompt = prompt or 'Select workspace',
+      format_items = format,
+    }, fn or func)
+  end,
+  set_selected = function()
+    local workspace = M.data.select()
+    print(workspace)
+    M.data.set_workspace(workspace)
+    utils.notify('Changed workspace to ' .. workspace)
+  end,
 
   ---@class default.workspace.CreateFileOpts
   ---@field ['opts.no_open']? boolean do not open the file after creation?
@@ -369,7 +409,8 @@ M.data = {
 
     if not opts.no_open then
       -- Begin editing that newly created file
-      vim.cmd('e ' .. destination:cmd_string() .. '| silent! w')
+      -- vim.cmd('e ' .. destination:cmd_string() .. '| silent! w')
+      vim.cmd('e ' .. destination:tostring() .. '| silent! w')
     end
   end,
 
@@ -580,13 +621,11 @@ end
 
 M.data.is_subpath = function(path, wsname)
   local wsp = M.data.get_dir(wsname)
-  return not not path:match("^" .. wsp)
+  return not not path:match('^' .. wsp)
 end
 
 M.on = function(event)
-  -- If somebody has executed the :down workspace command then
   if event.type == 'cmd.events.workspace.workspace' then
-    -- Have we supplied an argument?
     if event.body[1] then
       M.data.open_workspace(event.body[1])
 
@@ -594,45 +633,30 @@ M.on = function(event)
         local new_workspace = M.data.get_workspace(event.body[1])
 
         if not new_workspace then
-          return
+          new_workspace = M.data.select()
         end
 
         utils.notify('New workspace: ' .. event.body[1] .. ' -> ' .. new_workspace)
       end)
     else -- No argument supplied, simply print the current workspace
       -- Query the current workspace
-      local current_ws = M.data.get_current_workspace()
+      -- local current_ws = M.data.get_current_workspace()
       -- Nicely print it. We schedule_wrap here because people with a configured logger will have this message
       -- silenced by other trace logs
-      vim.schedule(function()
-        utils.notify('Current workspace: ' .. current_ws[1] .. ' -> ' .. current_ws[2])
-      end)
+      -- vim.schedule(function()
+      -- utils.notify('Current workspace: ' .. current_ws[1] .. ' -> ' .. current_ws[2])
+      -- end)
+      M.data.select()
     end
-  end
 
-  -- If somebody has executed the :down index command then
-  if event.type == 'cmd.events.workspace.index' then
+    -- If somebody has executed the :down index command then
+  elseif event.type == 'cmd.events.workspace.index' then
     local current_ws = M.data.get_current_workspace()
 
     local index_path = current_ws[2] / M.data.index()
 
     if vim.fn.filereadable(index_path:tostring('/')) == 0 then
-      -- if current_ws[1] == "default" then
-      --   utils.notify(table.concat({
-      --     "Index file cannot be created in 'default' workspace to avoid confusion.",
-      --     "If this is intentional, manually create an index file beforehand to use this command.",
-      --   }, " "))
-      --   return
-      -- end
       if not index_path:touch(Path.const.o644, true) then
-        -- utils.notify(
-        --   table.concat({
-        --     "Unable to create '",
-        --     M.data.index(),
-        --     "' in the current workspace - are your filesystem permissions set correctly?",
-        --   }),
-        --   vim.log.levels.WARN
-        -- )
         return
       end
     end
@@ -654,7 +678,7 @@ M.events = {
 M.subscribed = {
   workspace = {
     wsadded = true,
-
+    file_created = true,
     wschanged = true,
   },
   cmd = {

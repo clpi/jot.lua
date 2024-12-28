@@ -1,5 +1,6 @@
 local down = require('down')
 local u = require 'down.mod.note.util'
+local map = require 'down.util.maps'
 local config = require('down.config')
 local util = require('down.util')
 local mod = require('down.mod')
@@ -16,10 +17,10 @@ M = setmetatable(M, {
 local W = M.required['workspace']
 
 M.maps = function()
-  vim.api.nvim_set_keymap('n', ',wn', '<CMD>Down note today<CR>', { silent = true })
-  vim.api.nvim_set_keymap('n', ',wy', '<CMD>Down note yesterday<CR>', { silent = true })
-  vim.api.nvim_set_keymap('n', ',wc', '<CMD>Down note capture<CR>', { silent = true })
-  vim.api.nvim_set_keymap('n', ',wt', '<CMD>Down note tomorrow<CR>', { silent = true })
+  map.n(',dn', '<CMD>Down note today<CR>')
+  map.n(',dy', '<CMD>Down note yesterday<CR>')
+  map.n(',dc', '<CMD>Down note capture<CR>')
+  map.n(',dt', '<CMD>Down note tomorrow<CR>')
 end
 
 ---@class down.mod.note.Data
@@ -47,12 +48,12 @@ M.data = {
     local ws = M.config.workspace or M.required['workspace'].get_current_workspace()[1]
     local ws_path = M.required['workspace'].get_workspace(ws)
     local ix = M.config.note_folder
-        .. config.pathsep
-        .. yr
-        .. config.pathsep
-        .. mo
-        .. config.pathsep
-        .. M.config.index
+      .. config.pathsep
+      .. yr
+      .. config.pathsep
+      .. mo
+      .. config.pathsep
+      .. M.config.index
     local path = ws_path .. config.pathsep .. ix
     local index_exists = M.required['workspace'].file_exists(path)
     if index_exists then
@@ -102,7 +103,7 @@ M.data = {
 
     local path = os.date(
       type(M.config.strategy) == 'function' and M.config.strategy(os.date('*t', time))
-      or M.config.strategy,
+        or M.config.strategy,
       time
     )
 
@@ -112,11 +113,10 @@ M.data = {
 
     M.required['workspace'].new_file(folder_name .. config.pathsep .. path, workspace)
 
-
     if
-        not note_file_exists
-        and M.config.template.enable
-        and M.required['workspace'].file_exists(workspace_path .. '/' .. folder_name .. '/' .. tmpl)
+      not note_file_exists
+      and M.config.template.enable
+      and M.required['workspace'].file_exists(workspace_path .. '/' .. folder_name .. '/' .. tmpl)
     then
       vim.cmd('$read ' .. workspace_path .. '/' .. folder_name .. '/' .. tmpl .. '| silent! w')
     end
@@ -146,7 +146,7 @@ M.data = {
 
     local path = os.date(
       type(M.config.strategy) == 'function' and M.config.strategy(os.date('*t', time))
-      or M.config.strategy,
+        or M.config.strategy,
       time
     )
 
@@ -157,9 +157,9 @@ M.data = {
     M.required['workspace'].new_file(folder_name .. config.pathsep .. path, workspace)
 
     if
-        not note_file_exists
-        and M.config.template.enable
-        and M.required['workspace'].file_exists(workspace_path .. '/' .. folder_name .. '/' .. tmpl)
+      not note_file_exists
+      and M.config.template.enable
+      and M.required['workspace'].file_exists(workspace_path .. '/' .. folder_name .. '/' .. tmpl)
     then
       vim.cmd('$read ' .. workspace_path .. '/' .. folder_name .. '/' .. tmpl .. '| silent! w')
     end
@@ -200,7 +200,7 @@ M.data = {
 
     local path = os.date(
       type(M.config.strategy) == 'function' and M.config.strategy(os.date('*t', time))
-      or M.config.strategy,
+        or M.config.strategy,
       time
     )
 
@@ -214,9 +214,9 @@ M.data = {
     -- M.required["workspace"].new_file(folder_name..config.pathsep..path, workspace)
 
     if
-        not note_file_exists
-        and M.config.template.enable
-        and M.required['workspace'].file_exists(workspace_path .. '/' .. folder_name .. '/' .. tmpl)
+      not note_file_exists
+      and M.config.template.enable
+      and M.required['workspace'].file_exists(workspace_path .. '/' .. folder_name .. '/' .. tmpl)
     then
       vim.cmd('$read ' .. workspace_path .. '/' .. folder_name .. '/' .. tmpl .. '| silent! w')
     end
@@ -332,7 +332,7 @@ M.data = {
     -- Gets the title from the metadata of a file, must be called in a vim.schedule
     local get_title = function(file)
       local buffer =
-          vim.fn.bufadd(workspace_path .. config.pathsep .. folder_name .. config.pathsep .. file)
+        vim.fn.bufadd(workspace_path .. config.pathsep .. folder_name .. config.pathsep .. file)
       local meta = M.required['workspace'].get_document_metadata(buffer)
       return meta.title
     end
@@ -391,16 +391,16 @@ M.data = {
                         tonumber(mname),
                         tonumber(file[1]),
                         '{:$'
-                        .. workspace_name_for_link
-                        .. config.pathsep
-                        .. M.config.note_folder
-                        .. config.pathsep
-                        .. name
-                        .. config.pathsep
-                        .. mname
-                        .. config.pathsep
-                        .. file[1]
-                        .. ':}',
+                          .. workspace_name_for_link
+                          .. config.pathsep
+                          .. M.config.note_folder
+                          .. config.pathsep
+                          .. name
+                          .. config.pathsep
+                          .. mname
+                          .. config.pathsep
+                          .. file[1]
+                          .. ':}',
                         title,
                       })
                     end)
@@ -434,12 +434,12 @@ M.data = {
                 parts[2],
                 parts[3],
                 '{:$'
-                .. workspace_name_for_link
-                .. config.pathsep
-                .. M.config.note_folder
-                .. config.pathsep
-                .. file[1]
-                .. ':}',
+                  .. workspace_name_for_link
+                  .. config.pathsep
+                  .. M.config.note_folder
+                  .. config.pathsep
+                  .. file[1]
+                  .. ':}',
                 title,
               })
             end)
@@ -449,30 +449,30 @@ M.data = {
         vim.schedule(function()
           -- Gets a base format for the entries
           local format = M.config.toc_format
-              or function(entries)
-                local months_text = M.months
-                -- Convert the entries into a certain format to be written
-                local output = {}
-                local current_year
-                local current_month
-                for _, entry in ipairs(entries) do
-                  -- Don't print the year and month if they haven't changed
-                  if not current_year or current_year < entry[1] then
-                    current_year = entry[1]
-                    current_month = nil
-                    table.insert(output, '* ' .. current_year)
-                  end
-                  if not current_month or current_month < entry[2] then
-                    current_month = entry[2]
-                    table.insert(output, '** ' .. months_text[current_month])
-                  end
-
-                  -- Prints the file link
-                  table.insert(output, '   ' .. entry[4] .. string.format('[%s]', entry[5]))
+            or function(entries)
+              local months_text = M.months
+              -- Convert the entries into a certain format to be written
+              local output = {}
+              local current_year
+              local current_month
+              for _, entry in ipairs(entries) do
+                -- Don't print the year and month if they haven't changed
+                if not current_year or current_year < entry[1] then
+                  current_year = entry[1]
+                  current_month = nil
+                  table.insert(output, '* ' .. current_year)
+                end
+                if not current_month or current_month < entry[2] then
+                  current_month = entry[2]
+                  table.insert(output, '** ' .. months_text[current_month])
                 end
 
-                return output
+                -- Prints the file link
+                table.insert(output, '   ' .. entry[4] .. string.format('[%s]', entry[5]))
               end
+
+              return output
+            end
 
           M.required['workspace'].new_file(
             folder_name .. config.pathsep .. index,
@@ -500,7 +500,7 @@ M.config = {
   -- The name for the folder in which the note files are put.
   note_folder = 'note',
 
-  index = "index.md",
+  index = 'index.md',
 
   -- The strategy to use to create directories.
   -- May be "flat" (`2022-03-02.down`), "nested" (`2022/03/02.down`),
@@ -574,10 +574,10 @@ M.on = function(event)
             M.data.open_note(
               nil,
               string.format('%04d', osdate.year)
-              .. '-'
-              .. string.format('%02d', osdate.month)
-              .. '-'
-              .. string.format('%02d', osdate.day)
+                .. '-'
+                .. string.format('%02d', osdate.month)
+                .. '-'
+                .. string.format('%02d', osdate.day)
             )
           end),
         })
@@ -596,10 +596,10 @@ M.on = function(event)
             M.data.open_note(
               nil,
               string.format('%04d', osdate.year)
-              .. '-'
-              .. string.format('%02d', osdate.month)
-              .. '-'
-              .. string.format('%02d', osdate.day)
+                .. '-'
+                .. string.format('%02d', osdate.month)
+                .. '-'
+                .. string.format('%02d', osdate.day)
             )
           end),
         })

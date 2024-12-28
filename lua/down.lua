@@ -52,17 +52,24 @@ function Down.setup(user, ...)
     ::continue::
   end
   Down.config.mod = Down.mod.mods
-  for _, l in pairs(Down.mod.mods) do
+  Down.config:post_load()
+  Down:post_load()
+  Down:broadcast('started')
+end
+
+function Down:post_load()
+  for _, l in pairs(self.mod.mods) do
+    l.maps()
+    l.cmds()
+    l.opts()
     l.post_load()
   end
-  Down.config.post_load()
-  Down.broadcast('started')
 end
 
 ---@param e string
 ---@param ... any
-function Down.broadcast(e, ...)
-  Down.mod.broadcast({ ---@type down.Event
+function Down:broadcast(e, ...)
+  self.mod.broadcast({ ---@type down.Event
     type = e, ---@diagnostic disable-line
     split = {
       e,

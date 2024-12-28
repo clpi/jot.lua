@@ -1,6 +1,6 @@
 local Dirs = {}
 
-local path = require("plenary.path")
+local path = require('plenary.path')
 local ctx = require 'plenary.context_manager'
 local ctx = require 'plenary.async_lib'
 
@@ -12,6 +12,13 @@ Dirs.vim = {
   run = vim.fn.stdpath('run'),
   log = vim.fn.stdpath('log'),
 }
+
+Dirs.down = {
+  dir = function(base, sub)
+    return vim.fs.joinpath(vim.fn.stdpath(base or 'data'), sub or '')
+  end,
+}
+Dirs.down.data = function(sub) return Dirs.down.dir('data', sub) end
 
 Dirs.get_mkfile = function(file)
   local f = path:new(file)

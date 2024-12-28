@@ -55,16 +55,18 @@ local Mod = {
 
 ---@return down.Mod
 Mod.default.mod = function(n)
-  return {
+  return setmetatable({
     setup = Mod.default.setup,
     cmds = function() end,
     load = function()
       -- print 'default load n'
     end,
+    test = function() end,
     post_load = function()
       -- print('postload' .. n)
     end,
-    maps = nil,
+    opts = function() end,
+    maps = function() end,
     on = function(e)
       -- print('load' .. e)
     end,
@@ -83,7 +85,17 @@ Mod.default.mod = function(n)
     required = {},
     import = {},
     tests = {},
-  }
+  }, {
+    __call = function(self, fun, ...)
+      return self.data[fun](...)
+    end,
+    __index = function(self, k)
+      return self.data[k]
+    end,
+    __newindex = function(self, k, v)
+      self.data[k] = v
+    end,
+  })
 end
 
 --- @param nm string
