@@ -1,8 +1,5 @@
-local uv, lu, fn = vim.loop or vim.uv, vim.lsp.util, vim.fn
 local Event = require 'down.event'
 local util = require 'down.util'
-local utils = require 'down.util'
-local config = require('down.config')
 local log = require('down.util.log')
 
 --- @!TODO : Change to body access where appropriate and now available to avoid complex config for end user
@@ -28,7 +25,6 @@ local Mod = {
   load = function()
     -- print 'default load n'
   end,
-  test = function() end,
   post_load = function()
     -- print('postload' .. n)
   end,
@@ -345,6 +341,14 @@ Mod.test = function(m)
     for tn, test in m.tests do
       log.info('Running test ', tn, ' for ', m.name, ':')
       test(m)
+    end
+  end
+end
+
+Mod.handle_event = function(e)
+  for m, mod in pairs(Mod.mods) do
+    if mod.subscribed[e.type] then
+      mod.subscribed[e.type]()
     end
   end
 end
