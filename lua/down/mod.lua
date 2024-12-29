@@ -10,6 +10,10 @@ local log = require('down.util.log')
 ---
 --- @TODO: Merge Module.data with Module, Module.config as subfield for all modules
 ---        which have class then of down.mod.[Mod] as M
+---
+---
+--- TODO: Make Mod.subscribed be [string]: function() instead of [string]: boolean
+---       and eliminate Mod.handler(e)
 
 ---@class down.Mod
 local Mod = {

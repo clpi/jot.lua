@@ -1,7 +1,7 @@
-local down = require("down")
+local down = require('down')
 local mod, utils, log = down.mod, down.utils, down.log
 
-local M = mod.new("edit.toc")
+local M = mod.new('edit.toc')
 
 M.setup = function()
   -- mod.await("cmd", function(downcmd)
@@ -31,7 +31,7 @@ M.setup = function()
   --   })
   -- end
   return {
-    requires = { "tool.treesitter", "ui", "cmd" },
+    requires = { 'tool.treesitter', 'ui', 'cmd' },
   }
 end
 
@@ -96,25 +96,6 @@ local function upper_bound(array, v)
   return l
 end
 
-local function get_target_location_under_cursor(ui_data)
-  local ui_window = vim.fn.bufwinid(ui_data.buffer)
-  local curline = vim.api.nvim_win_get_cursor(ui_window)[1]
-  local offset = ui_data.start_lines.offset
-  local extmark_lookup =
-      data_of_down_buf[ui_data.down_buffer].extmarks[curline - offset]
-
-  if not extmark_lookup then
-    return
-  end
-
-  return vim.api.nvim_buf_get_extmark_by_id(
-    ui_data.down_buffer,
-    toc_namespace,
-    extmark_lookup,
-    {}
-  )
-end
-
 local toc_query
 
 ---@class down.edit.toc.Data
@@ -122,7 +103,7 @@ M.data = {
   parse_toc_macro = function(buffer)
     local toc, toc_name = false, nil
 
-    local success = M.required["tool.treesitter"].execute_query(
+    local success = M.required['tool.treesitter'].execute_query(
       [[
                 (infirm_tag
                     (tag_name) @name
@@ -132,16 +113,13 @@ M.data = {
         local capture_name = query.captures[id]
 
         if
-            capture_name == "name"
-            and M.required["tool.treesitter"]
-            .get_node_text(node, buffer)
-            :lower()
-            == "toc"
+          capture_name == 'name'
+          and M.required['tool.treesitter'].get_node_text(node, buffer):lower()
+            == 'toc'
         then
           toc = true
-        elseif capture_name == "parameters" and toc then
-          toc_name =
-              M.required["tool.treesitter"].get_node_text(node, buffer)
+        elseif capture_name == 'parameters' and toc then
+          toc_name = M.required['tool.treesitter'].get_node_text(node, buffer)
           return true
         end
       end,
@@ -159,7 +137,7 @@ M.data = {
     local prefix, title
     local qflist_data = {}
 
-    local success = M.required[".treesitter"].execute_query(
+    local success = M.required['.treesitter'].execute_query(
       [[
             (_
               .
@@ -170,30 +148,23 @@ M.data = {
       function(query, id, node)
         local capture = query.captures[id]
 
-        if capture == "prefix" then
-          if node:type():match("_prefix$") then
+        if capture == 'prefix' then
+          if node:type():match('_prefix$') then
             prefix = node
           else
             prefix = nil
           end
           title = nil
-        elseif capture == "title" then
+        elseif capture == 'title' then
           title = node
         end
 
         if prefix and title then
-          local prefix_text =
-              M.required["tool.treesitter"].get_node_text(
-                prefix,
-                original_buffer
-              )
-          local title_text = M.required["tool.treesitter"].get_node_text(
-            title,
-            original_buffer
-          )
+          local prefix_text = M.required['tool.treesitter'].get_node_text(prefix, original_buffer)
+          local title_text = M.required['tool.treesitter'].get_node_text(title, original_buffer)
 
-          if prefix_text:sub(1, 1) ~= "*" and prefix_text:match("^%W%W") then
-            prefix_text = table.concat({ prefix_text:sub(1, 1), " " })
+          if prefix_text:sub(1, 1) ~= '*' and prefix_text:match('^%W%W') then
+            prefix_text = table.concat({ prefix_text:sub(1, 1), ' ' })
           end
 
           table.insert(qflist_data, {
@@ -222,7 +193,7 @@ M.data = {
     local ui_window = vim.fn.bufwinid(ui_data.buffer)
     assert(ui_window ~= -1)
 
-    local current_row_1b = vim.fn.line(".", down_window)
+    local current_row_1b = vim.fn.line('.', down_window)
     if down_data.last_row == current_row_1b then
       return
     end
@@ -231,8 +202,7 @@ M.data = {
     local start_lines = ui_data.start_lines
     assert(start_lines)
 
-    local current_toc_item_idx = upper_bound(start_lines, current_row_1b - 1)
-        - 1
+    local current_toc_item_idx = upper_bound(start_lines, current_row_1b - 1) - 1
     local current_toc_row = (
       current_toc_item_idx == 0 and math.max(1, start_lines.offset)
       or current_toc_item_idx + start_lines.offset
@@ -245,14 +215,14 @@ M.data = {
     ui_data.down_buffer = down_buffer
 
     if not vim.api.nvim_buf_is_valid(ui_buffer) then
-      log.error("update_toc called with invalid ui buffer")
+      log.error('update_toc called with invalid ui buffer')
       return
     end
 
     vim.bo[ui_buffer].modifiable = true
     vim.api.nvim_buf_clear_namespace(down_buffer, toc_namespace, 0, -1)
 
-    table.insert(toc_title, "")
+    table.insert(toc_title, '')
     vim.api.nvim_buf_set_lines(ui_buffer, 0, -1, true, toc_title)
 
     local down_data = {}
@@ -266,9 +236,9 @@ M.data = {
     ui_data.start_lines = start_lines
 
     toc_query = toc_query
-        or utils.ts_parse_query(
-          "down",
-          [[
+      or utils.ts_parse_query(
+        'down',
+        [[
         (
             [(heading1_prefix)(heading2_prefix)(heading3_prefix)(heading4_prefix)(heading5_prefix)(heading6_prefix)]@prefix
             .
@@ -276,10 +246,9 @@ M.data = {
             .
             title: (paragraph_segment)@title
         )]]
-        )
+      )
 
-    local down_root =
-        M.required["tool.treesitter"].get_document_root(down_buffer)
+    local down_root = M.required['tool.treesitter'].get_document_root(down_buffer)
     if not down_root then
       return
     end
@@ -288,7 +257,7 @@ M.data = {
     local heading_nodes = {}
     for id, node in toc_query:iter_captures(down_root, down_buffer) do
       local type = toc_query.captures[id]
-      if type == "prefix" then
+      if type == 'prefix' then
         current_capture = {}
         table.insert(heading_nodes, current_capture)
       end
@@ -297,9 +266,7 @@ M.data = {
 
     local heading_texts = {}
     for _, capture in ipairs(heading_nodes) do
-      if
-          capture.modifier and capture.modifier:type() == "todo_item_cancelled"
-      then
+      if capture.modifier and capture.modifier:type() == 'todo_item_cancelled' then
         goto continue
       end
 
@@ -309,26 +276,20 @@ M.data = {
       table.insert(start_lines, row_start_0b)
       table.insert(
         extmarks,
-        vim.api.nvim_buf_set_extmark(
-          down_buffer,
-          toc_namespace,
-          row_start_0b,
-          col_start_0b,
-          {}
-        )
+        vim.api.nvim_buf_set_extmark(down_buffer, toc_namespace, row_start_0b, col_start_0b, {})
       )
 
       for _, line in
-      ipairs(
-        vim.api.nvim_buf_get_text(
-          down_buffer,
-          row_start_0b,
-          col_start_0b,
-          row_end_0bin,
-          col_end_0bex,
-          {}
+        ipairs(
+          vim.api.nvim_buf_get_text(
+            down_buffer,
+            row_start_0b,
+            col_start_0b,
+            row_end_0bin,
+            col_end_0bex,
+            {}
+          )
         )
-      )
       do
         table.insert(heading_texts, line)
       end
@@ -340,7 +301,7 @@ M.data = {
 
     vim.bo[ui_buffer].modifiable = false
 
-    vim.api.nvim_buf_set_keymap(ui_buffer, "n", "<CR>", "", {
+    vim.api.nvim_buf_set_keymap(ui_buffer, 'n', '<CR>', '', {
       callback = function()
         local location = get_target_location_under_cursor(ui_data)
         if not location then
@@ -352,8 +313,7 @@ M.data = {
           local toc_window = vim.fn.bufwinid(ui_data.buffer)
           local buf_width = nil
           if toc_window ~= -1 then
-            buf_width = vim.api.nvim_win_get_width(toc_window)
-                - M.data.data.get_toc_width(ui_data)
+            buf_width = vim.api.nvim_win_get_width(toc_window) - M.data.data.get_toc_width(ui_data)
             if buf_width < 1 then
               buf_width = nil
             end
@@ -367,10 +327,7 @@ M.data = {
           vim.api.nvim_set_current_win(down_window)
           vim.api.nvim_set_current_buf(down_buffer)
         end
-        vim.api.nvim_win_set_cursor(
-          down_window,
-          { location[1] + 1, location[2] }
-        )
+        vim.api.nvim_win_set_cursor(down_window, { location[1] + 1, location[2] })
 
         if M.config.close_after_use then
           vim.api.nvim_buf_delete(ui_buffer, { force = true })
@@ -384,29 +341,38 @@ M.data = {
   end,
 }
 
+M.data.get_target_location_under_cursor = function(ui_data)
+  local ui_window = vim.fn.bufwinid(ui_data.buffer)
+  local curline = vim.api.nvim_win_get_cursor(ui_window)[1]
+  local offset = ui_data.start_lines.offset
+  local extmark_lookup = data_of_down_buf[ui_data.down_buffer].extmarks[curline - offset]
+
+  if not extmark_lookup then
+    return
+  end
+
+  return vim.api.nvim_buf_get_extmark_by_id(ui_data.down_buffer, toc_namespace, extmark_lookup, {})
+end
+
 M.data.data = {
   ---get the width of the ToC window
   ---@param ui_data table
   ---@return number
   get_toc_width = function(ui_data)
-    if type(M.config.fixed_width) == "number" then
+    if type(M.config.fixed_width) == 'number' then
       return M.config.fixed_width
     end
     local max_virtcol_1bex = M.data.data.get_max_virtcol(ui_data.window)
     local current_winwidth = vim.api.nvim_win_get_width(ui_data.window)
-    local new_winwidth = math.min(
-      current_winwidth,
-      M.config.max_width,
-      max_virtcol_1bex - 1
-    )
+    local new_winwidth = math.min(current_winwidth, M.config.max_width, max_virtcol_1bex - 1)
     return new_winwidth + 1
   end,
 
   get_max_virtcol = function(win)
-    local n_line = vim.fn.line("$", win)
+    local n_line = vim.fn.line('$', win)
     local result = 1
     for i = 1, n_line do
-      result = math.max(result, vim.fn.virtcol({ i, "$" }, 0, win))
+      result = math.max(result, vim.fn.virtcol({ i, '$' }, 0, win))
     end
     return result
   end,
@@ -445,19 +411,19 @@ end
 local function create_ui(tabpage, split_dir, enter)
   assert(tabpage == vim.api.nvim_get_current_tabpage())
 
-  toc_namespace = toc_namespace or vim.api.nvim_create_namespace("down/toc")
-  local ui_buffer, ui_window = M.required["core.ui"].new_vsplit(
-    ("toc-%d"):format(tabpage),
+  toc_namespace = toc_namespace or vim.api.nvim_create_namespace('down/toc')
+  local ui_buffer, ui_window = M.required['core.ui'].new_vsplit(
+    ('toc-%d'):format(tabpage),
     enter,
-    { ft = "down" },
-    { split = split_dir, win = 0, style = "minimal" }
+    { ft = 'down' },
+    { split = split_dir, win = 0, style = 'minimal' }
   )
 
   local ui_wo = vim.wo[ui_window]
   ui_wo.scrolloff = 999
   ui_wo.conceallevel = 0
-  ui_wo.foldmethod = "expr"
-  ui_wo.foldexpr = "v:lua.vim.treesitter.foldexpr()"
+  ui_wo.foldmethod = 'expr'
+  ui_wo.foldexpr = 'v:lua.vim.treesitter.foldexpr()'
   ui_wo.foldlevel = 99
   ui_wo.winfixbuf = true
 
@@ -490,23 +456,19 @@ M.handle = function(event)
     return
   end
 
-  local toc_title =
-      vim.split(M.data.parse_toc_macro(event.buffer) or "Table of Contents", "\n")
+  local toc_title = vim.split(M.data.parse_toc_macro(event.buffer) or 'Table of Contents', '\n')
   local down_buffer = event.buffer
 
-  if event.content and event.content[1] == "qflist" then
+  if event.content and event.content[1] == 'qflist' then
     local qflist = M.data.generate_qflist(event.buffer)
 
     if not qflist then
-      utils.notify(
-        "An error occurred and the qflist could not be generated",
-        vim.log.levels.WARN
-      )
+      utils.notify('An error occurred and the qflist could not be generated', vim.log.levels.WARN)
       return
     end
 
-    vim.fn.setqflist(qflist, "r")
-    vim.fn.setqflist({}, "a", { title = toc_title[1] })
+    vim.fn.setqflist(qflist, 'r')
+    vim.fn.setqflist({}, 'a', { title = toc_title[1] })
     vim.cmd.copen()
 
     return
@@ -525,17 +487,13 @@ M.handle = function(event)
     return
   end
 
-  local ui_data =
-      create_ui(tabpage, event.content[1] or "left", enter_toc_win())
+  local ui_data = create_ui(tabpage, event.content[1] or 'left', enter_toc_win())
   next_open_is_auto = false
 
   M.data.update_toc(toc_title, ui_data_of_tabpage[tabpage], down_buffer)
 
   if M.config.fit_width then
-    vim.api.nvim_win_set_width(
-      ui_data.window,
-      M.data.data.get_toc_width(ui_data)
-    )
+    vim.api.nvim_win_set_width(ui_data.window, M.data.data.get_toc_width(ui_data))
   end
 
   local close_buffer_callback = function()
@@ -546,33 +504,31 @@ M.handle = function(event)
     ui_data_of_tabpage[tabpage] = nil
   end
 
-  vim.keymap.set("n", "q", close_buffer_callback, { buffer = ui_data.buffer })
+  vim.keymap.set('n', 'q', close_buffer_callback, { buffer = ui_data.buffer })
 
   --- WinClosed matches against the win number as a string, not the buf number
-  vim.api.nvim_create_autocmd("WinClosed", {
+  vim.api.nvim_create_autocmd('WinClosed', {
     pattern = tostring(ui_data.window),
     callback = close_buffer_callback,
   })
 
-  vim.api.nvim_create_autocmd("BufWritePost", {
-    pattern = "*.down",
+  vim.api.nvim_create_autocmd('BufWritePost', {
+    pattern = '*.down',
     callback = unlisten_if_closed(function(buf, ui)
-      toc_title =
-          vim.split(M.data.parse_toc_macro(buf) or "Table of Contents", "\n")
+      toc_title = vim.split(M.data.parse_toc_macro(buf) or 'Table of Contents', '\n')
       data_of_down_buf[buf].last_row = nil -- invalidate cursor cache
       M.data.update_toc(toc_title, ui, buf)
     end),
   })
 
-  vim.api.nvim_create_autocmd("BufEnter", {
-    pattern = "*.down",
+  vim.api.nvim_create_autocmd('BufEnter', {
+    pattern = '*.down',
     callback = unlisten_if_closed(function(buf, ui)
       if buf == ui.buffer or buf == ui.down_buffer then
         return
       end
 
-      toc_title =
-          vim.split(M.data.parse_toc_macro(buf) or "Table of Contents", "\n")
+      toc_title = vim.split(M.data.parse_toc_macro(buf) or 'Table of Contents', '\n')
       M.data.update_toc(toc_title, ui, buf)
     end),
   })
@@ -580,14 +536,14 @@ M.handle = function(event)
   -- Sync cursor: ToC -> content
   if M.config.sync_cursorline then
     -- Ignore the first (fake) CursorMoved coming together with BufEnter of the ToC buffer
-    vim.api.nvim_create_autocmd("BufEnter", {
+    vim.api.nvim_create_autocmd('BufEnter', {
       buffer = ui_data.buffer,
       callback = function(_ev)
         ui_data.cursor_start_moving = false
       end,
     })
 
-    vim.api.nvim_create_autocmd({ "CursorMoved", "CursorMovedI" }, {
+    vim.api.nvim_create_autocmd({ 'CursorMoved', 'CursorMovedI' }, {
       buffer = ui_data.buffer,
       callback = function(ev)
         assert(ev.buf == ui_data.buffer)
@@ -601,12 +557,9 @@ M.handle = function(event)
           local location = get_target_location_under_cursor(ui_data)
           if location then
             local down_window = vim.fn.bufwinid(ui_data.down_buffer)
-            vim.api.nvim_win_set_cursor(
-              down_window,
-              { location[1] + 1, location[2] }
-            )
+            vim.api.nvim_win_set_cursor(down_window, { location[1] + 1, location[2] })
             vim.api.nvim_buf_call(ui_data.down_buffer, function()
-              vim.cmd("normal! zz")
+              vim.cmd('normal! zz')
             end)
           end
         end
@@ -615,8 +568,8 @@ M.handle = function(event)
     })
 
     -- Sync cursor: content -> ToC
-    vim.api.nvim_create_autocmd({ "CursorMoved", "CursorMovedI" }, {
-      pattern = "*.down",
+    vim.api.nvim_create_autocmd({ 'CursorMoved', 'CursorMovedI' }, {
+      pattern = '*.down',
       callback = unlisten_if_closed(function(buf, ui)
         if buf ~= ui.down_buffer then
           return
@@ -632,8 +585,8 @@ M.handle = function(event)
     })
 
     -- When leaving the content buffer, add its last cursor position to jump list
-    vim.api.nvim_create_autocmd("BufLeave", {
-      pattern = "*.down",
+    vim.api.nvim_create_autocmd('BufLeave', {
+      pattern = '*.down',
       callback = unlisten_if_closed(function(_down_buffer, _ui_data)
         vim.cmd("normal! m'")
       end),
@@ -641,16 +594,16 @@ M.handle = function(event)
   end
 
   if M.config.auto_toc.exit_nvim then
-    vim.api.nvim_create_autocmd("WinEnter", {
+    vim.api.nvim_create_autocmd('WinEnter', {
       buffer = ui_data.buffer,
       callback = unlisten_if_closed(function(_, _)
         vim.schedule(function()
           local real_windows = vim
-              .iter(vim.api.nvim_list_wins())
-              :filter(function(win)
-                return vim.api.nvim_win_get_config(win).relative == ""
-              end)
-              :totable()
+            .iter(vim.api.nvim_list_wins())
+            :filter(function(win)
+              return vim.api.nvim_win_get_config(win).relative == ''
+            end)
+            :totable()
           if #real_windows == 1 then
             vim.schedule(vim.cmd.q)
           end
@@ -660,11 +613,11 @@ M.handle = function(event)
   end
 
   if M.config.auto_toc.close then
-    vim.api.nvim_create_autocmd("BufWinLeave", {
-      pattern = "*.down",
+    vim.api.nvim_create_autocmd('BufWinLeave', {
+      pattern = '*.down',
       callback = unlisten_if_closed(function(_buf, ui)
         vim.schedule(function()
-          if vim.fn.winnr("$") > 1 then
+          if vim.fn.winnr('$') > 1 then
             local win = vim.fn.bufwinid(ui.buffer)
             if win ~= -1 then
               vim.api.nvim_win_close(win, true)
@@ -678,7 +631,7 @@ M.handle = function(event)
 end
 
 M.subscribed = {
-  ["core.downcmd"] = {
+  ['core.downcmd'] = {
     [M.name] = true,
   },
 }
