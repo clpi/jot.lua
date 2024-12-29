@@ -16,6 +16,7 @@ Down = {
 Down.default = {
   -- ['data.log'] = {},
   ['lsp'] = {},
+  ['cmd'] = {},
   ['data.link'] = {},
   -- ['cmd.back'] = {},
   -- ['data.history'] = {},
@@ -27,11 +28,13 @@ Down.default = {
 --- @param user down.config.User user config to load
 --- @param ... string The arguments to pass into an optional user hook
 function Down.setup(user, ...)
+  Down.util.log.trace('Setting up Down')
   Down.config:setup(user, Down.default, ...)
   Down:start()
 end
 
 function Down:start()
+  Down.util.log.trace('Setting up Down')
   Down.mod.load_mod('workspace', self.config.user.workspace or {})
   for name, usermod in pairs(self.config.user) do
     if type(usermod) == 'table' then
@@ -56,9 +59,6 @@ end
 
 function Down:post_load()
   for _, l in pairs(self.mod.mods) do
-    -- l.maps()
-    -- l.cmds()
-    -- l.opts()
     l.post_load()
   end
 end
@@ -66,12 +66,13 @@ end
 ---@param e string
 ---@param ... any
 function Down:broadcast(e, ...)
-  local ev = self.event.define("down", e or "started") ---@type down.Event
+  local ev = self.event.define('down', e or 'started') ---@type down.Event
   self.event.broadcast_to(ev, Down.mod.mods)
 end
 
 --- Test all modules loaded
 function Down.test()
+  Down.config:test()
   for m, d in pairs(Down.mod.mods) do
     print('Testing mod: ' .. m)
     d.test()

@@ -1,30 +1,29 @@
-local mod = require("down.mod")
-local E = Mod.new("data.export")
+local mod = require('down.mod')
+local E = Mod.new('data.export')
+
+E.commands = {
+  export = {
+    subcommands = {
+      file = {
+        args = 0,
+        name = 'data.export.update',
+      },
+      workspace = {
+        name = 'data.export.insert',
+        args = 0,
+      },
+    },
+    name = 'export',
+  },
+}
 
 E.setup = function()
-  mod.await("cmd", function(cmd)
-    cmd.add_commands_from_table({
-      export = {
-        subcommands = {
-          file = {
-            args = 0,
-            name = "data.export.update",
-          },
-          workspace = {
-            name = "data.export.insert",
-            args = 0,
-          },
-        },
-        name = "export",
-      },
-    })
-  end)
   return {
     loaded = true,
     requires = {
-      "tool.treesitter",
-      "cmd",
-      "workspace",
+      'tool.treesitter',
+      'cmd',
+      'workspace',
     },
   }
 end
@@ -39,8 +38,8 @@ E.handle = function(e) end
 
 E.subscribed = {
   cmd = {
-    ["data.export.insert"] = true,
-    ["data.export.update"] = true,
+    ['data.export.insert'] = true,
+    ['data.export.update'] = true,
   },
 }
 

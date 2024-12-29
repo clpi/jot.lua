@@ -21,7 +21,6 @@ local Mod = {
       requires = {},
     }
   end,
-  cmds = function() end,
   load = function()
     -- print 'default load n'
   end,
@@ -29,8 +28,9 @@ local Mod = {
   post_load = function()
     -- print('postload' .. n)
   end,
-  opts = function() end,
-  maps = function() end,
+  opts = {},
+  maps = {},
+  commands = {},
   handle = function(e)
     -- print('load' .. e)
   end,
@@ -45,6 +45,22 @@ local Mod = {
   tests = {},
 }
 
+---@type metatable
+Mod.data.metatable = {
+  __index = function(self, k)
+    return self.required[k]
+  end,
+  __newindex = function(self, k, v)
+    self.data[k] = v
+  end,
+  __eq = function(m1, m2)
+    return m1.name == m2.name
+  end,
+  __call = function(self, fun, ...)
+    return self.data[fun](...)
+  end,
+}
+
 Mod.mods = {}
 
 Mod.default = {
@@ -54,7 +70,7 @@ Mod.default = {
     'note',
     'workspace',
     'data.log',
-    'data.template',
+    'template',
   },
   ---@type fun():down.mod.Setup
   setup = function()
@@ -70,16 +86,15 @@ Mod.default = {
     ---@type down.Mod
     return setmetatable({
       setup = Mod.setup,
-      cmds = function() end,
+      commands = {},
       load = function()
         -- print 'default load n'
       end,
-      test = function() end,
       post_load = function()
         -- print('postload' .. n)
       end,
-      opts = function() end,
-      maps = function() end,
+      opts = {},
+      maps = {},
       handle = function(e)
         -- print('load' .. e)
       end,
@@ -92,26 +107,9 @@ Mod.default = {
       required = {},
       import = {},
       tests = {},
-    }, {
-      __call = function(self, fun, ...)
-        return self.data[fun](...)
-      end,
-      -- __index = function(self, k)
-      --   return self.required[k]
-      -- end,
-      __newindex = function(self, k, v)
-        self.data[k] = v
-      end,
-      __eq = function(m1, m2)
-        return m1.name == m2.name
-      end,
-      -- __tostring = function(m)
-      --   return m.name
-      -- end,
-    })
-  end
+    }, Mod.data.metatable)
+  end,
 }
-
 
 --- @param nm string
 --- @param im? string[]
@@ -202,7 +200,9 @@ function Mod.load_mod(modn, cfg)
     return Mod.mods[modn]
   end
   local modl = Mod.check_mod(modn)
-  if not modl then return nil end
+  if not modl then
+    return nil
+  end
   if cfg and not vim.tbl_isempty(cfg) then
     modl.config = util.extend(modl.config, cfg)
   end
@@ -268,42 +268,60 @@ end
 --- Executes `callback` once `init` is a valid and loaded init, else the callback gets instantly executed.
 --- @param modn string The name of the init to listen for.
 --- @param callback fun(mod_public_table: table)
-function Mod.await(modn, callback)
+function Mod.await(modn, cb)
   if Mod.is_loaded(modn) then
-    callback(assert(Mod.get_mod(modn)))
+    cb(assert(Mod.get_mod(modn)))
     return
   end
 
-  cb.handle('mod_loaded', function(_, m)
-    callback(m.data)
+  Event.callback('mod_loaded', function(_, m)
+    cb(m.data)
   end, function(event)
     return event.body.name == modn
   end)
 end
 
 ---@param m down.Mod
-function Mod.mod_load(m)
-  if m.cmds then
-    m.cmds()
-  end
-  if m.maps then
-    m.maps()
-  end
+function Mod.load_opts(m)
   if m.opts then
-    m.opts()
+    for i, k in ipairs(m.opts) do
+    end
   end
+end
+
+---@param m down.Mod
+function Mod.load_maps(m)
+  if m.maps then
+    if type(m.maps) == 'function' then
+      return
+    elseif type(m.maps) == 'table' then
+      for i, k in ipairs(m.maps) do
+        vim.keymap.set(
+          k[1] or 'n',
+          k[2],
+          k[3],
+          { desc = k[4], noremap = true, nowait = true, silent = true }
+        )
+      end
+    end
+  end
+end
+
+---@param m down.Mod
+function Mod.mod_load(m)
+  Mod.load_maps(m)
+  Mod.load_opts(m)
   if m.load then
     m.load()
   end
 end
 
 Mod.get = function(m)
-  local path = 'down.mod.' .. m
-  local ok, pc = require(path)
+  local ok, pc = pcall(require, 'down.mod.' .. m)
   if ok then
     return pc
   else
-    print('U.load_mod: could not load mod ' .. path)
+    log.error('U.load_mod: could not load mod ' .. 'down.mod.' .. m)
     return nil
   end
 end
@@ -315,6 +333,16 @@ Mod.modules = function(ms)
     modmap[module] = Mod.get(module)
   end
   return modmap
+end
+
+---@param m down.Mod
+Mod.test = function(m)
+  if m.tests then
+    for tn, test in m.tests do
+      log.info('Running test ', tn, ' for ', m.name, ':')
+      test(m)
+    end
+  end
 end
 
 --- @param m down.Mod.Mod

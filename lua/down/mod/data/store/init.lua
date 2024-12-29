@@ -22,4 +22,8 @@ Store.data = {
 
 }
 
+---@type down.mod.Handler
+Store.handle = function(ev)
+end
+
 return Store

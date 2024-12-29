@@ -1,5 +1,5 @@
 local mod = require('down.mod')
-local config = require("down.config")
+local config = require('down.config')
 
 ---@class down.mod.Data: down.Mod
 local M = mod.new('data', {})
@@ -24,25 +24,23 @@ M.setup = function()
   }
 end
 
-M.load = function()
-
-end
+M.load = function() end
 
 ---@class down.mod.data.Config
 M.config = {
   path = vim.fn.stdpath('data') .. '/down.mpack',
   dir = {
     vim = vim.fs.joinpath(vim.fn.stdpath('data'), 'down/'),
-    home = vim.fs.joinpath(os.getenv("HOME") or "~/", ".down/"),
+    home = vim.fs.joinpath(os.getenv('HOME') or '~/', '.down/'),
   },
   file = {
     vim = vim.fs.joinpath(vim.fn.stdpath('data'), 'down/', 'down.json'),
-    home = vim.fs.joinpath(os.getenv("HOME") or "~/", ".down/", 'down.json'),
-  }
+    home = vim.fs.joinpath(os.getenv('HOME') or '~/', '.down/', 'down.json'),
+  },
 }
 ---@class down.mod.data.Data
 M.data = {
-  data = {}
+  data = {},
 }
 
 M.data.concat = function(p1, p2)
@@ -54,11 +52,11 @@ end
 --- @return table<string>
 M.data.files = function(path, cond)
   local f = {}
-  local dir = path or vim.fs.root(vim.fn.cwd(), ".down/")
+  local dir = path or vim.fs.root(vim.fn.cwd(), '.down/')
   for name, type in vim.fs.dir(dir) do
-    if type == 'file' and cond or name:endswith(".md") then
+    if type == 'file' and cond or name:endswith('.md') then
       table.insert(f, name)
-    elseif type == 'directory' and not name:startswith(".") then
+    elseif type == 'directory' and not name:startswith('.') then
       local fs = M.data.get_files(M.data.concat(path, name))
       for _, v in ipairs(fs) do
         table.insert(f, v)
@@ -92,19 +90,14 @@ M.data.copy_directory = function(old_path, new_path)
 
   for name, type in vim.fs.dir(old_path) do
     if type == 'file' then
-      ok, err = vim.loop.fs_copyfile(
-        M.data.concat({ old_path, name }),
-        M.data.concat(new_path, name)
-      )
+      ok, err =
+        vim.loop.fs_copyfile(M.data.concat({ old_path, name }), M.data.concat(new_path, name))
 
       if not ok then
         return ok, err ---@diagnostic disable-line -- TODO: type error workaround <pysan3>
       end
     elseif type == 'directory' and not vim.endswith(new_path, name) then
-      ok, err = M.data.copy_directory(
-        M.data.concat(old_path, name),
-        M.data.concat(new_path, name)
-      )
+      ok, err = M.data.copy_directory(M.data.concat(old_path, name), M.data.concat(new_path, name))
 
       if not ok then
         return ok, err ---@diagnostic disable-line -- TODO: type error workaround <pysan3>
@@ -146,21 +139,26 @@ M.data.retrieve = function(key)
   return M.data.data[key] or {}
 end
 
+M.data.json = function(path)
+  local dir = M.config.dir.home
+  local vim = M.config.dir.vim
+  vim.fn.mkdir(dir, 'p')
+  vim.fn.mkdir(vim, 'p')
+  local f = io.open(path or M.config.file.vim, 'w')
+  f:write(vim.json.encode(M.data.data))
+end
 --- Flushes the contents in memory to the location specified
-M.data.flush = function()
-  local file = io.open(M.config.path, 'w')
+M.data.flush = function(path)
+  local file = io.open(path or M.config.path, 'w')
 
   if not file then
     return
   end
 
-  file:write(
-    vim.mpack.encode and vim.mpack.encode(M.data.data) or vim.mpack.pack(M.data.data)
-  )
+  file:write(vim.mpack.encode and vim.mpack.encode(M.data.data) or vim.mpack.pack(M.data.data))
 
   io.close(file)
 end
-
 
 M.subscribed = {}
 

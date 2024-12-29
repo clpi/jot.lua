@@ -4,15 +4,43 @@
 ---
 --- @alias down.mod.SetupFun fun(): down.mod.Setup
 ---
+--- @class down.Opts: {
+---   [string]?: string,
+--- }
+---
+--- @alias down.VimMode
+--- | 'n'
+--- | 'i'
+--- | 'v'
+--- | 'x'
+--- | 'c'
+---
+--- @class down.Map: {
+---   [1]: down.VimMode | down.VimMode[],
+---   [2]: string,
+---   [3]: string | fun(),
+---   [4]?: string,
+---   [5]?: down.MapOpts,
+---
+--- @class down.MapOpts: {
+---   mode?: down.VimMode | down.VimMode[],
+---   key?: string,
+---   callback?: string | fun(),
+---   desc?: string,
+---   noremap?: boolean,
+---   nowait?: boolean
+--- }
+---
+--- @alias down.Maps down.Map[]
+---
 --- @class (exact) down.Mod
 ---   @field hook? fun(arguments?: string)    A user-defined function that is invoked whenever down starts up. May be used to e.g. set custom keybindings.
 ---   @field config? down.mod.Config The config for the mod.
 ---   @field import? table<string, down.Mod> Imported submod of the given mod. Contrary to `required`, which only exposes the public API of a mod, imported mod can be accessed in their entirety.
----   @field cmds? fun() Function that adds all the commands for the mod.
----   @field opts? fun() Function that adds all the options for the mod.
----   @field maps? fun() Function that adds all the mappings for the mod.
+---   @field commands?  down.Commands that adds all the commands for the mod.
+---   @field maps? down.Maps
+---   @field opts? down.Opts Function that adds all the options for the mod.
 ---   @field load? fun() Function that is invoked once the mod is considered "stable", i.e. after all dependencies are loaded. Perform your main loading routine here.
----   @field test? fun() Function that is invoked when the mod is being tested.
 ---   @field version? string
 ---   @field bench? fun() Function that is invoked when the mod is being benchmarked.
 ---   @field name string The name of the mod.
@@ -23,7 +51,7 @@
 ---   @field setup? fun(): down.mod.Setup? Function that is invoked before any other loading occurs. Should perform preliminary startup tasks.
 ---   @field replaced? boolean If `true`, this means the mod is a replacement for a base mod. This flag is set automatically whenever `setup().replaces` is set to a value.
 ---   @field handle fun(event: down.Event) A callback that is invoked any time an event the mod has subscribed to has fired.
----   @field test? fun() Function that is invoked when the mod is being tested.
+---   @field tests? table<string, fun(down.Mod.Mod):boolean> Function that is invoked when the mod is being tested.
 ---   @field public events? down.mod.Events
 ---   @field public subscribed? down.mod.Events
 -- ---   @field public [string]? down.mod.Data

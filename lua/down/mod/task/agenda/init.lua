@@ -1,5 +1,5 @@
 ---@type down.Mod
-local M = require "down.mod".new("data.task.agenda", {
+local M = require "down.mod".new("task.agenda", {
 })
 
 ---@class down.data.task.agenda.Agenda

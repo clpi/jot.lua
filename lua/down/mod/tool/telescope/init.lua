@@ -9,7 +9,7 @@ M.setup = function()
   if tok then
     return {
       loaded = true,
-      requires = { "cmd", "workspace" },
+      requires = { "workspace" },
     }
   else
     return {
@@ -68,38 +68,36 @@ M.subscribed = {
     ["find.workspace"] = true,
   },
 }
+M.commands = {
+  find = {
+    args = 0,
+    name = "find",
+    subcommands = {
+      links = {
+        name = "find.links",
+        args = 0,
+      },
+      tags = {
+        name = "find.tags",
+        args = 0,
+      },
+      files = {
+        name = "find.files",
+        args = 0,
+      },
+      workspace = {
+        name = "find.workspace",
+        args = 0,
+      },
+    },
+  },
+}
 M.load = function()
+  assert(tok)
   if tok then
-    mod.await("cmd", function(cmd)
-      cmd.add_commands_from_table({
-        find = {
-          args = 0,
-          name = "find",
-          subcommands = {
-            links = {
-              name = "find.links",
-              args = 0,
-            },
-            tags = {
-              name = "find.tags",
-              args = 0,
-            },
-            files = {
-              name = "find.files",
-              args = 0,
-            },
-            workspace = {
-              name = "find.workspace",
-              args = 0,
-            },
-          },
-        },
-      })
-    end)
-    assert(tok, t)
     t.load_extension("down")
     for _, pic in ipairs(M.data.picker_names) do
-      k("n", "<plug>down.telescope." .. pic .. "", M.data.pickers()[pic])
+      k("n", "<plug>Down.telescope." .. pic .. "", M.data.pickers()[pic])
     end
   else
     return

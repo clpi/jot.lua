@@ -162,6 +162,7 @@
 --- TODO:     #field [string]? down.Mod
 ---
 --- @class (exact) down.Config
+---   @field log? down.log.Config
 ---   @field dev? boolean  Whether to start in dev mode
 ---   @field hook? fun()   A hook that is run when down is started
 ---   @field workspace? string[]

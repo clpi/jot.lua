@@ -1,6 +1,6 @@
 local mod = require 'down.mod'
 
-local F = mod.new('edit.fold')
+local F = mod.new('ui.fold')
 
 F.setup = function()
   return {

@@ -48,11 +48,13 @@ function Event:get_cb(ty)
 end
 
 --- Triggers a new callback to execute whenever an event of the requested type is executed.
+--- @param self down.Event | string
 --- @param cb fun(event: down.Event, content: table|any) The function to call whenever our event gets triggered.
 --- @param filt? fun(event: down.Event): boolean # A filtering function to test if a certain event meets our expectations.
-function Event:callback(cb, filt)
-  Cb.cb[self.type] = Cb.cb[self.type] or {}
-  table.insert(Cb.cb[self.type], { cb, filt })
+function Event.callback(self, cb, filt)
+  local ty = (self and self.type) or self
+  Cb.cb[ty] = Cb.cb[ty] or {}
+  table.insert(Cb.cb[ty], { cb, filt })
 end
 
 --- @param cb? fun(event: down.Event, content: table|any)

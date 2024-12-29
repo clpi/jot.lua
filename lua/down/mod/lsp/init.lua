@@ -16,44 +16,45 @@ Lsp.setup = function()
   }
 end
 
+Lsp.commands = {
+  actions = {
+    args = 1,
+    name = 'actions',
+    condition = 'markdown',
+    subcommands = {
+      workspace = {
+        args = 1,
+        name = 'actions.workspace',
+      },
+    },
+  },
+  rename = {
+    args = 1,
+    max_args = 1,
+    name = 'rename',
+    condition = 'markdown',
+    subcommands = {
+      workspace = {
+        args = 0,
+        name = 'rename.workspace',
+      },
+      dir = {
+        args = 0,
+        name = 'rename.dir',
+      },
+      file = {
+        args = 0,
+        name = 'rename.file',
+      },
+    },
+  },
+}
+
 Lsp.load = function()
   -- local autocmd = Lsp.data.ft('*.{md,dn,dd}')
   local autocmd = Lsp.data.ft('markdown')
   -- local autocmd = Lsp.data.ft('*.dd')
   -- local autocmd = Lsp.data.ft('*.dn')
-  Lsp.required['cmd'].add_commands_from_table({
-    actions = {
-      args = 1,
-      name = 'actions',
-      condition = "markdown",
-      subcommands = {
-        workspace = {
-          args = 1,
-          name = 'actions.workspace',
-        },
-      },
-    },
-    rename = {
-      args = 1,
-      max_args = 1,
-      name = 'rename',
-      condition = "markdown",
-      subcommands = {
-        workspace = {
-          args = 0,
-          name = 'rename.workspace',
-        },
-        dir = {
-          args = 0,
-          name = 'rename.dir',
-        },
-        file = {
-          args = 0,
-          name = 'rename.file',
-        },
-      },
-    },
-  })
 end
 
 ---@class (exact) down.mod.lsp.Config

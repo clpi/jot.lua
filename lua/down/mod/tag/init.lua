@@ -1,30 +1,28 @@
 local mod = require("down.mod")
 local Tag = require("down.mod.data.tag.tag")
-local M = require("down.mod").new("data.tag")
+local M = require("down.mod").new("tag")
 
+M.commands = {
+  tag = {
+    subcommands = {
+      delete = {
+        args = 0,
+        name = 'data.tag.delete'
+      },
+      new = {
+        args = 0,
+        name = 'data.tag.new'
+      },
+      list = {
+        name = 'data.tag.list',
+        args = 0,
+      },
+    },
+    name = 'tag'
+  }
+}
 ---@return down.mod.Setup
 M.setup = function()
-  -- mod.await("cmd", function(cmd)
-  --   cmd.add_commands_from_table({
-  --     tag = {
-  --       subcommands = {
-  --         delete = {
-  --           args = 0,
-  --           name = 'data.tag.delete'
-  --         },
-  --         new = {
-  --           args = 0,
-  --           name = 'data.tag.new'
-  --         },
-  --         list = {
-  --           name = 'data.tag.list',
-  --           args = 0,
-  --         },
-  --       },
-  --       name = 'tag'
-  --     }
-  --   })
-  -- end)
   return {
     loaded = true,
     requires = { "workspace", "cmd" },

@@ -14,20 +14,28 @@ Link.setup = function()
     loaded = true,
     requires = {
       'tool.treesitter', --- For treesitter node parsing
-      'workspace', --- For checking filetype and index file names of current workspace
+      'workspace',       --- For checking filetype and index file names of current workspace
     },
   }
 end
 
 --- TODO: <tab> and <s-tab> for next and previous links
-Link.maps = function()
-  vim.keymap.set('n', '<bs>', ':edit #<cr>', { silent = true })
-  vim.api.nvim_set_keymap(
+Link.maps = {
+  {
     'n',
-    '<cr>',
-    ':lua require("down.mod.data.link").data.follow.link()<cr>',
-    { noremap = true, silent = true }
-  )
+    '<BS>',
+    '<ESC>:<C-U>edit #<CR>',
+    'Go back',
+  },
+  {
+    'n',
+    '<CR>',
+    '<ESC>:<C-U>lua require("down.mod.data.link").data.follow.link()<CR>',
+    'Follow link',
+  },
+}
+
+Link.load = function()
 end
 
 ---@class down.mod.data.link.Data
@@ -113,7 +121,7 @@ end
 Link.data.ref = function(node)
   local link_label = Link.data.text(node)
   for _, captures, _ in
-    Link.required['tool.treesitter'].query([[
+  Link.required['tool.treesitter'].query([[
     (link_reference_definition
       (link_label) @label (#eq? @label "]] .. link_label .. [[")
       (link_destination) @link_destination

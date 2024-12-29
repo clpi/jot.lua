@@ -8,7 +8,8 @@ local mod = require 'down.mod'
 local utils = require 'down.util'
 local path = require 'plenary.path'
 
----@class down.mod.Workspace: down.mod
+---@alias down.mod.Workspace down.Mod
+---@type down.mod.Workspace
 local M = mod.new('workspace')
 
 ---@todo TODO: Merge M.config.default and M.config.workspaces.default
@@ -37,17 +38,16 @@ M.config = {
 M.setup = function()
   return {
     loaded = true,
-    requires = { 'ui', 'data', 'note' },
+    requires = { 'ui', 'data', 'note', 'cmd' },
   }
 end
 
-M.maps = function()
-  map.n(',di', '<cmd>Down index<cr>')
-  map.n(',dw', '<CMD>Telescope down workspace<CR>')
-  map.n(',dw', '<CMD>Down workspace<CR>')
-  map.n(',d,', '<CMD>Down workspace default<CR>')
-  map.n(',dd', '<CMD>Down workspace cwd<CR>')
-end
+M.maps = {
+  { 'n', ',di', '<CMD>Down index<CR>', 'Down index' },
+  { 'n', ',dw', '<CMD>Down workspace<CR>', 'Down workspaces' },
+  { 'n', ',dfw', '<CMD>Telescope down workspace<CR>', 'Telescope down workspaces' },
+  { 'n', ',d.', '<CMD>Down workspace cwd<CR>', 'Down workspace in cwd' },
+}
 
 M.load = function()
   for name, wsloc in pairs(M.config.workspaces) do
@@ -57,12 +57,7 @@ M.load = function()
     pattern = '*',
     callback = function()
       mod.await('cmd', function(cmd)
-        cmd.add_commands_from_table({
-          index = {
-            args = 0,
-            name = 'workspace.index',
-          },
-        })
+        cmd.add_commands_from_table({})
       end)
     end,
   })
@@ -242,9 +237,8 @@ M.data = {
 
     -- Broadcast the wschanged event with all the necessary information
     Event.broadcast_to(
-      assert(
-        Event.new(M, 'workspace.events.wschanged', { old = current_ws, new = new_workspace })
-      ), mod.mods
+      assert(Event.new(M, 'workspace.events.wschanged', { old = current_ws, new = new_workspace })),
+      mod.mods
     )
 
     return true
@@ -313,16 +307,13 @@ M.data = {
   sync = function()
     -- Get all the workspace names
     local wsnames = M.data.get_wsnames()
+    M.commands.workspace.complete = { wsnames }
+    M.required['data'].store('workspaces', wsnames)
+    M.required['data'].store('last_workspace', M.config.default)
 
     -- Add the command to default.cmd so it can be used by the user!
     mod.await('cmd', function(cmd)
-      cmd.add_commands_from_table({
-        workspace = {
-          max_args = 1,
-          name = 'workspace.workspace',
-          complete = { wsnames },
-        },
-      })
+      cmd.add_commands_from_table(M.commands)
     end)
   end,
   --- @param prompt? string | nil
@@ -331,36 +322,35 @@ M.data = {
   select = function(prompt, fmt, fn)
     local workspaces = M.data.get_workspaces()
     local format = fmt
-        or function(item)
-          local current = M.data.get_current_workspace()
-          if item == current then
-            return '• ' .. item
-          end
-          return item
+      or function(item)
+        local current = M.data.get_current_workspace()
+        if item == current then
+          return '• ' .. item
         end
+        return item
+      end
     local func = fn
-        or function(item, idx)
-          local current = M.data.get_current_workspace()
+      or function(item, idx)
+        local current = M.data.get_current_workspace()
+        if item == current then
+          utils.notify('Already in workspace ' .. current)
           print(item, idx)
-          if item == current then
-            utils.notify('Already in workspace ' .. current)
-            print(item, idx)
-            M.data.open_workspace(item)
-          else
-            print(item, idx)
-            M.data.set_workspace(item)
-            M.data.open_workspace(item)
-            utils.notify('Workspace set to ' .. item)
-          end
+          M.data.open_workspace(item)
+        elseif not item then
+          return
+        elseif item then
+          M.data.set_workspace(item)
+          M.data.open_workspace(item)
+          utils.notify('Workspace set to ' .. item)
         end
+      end
     return vim.ui.select(vim.tbl_keys(workspaces), {
       prompt = prompt or 'Select workspace',
       format_items = format,
-    }, fn or func)
+    }, func)
   end,
   set_selected = function()
     local workspace = M.data.select()
-    print(workspace)
     M.data.set_workspace(workspace)
     utils.notify('Changed workspace to ' .. workspace)
   end,
@@ -658,6 +648,18 @@ M.handle = function(event)
     return
   end
 end
+
+M.commands = {
+  index = {
+    args = 0,
+    name = 'workspace.index',
+  },
+  workspace = {
+    max_args = 1,
+    name = 'workspace.workspace',
+    complete = { M.data.get_wsnames() },
+  },
+}
 
 ---@class down.mod.workspace.Events
 M.events = {

@@ -1,5 +1,5 @@
 local mod = require("down.mod")
-local M = require "down.mod".new("data.code.snippet")
+local M = require "down.mod".new("code.snippet")
 
 M.setup = function()
   -- mod.await("cmd", function(cmd)

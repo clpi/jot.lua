@@ -4,39 +4,38 @@ local log = require 'down.util.log'
 local mod = require 'down.mod'
 local lib = require 'down.util.lib'
 
----@class down.mod.data.Template: down.Mod
-local M = require 'down.mod'.new('data.template')
+---@class down.mod.template: down.Mod
+local M = require 'down.mod'.new('template')
+
+M.commands = {
+  template = {
+    min_args = 1,
+    max_args = 2,
+    name = 'template',
+    subcommands = {
+      index = { args = 0, name = 'template.index' },
+      month = { max_args = 1, name = 'template.month' },
+      tomorrow = { args = 0, name = 'template.tomorrow' },
+      yesterday = { args = 0, name = 'template.yesterday' },
+      today = { args = 0, name = 'template.today' },
+      custom = { max_args = 1, name = 'template.custom' }, -- format :yyyy-mm-dd
+      template = { args = 0, name = 'template.template' },
+      toc = {
+        args = 1,
+        name = 'template.toc',
+        subcommands = {
+          open = { args = 0, name = 'template.toc.open' },
+          update = { args = 0, name = 'template.toc.update' },
+        },
+      },
+    },
+  },
+}
 
 M.load = function()
   if M.config.strategies[M.config.strategy] then
     M.config.strategy = M.config.strategies[M.config.strategy]
   end
-  mod.await('cmd', function(cmd)
-    cmd.add_commands_from_table({
-      template = {
-        min_args = 1,
-        max_args = 2,
-        name = 'data.template',
-        subcommands = {
-          index = { args = 0, name = 'data.template.index' },
-          month = { max_args = 1, name = 'data.template.month' },
-          tomorrow = { args = 0, name = 'data.template.tomorrow' },
-          yesterday = { args = 0, name = 'data.template.yesterday' },
-          today = { args = 0, name = 'data.template.today' },
-          custom = { max_args = 1, name = 'data.template.custom' }, -- format :yyyy-mm-dd
-          template = { args = 0, name = 'data.template.template' },
-          toc = {
-            args = 1,
-            name = 'data.template.toc',
-            subcommands = {
-              open = { args = 0, name = 'data.template.toc.open' },
-              update = { args = 0, name = 'data.template.toc.update' },
-            },
-          },
-        },
-      },
-    })
-  end)
 end
 M.setup = function()
   return {
@@ -49,7 +48,7 @@ M.setup = function()
   }
 end
 
----@class (exact) down.mod.data.template.Config
+---@class (exact) down.mod.template.Config
 M.config = {
   strategies = {
     flat = '%Y-%m-%d.md',
@@ -63,7 +62,7 @@ M.config = {
   workspace = nil,
 
   -- The name for the folder in which the template files are put.
-  template_folder = 'data.template',
+  template_folder = 'template',
 
   -- The strategy to use to create directories.
   -- May be "flat" (`2022-03-02.down`), "nested" (`2022/03/02.down`),
@@ -72,7 +71,7 @@ M.config = {
   strategy = 'nested',
 
   -- The name of the template file to use when running `:down template template`.
-  template_name = 'data.template.md',
+  template_name = 'template.md',
 
   -- Whether to apply the template file to new template entries.
   use_template = true,
@@ -84,7 +83,7 @@ M.config = {
   toc_format = nil,
 }
 
----@class down.mod.data.template.Data
+---@class down.mod.template.Data
 M.data = {
 
   data = {
@@ -337,7 +336,7 @@ M.data = {
             -- Gets a base format for the entries
             local format = M.config.toc_format
               or function(entries)
-                local months_text = require('down.mod.data.template.util').months
+                local months_text = require('down.mod.template.util').months
                 -- Convert the entries into a certain format to be written
                 local output = {}
                 local current_year
@@ -378,15 +377,15 @@ M.data = {
 
 M.handle = function(event)
   if event.split_type[1] == 'cmd' then
-    if event.split_type[2] == 'data.template.index' then
+    if event.split_type[2] == 'template.index' then
       M.data.data.open_index()
-    elseif event.split_type[2] == 'data.template.month' then
+    elseif event.split_type[2] == 'template.month' then
       M.data.data.open_month()
-    elseif event.split_type[2] == 'data.template.tomorrow' then
+    elseif event.split_type[2] == 'template.tomorrow' then
       M.data.data.oemplate_tomorrow()
-    elseif event.split_type[2] == 'data.template.yesterday' then
+    elseif event.split_type[2] == 'template.yesterday' then
       M.data.data.oemplate_yesterday()
-    elseif event.split_type[2] == 'data.template.custom' then
+    elseif event.split_type[2] == 'template.custom' then
       if not event.content[1] then
         local calendar = mod.get_mod('ui.calendar')
 
@@ -412,13 +411,13 @@ M.handle = function(event)
       else
         M.data.data.open_template(nil, event.content[1])
       end
-    elseif event.split_type[2] == 'data.template.today' then
+    elseif event.split_type[2] == 'template.today' then
       M.data.data.oemplate_today()
-    elseif event.split_type[2] == 'data.template.template' then
+    elseif event.split_type[2] == 'template.template' then
       M.data.data.new_template()
-    elseif event.split_type[2] == 'data.template.toc.open' then
+    elseif event.split_type[2] == 'template.toc.open' then
       M.data.data.open_toc()
-    elseif event.split_type[2] == 'data.template.toc.update' then
+    elseif event.split_type[2] == 'template.toc.update' then
       M.data.data.new_toc()
     end
   end
@@ -426,15 +425,15 @@ end
 
 M.subscribed = {
   cmd = {
-    ['data.template.index'] = true,
-    ['data.template.month'] = true,
-    ['data.template.yesterday'] = true,
-    ['data.template.tomorrow'] = true,
-    ['data.template.today'] = true,
-    ['data.template.custom'] = true,
-    ['data.template.template'] = true,
-    ['data.template.toc.update'] = true,
-    ['data.template.toc.open'] = true,
+    ['template.index'] = true,
+    ['template.month'] = true,
+    ['template.yesterday'] = true,
+    ['template.tomorrow'] = true,
+    ['template.today'] = true,
+    ['template.custom'] = true,
+    ['template.template'] = true,
+    ['template.toc.update'] = true,
+    ['template.toc.open'] = true,
   },
 }
 

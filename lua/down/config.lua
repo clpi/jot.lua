@@ -1,8 +1,17 @@
-local util = require('down.util')
-local print = require('down.util.print')
-local map = require('down.util.maps')
 -- local mod = require('down.util.mod')
-local osinfo = util.get_os()
+local log = require 'down.util.log'
+
+---@return down.Os
+local function get_os()
+  local ffi = require('ffi')
+  if ffi.os == 'Windows' then
+    return 'windows'
+  elseif ffi.os == 'OSX' then
+    return 'mac'
+  elseif ffi.os == 'Linux' then
+    return 'linux'
+  end
+end
 
 ---@todo TODO: Setup configuration and parse user config
 ---@todo       in this config module only
@@ -12,6 +21,12 @@ local osinfo = util.get_os()
 local Config = {
   --- Start in dev mode
   dev = false,
+  log = {},
+  log_config = {
+    level = 'trace',
+    lvl = 0,
+  },
+
   workspace = {
     default = vim.fn.getcwd(0),
   },
@@ -21,20 +36,20 @@ local Config = {
   ---@type table<string, down.Mod.Config>
   mod = {},
   version = '0.1.2-alpha',
-  os = osinfo,
+  os = get_os(),
   hook = nil,
   started = false,
-  pathsep = osinfo == 'windows' and '\\' or '/',
+  pathsep = get_os() == 'windows' and '\\' or '/',
   load = {
     maps = function()
-      map.n(',dd', '<CMD>Down<CR>')
-      map.n(',D', '<CMD>Down<CR>')
-      map.n('~', '<CMD>Down<CR>')
-      map.n('|', '<CMD>Down<CR>')
+      -- vim.keymap.set('n', 'dd', '<CMD>Down<CR>')
+      --  vim.keymap.set('n', ',D', '<CMD>Down<CR>')
+      vim.keymap.set('n', '~', '<CMD>Down<CR>')
+      vim.keymap.set('n', '|', '<CMD>Down<CR>')
     end,
     opts = function()
-      vim.o.conceallevel = 2
-      vim.o.concealcursor = [[nc]]
+      -- vim.o.conceallevel = 2
+      -- vim.o.concealcursor = [[nc]]
     end,
   },
 }
@@ -85,8 +100,9 @@ function Config.setup(self, user, default, ...)
   if self.started or not user or vim.tbl_isempty(user) then
     return false
   end
-  user = util.extend(user, default)
-  self.user = util.extend(self.user, user)
+  self.log = log.new(self.log_config, true)
+  user = vim.tbl_deep_extend('force', user, default)
+  self.user = vim.tbl_deep_extend('force', self.user, user)
   if self.user.hook then
     self.user.hook(...)
   end
@@ -99,6 +115,10 @@ function Config:post_load()
   Config.load.opts()
   Config.started = true
   return Config.started
+end
+
+function Config:test()
+  vim.print('Testing config', self)
 end
 
 return setmetatable(Config, {

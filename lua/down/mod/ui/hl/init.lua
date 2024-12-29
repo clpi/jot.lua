@@ -1,7 +1,7 @@
 local down = require("down")
 local lib, log, mod = down.lib, down.log, down.mod
 
-local M = mod.new("edit.hl")
+local M = mod.new("ui.hl")
 
 M.config = {
   highlight = {

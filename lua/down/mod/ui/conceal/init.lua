@@ -1,10 +1,10 @@
 local down = require("down")
 local mod, config = down.mod, down.cfg
-local M = mod.new("edit.conceal")
+local M = mod.new("ui.conceal")
 local fn, a, madd = vim.fn, vim.api, vim.fn.matchadd
-M.chars = require("down.mod.edit.conceal.chars")
-M.math = require("down.mod.edit.conceal.math")
-M.border = require("down.mod.edit.conceal.border")
+M.chars = require("down.mod.ui.conceal.chars")
+M.math = require("down.mod.ui.conceal.math")
+M.border = require("down.mod.ui.conceal.border")
 
 M.setup = function()
   return {

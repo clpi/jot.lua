@@ -9,20 +9,12 @@ local mod = require('down.mod')
 ---@class down.mod.Note: down.Mod
 local M = mod.new('note', {})
 
-M = setmetatable(M, {
-  __index = function(self, k)
-    return self.required[k]
-  end,
-})
-
-local W = M.required['workspace']
-
-M.maps = function()
-  map.n(',dn', '<CMD>Down note today<CR>')
-  map.n(',dy', '<CMD>Down note yesterday<CR>')
-  map.n(',dc', '<CMD>Down note capture<CR>')
-  map.n(',dt', '<CMD>Down note tomorrow<CR>')
-end
+M.maps = {
+  { 'n', ',dn', '<CMD>Down note today<CR>', 'Down today note' },
+  { 'n', ',dy', '<CMD>Down note yesterday<CR>', 'Down yesterday note' },
+  { 'n', ',dt', '<CMD>Down note tomorrow<CR>', 'Down tomorrow note' },
+  { 'n', ',dc', '<CMD>Down note capture<CR>', 'Down capture note' },
+}
 
 ---@class down.mod.note.Data
 M.data = {
@@ -630,108 +622,108 @@ M.handle = function(event)
   end
 end
 
+M.commands = {
+  calendar = {
+    min_args = 0,
+    max_args = 1,
+    name = 'calendar',
+  }, -- format :yyyy-mm-dd
+  note = {
+    min_args = 1,
+    max_args = 2,
+    subcommands = {
+      index = { args = 0, name = 'note.index' },
+      month = {
+        max_args = 1,
+        name = 'note.month',
+        subcommands = {
+          index = { args = 0, name = 'note.month.index' },
+          previous = {
+            args = 0,
+            name = 'note.month.previous',
+          },
+          next = {
+            args = 0,
+            name = 'note.month.next',
+          },
+        },
+      },
+      week = {
+        subcommands = {
+          index = { args = 0, name = 'note.week.index' },
+          previous = {
+            args = 0,
+            name = 'note.week.previous',
+          },
+          next = {
+            args = 0,
+            name = 'note.week.next',
+          },
+        },
+        max_args = 1,
+        name = 'note.week',
+      },
+      year = {
+        max_args = 1,
+        name = 'note.year',
+        subcommands = {
+          index = { args = 0, name = 'note.year.index' },
+          previous = {
+            args = 0,
+            name = 'note.year.previous',
+          },
+          next = {
+            args = 0,
+            name = 'note.year.next',
+          },
+        },
+      },
+      capture = { args = 0, name = 'note.capture' },
+      tomorrow = { args = 0, name = 'note.tomorrow' },
+      yesterday = { args = 0, name = 'note.yesterday' },
+      today = { args = 0, name = 'note.today' },
+      calendar = {
+        max_args = 1,
+        name = 'note.calendar',
+      }, -- format :yyyy-mm-dd
+      template = {
+        subcommands = {
+          year = {
+            name = 'notes.template.year',
+            args = 0,
+          },
+          week = {
+            name = 'notes.template.week',
+            args = 0,
+          },
+          month = {
+            name = 'notes.template.month',
+            args = 0,
+          },
+          day = {
+            name = 'notes.template.day',
+            args = 0,
+          },
+        },
+        args = 0,
+        name = 'note.template',
+      },
+      toc = {
+        args = 1,
+        name = 'note.toc',
+        subcommands = {
+          open = { args = 0, name = 'note.toc.open' },
+          update = { args = 0, name = 'note.toc.update' },
+        },
+      },
+    },
+  },
+}
+
 M.load = function()
   if M.config.strategies[M.config.strategy] then
     M.config.strategy = M.config.strategies[M.config.strategy]
   end
-  require('down.mod').await('cmd', function(cmd)
-    cmd.add_commands_from_table({
-      calendar = {
-        max_args = 1,
-        name = 'calendar',
-      }, -- format :yyyy-mm-dd
-      note = {
-        min_args = 1,
-        max_args = 2,
-        subcommands = {
-          index = { args = 0, name = 'note.index' },
-          month = {
-            max_args = 1,
-            name = 'note.month',
-            subcommands = {
-              index = { args = 0, name = 'note.month.index' },
-              previous = {
-                args = 0,
-                name = 'note.month.previous',
-              },
-              next = {
-                args = 0,
-                name = 'note.month.next',
-              },
-            },
-          },
-          week = {
-            subcommands = {
-              index = { args = 0, name = 'note.week.index' },
-              previous = {
-                args = 0,
-                name = 'note.week.previous',
-              },
-              next = {
-                args = 0,
-                name = 'note.week.next',
-              },
-            },
-            max_args = 1,
-            name = 'note.week',
-          },
-          year = {
-            max_args = 1,
-            name = 'note.year',
-            subcommands = {
-              index = { args = 0, name = 'note.year.index' },
-              previous = {
-                args = 0,
-                name = 'note.year.previous',
-              },
-              next = {
-                args = 0,
-                name = 'note.year.next',
-              },
-            },
-          },
-          capture = { args = 0, name = 'note.capture' },
-          tomorrow = { args = 0, name = 'note.tomorrow' },
-          yesterday = { args = 0, name = 'note.yesterday' },
-          today = { args = 0, name = 'note.today' },
-          calendar = {
-            max_args = 1,
-            name = 'note.calendar',
-          }, -- format :yyyy-mm-dd
-          template = {
-            subcommands = {
-              year = {
-                name = 'notes.template.year',
-                args = 0,
-              },
-              week = {
-                name = 'notes.template.week',
-                args = 0,
-              },
-              month = {
-                name = 'notes.template.month',
-                args = 0,
-              },
-              day = {
-                name = 'notes.template.day',
-                args = 0,
-              },
-            },
-            args = 0,
-            name = 'note.template',
-          },
-          toc = {
-            args = 1,
-            name = 'note.toc',
-            subcommands = {
-              open = { args = 0, name = 'note.toc.open' },
-              update = { args = 0, name = 'note.toc.update' },
-            },
-          },
-        },
-      },
-    })
-  end)
 end
 
 ---@return down.mod.Setup
@@ -739,11 +731,10 @@ M.setup = function()
   return {
     loaded = true,
     requires = {
-      'cmd',
       'ui.win',
       'ui.calendar',
       'data',
-      'data.template',
+      'template',
       'workspace',
       'tool.treesitter',
     },

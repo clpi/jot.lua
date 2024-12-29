@@ -4,45 +4,41 @@ local lib = require 'down.util.lib'
 local log = require 'down.util.log'
 local mod = require 'down.mod'
 
-local M = require 'down.mod'.new('data.log')
+local M = require 'down.mod'.new('log')
 
+M.commands = {
+  log = {
+    min_args = 1,
+    max_args = 2,
+    subcommands = {
+      index = { args = 0, name = 'log.index' },
+      month = { max_args = 1, name = 'log.month' },
+      tomorrow = { args = 0, name = 'log.tomorrow' },
+      yesterday = { args = 0, name = 'log.yesterday' },
+      new = { args = 0, name = 'log.new' },
+      custom = { max_args = 1, name = 'log.custom' }, -- format :yyyy-mm-dd
+      template = { args = 0, name = 'log.template' },
+      toc = {
+        args = 1,
+        name = 'log.toc',
+        subcommands = {
+          open = { args = 0, name = 'log.toc.open' },
+          update = { args = 0, name = 'log.toc.update' },
+        },
+      },
+    },
+  },
+}
 M.load = function()
   if M.config.strategies[M.config.strategy] then
     M.config.strategy = M.config.strategies[M.config.strategy]
   end
-
-  mod.await('cmd', function(cmd)
-    cmd.add_commands_from_table({
-      log = {
-        min_args = 1,
-        max_args = 2,
-        subcommands = {
-          index = { args = 0, name = 'log.index' },
-          month = { max_args = 1, name = 'log.month' },
-          tomorrow = { args = 0, name = 'log.tomorrow' },
-          yesterday = { args = 0, name = 'log.yesterday' },
-          new = { args = 0, name = 'log.new' },
-          custom = { max_args = 1, name = 'log.custom' }, -- format :yyyy-mm-dd
-          template = { args = 0, name = 'log.template' },
-          toc = {
-            args = 1,
-            name = 'log.toc',
-            subcommands = {
-              open = { args = 0, name = 'log.toc.open' },
-              update = { args = 0, name = 'log.toc.update' },
-            },
-          },
-        },
-      },
-    })
-  end)
 end
 
 M.setup = function()
   return {
     loaded = true,
     requires = {
-      'cmd',
       'ui.calendar',
       'ui.popup',
       'edit.inline',
