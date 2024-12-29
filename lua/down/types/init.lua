@@ -1,10 +1,10 @@
---- @meta down.types
+--- @meta down.ids
 --- @brief Provides core data types
 --- @version <5.2,JIT
 ---
 ---
 --- The important store value object
---- @class (exact) down.old.Store<V>: { id: down.store.Name, uri: down.Uri, data?: down.store.Data<V> } store
+--- @class (exact) down.old.Store<V>: { id: down.store.id, uri: down.Uri, data?: down.store.Data<V> } store
 ---
 --- [string]: down.Store<V>
 --- @class (exact) down.old.store.Map<V>: { [down.store.Key]?: down.Store<V> } Map { log1 = { i}}

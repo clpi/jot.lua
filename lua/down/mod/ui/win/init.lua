@@ -20,7 +20,7 @@ end
 M.setup = function()
   return {
     loaded = true,
-    requires = {
+    dependencies = {
       -- 'ui'
     },
   }

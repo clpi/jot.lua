@@ -1,4 +1,4 @@
----@enum down.types.enum
+---@enum down.ids.enum
 ---
 --- The scope of an entity.
 --- @alias down.Mode

@@ -1,4 +1,4 @@
----@meta down.types.mod
+---@meta down.ids.mod
 ---
 --- @alias down.mod.Handler fun(event: down.Event)
 ---
@@ -32,66 +32,40 @@
 --- }
 ---
 --- @alias down.Maps down.Map[]
----
+--- @alias down.Handler fun(event: down.Event, ...: any)
+--- @alias down.Handlers {
+---   [string]?: down.Handler|down.Handlers,
+---   __call?: down.Handler,
+--- }
 --- @class (exact) down.Mod
----   @field hook? fun(arguments?: string)    A user-defined function that is invoked whenever down starts up. May be used to e.g. set custom keybindings.
----   @field config? down.mod.Config The config for the mod.
----   @field import? table<string, down.Mod> Imported submod of the given mod. Contrary to `required`, which only exposes the public API of a mod, imported mod can be accessed in their entirety.
----   @field commands?  down.Commands that adds all the commands for the mod.
----   @field maps? down.Maps
----   @field opts? down.Opts Function that adds all the options for the mod.
----   @field load? fun() Function that is invoked once the mod is considered "stable", i.e. after all dependencies are loaded. Perform your main loading routine here.
----   @field version? string
----   @field bench? fun() Function that is invoked when the mod is being benchmarked.
----   @field name string The name of the mod.
----   @field namespace string The name of the mod.
----   @field post_load? fun() Function that is invoked after all mod are loaded. Useful if you want the down environment to be fully set up before performing some task.
----   @field public data? down.mod.Data Every mod can expose any set of information it sees fit through this field. All functions and variables declared in this table will be to any other mod loaded.
----   @field required? table<string, down.Mod.Data> Contains the public tables of all mod that were required via the `requires` array provided in the `setup()` function of this mod.
----   @field setup? fun(): down.mod.Setup? Function that is invoked before any other loading occurs. Should perform preliminary startup tasks.
----   @field replaced? boolean If `true`, this means the mod is a replacement for a base mod. This flag is set automatically whenever `setup().replaces` is set to a value.
----   @field handle fun(event: down.Event) A callback that is invoked any time an event the mod has subscribed to has fired.
----   @field tests? table<string, fun(down.Mod.Mod):boolean> Function that is invoked when the mod is being tested.
+---   @field public config? down.mod.Config The config for the mod.
+---   @field public import? table<string, down.Mod> Imported submod of the given mod. Contrary to `dep`, which only exposes the public API of a mod, imported mod can be accessed in their entirety.
+---   @field public commands?  down.Commands that adds all the commands for the mod.
+---   @field public maps? down.Maps
+---   @field public opts? down.Opts Function that adds all the options for the mod.
+---   @field public load? fun() Function that is invoked once the mod is considered "stable", i.e. after all dependencies are loaded. Perform your main loading routine here.
+---   @field public bench? fun() Function that is invoked when the mod is being benchmarked.
+---   @field public id string The name of the mod.
+---   @field public namespace string The name of the mod.
+---   @field public post_load? fun() Function that is invoked after all mod are loaded. Useful if you want the down environment to be fully set up before performing some task.
+---   @field public data? table<string, any> Every mod can expose any set of information it sees fit through this field. All functions and variables declared in this table will be to any other mod loaded.
+---   @field public dep? table<string, down.Mod.Data> Contains the public tables of all mod that were dep via the `dependencies` array provided in the `setup()` function of this mod.
+---   @field public setup? fun(): down.mod.Setup? Function that is invoked before any other loading occurs. Should perform preliminary startup tasks.
+---   @field public replaced? boolean If `true`, this means the mod is a replacement for a base mod. This flag is set automatically whenever `setup().replaces` is set to a value.
+---   @field public handle? down.Handlers callback that is invoked any time an event the mod has subscribed to has fired.
+---   @field public tests? table<string, fun()> Function that is invoked when the mod is being tested.
 ---   @field public events? down.mod.Events
----   @field public subscribed? down.mod.Events
 -- ---   @field public [string]? down.mod.Data
 ---
 --- @class (exact) down.mod.Setup: {
 ---   [string]?: { [string]?: any },
 ---   loaded: boolean,
----   requires?: string[],
+---   dependencies?: string[],
 ---   replaces?: string,
 ---   merge?: boolean,
 ---   @field public [string]? any
 ---
 --- @class (exact) down.mod.Events: { [string]: down.Event }
----
---- The entire mod configuration
---- @alias down.config.Mod
----   | down.mod.Lsp
----   | down.mod.Code
----   | down.mod.Parse
----   | down.mod.Edit
----   | down.mod.Data
----   | down.mod.Cmd
----   | down.mod.Tool
----   | down.mod.Workspace
----   | down.mod.Note
----   | down.mod.Ui
----
---- The entire mod configuration
---- @alias down.config.mod.Config
----   | down.mod.lsp.Config
----   | down.mod.data.Config
----   | down.mod.edit.Config
----   | down.mod.config.Config
----   | down.mod.cmd.Config
----   | down.mod.tool.Config
----   | down.mod.workspace.Config
----   | down.mod.note.Config
----   | down.mod.ui.Config
----   | down.mod.parse.Config
----   | down.mod.code.Config
 ---
 --- The entire mod configuration
 --- @alias down.Mod.Mod
@@ -100,11 +74,26 @@
 ---   | down.mod.Parse
 ---   | down.mod.Edit
 ---   | down.mod.Data
+---   | down.mod.Link
+---   | down.mod.Task
+---   | down.mod.Tag
+---   | down.mod.Template
+---   | down.mod.Log
 ---   | down.mod.Cmd
 ---   | down.mod.Tool
 ---   | down.mod.Workspace
 ---   | down.mod.Note
 ---   | down.mod.Ui
+---   | down.mod.data.Bookmark
+---   | down.mod.data.Store
+---   | down.mod.data.History
+---   | down.mod.task.Agenda
+---   | down.mod.data.Export
+---   | down.mod.data.Encrypt
+---   | down.mod.ui.Calendar
+---   | down.mod.ui.calendar.Day
+---   | down.mod.ui.calendar.Month
+---   | down.mod.ui.calendar.Week
 ---
 --- @alias down.Mod.Data
 ---   | down.mod.lsp.Data
@@ -117,12 +106,26 @@
 ---   | down.mod.ui.Data
 ---   | down.mod.parse.Data
 ---   | down.mod.code.Data
+---   | down.mod.link.Data
+---   | down.mod.task.Data
+---   | down.mod.tag.Data
+---   | down.mod.template.Data
+---   | down.mod.log.Data
+---   | down.mod.data.bookmark.Data
+---   | down.mod.data.store.Data
+---   | down.mod.data.history.Data
+---   | down.mod.task.agenda.Data
+---   | down.mod.data.export.Data
+---   | down.mod.data.encrypt.Data
+---   | down.mod.ui.calendar.Data
+---   | down.mod.ui.calendar.day.Data
+---   | down.mod.ui.calendar.month.Data
+---   | down.mod.ui.calendar.week.Data
 ---
 --- @alias down.Mod.Config
 ---   | down.mod.lsp.Config
 ---   | down.mod.data.Config
 ---   | down.mod.edit.Config
----   | down.mod.config.Config
 ---   | down.mod.cmd.Config
 ---   | down.mod.tool.Config
 ---   | down.mod.workspace.Config
@@ -130,10 +133,39 @@
 ---   | down.mod.ui.Config
 ---   | down.mod.parse.Config
 ---   | down.mod.code.Config
+---   | down.mod.link.Config
+---   | down.mod.task.Config
+---   | down.mod.tag.Config
+---   | down.mod.template.Config
+---   | down.mod.log.Config
+---   | down.mod.task.agenda.Config
+---   | down.mod.data.bookmark.Config
+---   | down.mod.data.store.Config
+---   | down.mod.data.history.Config
+---   | down.mod.data.export.Config
+---   | down.mod.data.encrypt.Config
+---   | down.mod.ui.calendar.Config
+---   | down.mod.ui.calendar.day.Config
+---   | down.mod.ui.calendar.month.Config
+---   | down.mod.ui.calendar.week.Config
 ---
 --- The base configuration
 --- @class (exact) down.config.BaseConfig: {
 ---   [string]?: any,
 ---   dev?: boolean,
+--- }
+---
+--- @class (exact) down.Command
+--- @field name? string
+--- @field args? number
+--- @field max_args? number
+--- @field condition? string
+--- @field complete? table<string, string[]>
+--- @field callback? fun(e?: down.Event, ...: any)
+--- @field min_args? number
+--- @field subcommands? { [string]?:down.Command}
+
+--- @class (exact) down.Commands: {
+---   [string]?: down.Command,
 --- }
 ---

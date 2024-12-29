@@ -1,4 +1,4 @@
---- @meta down.types.workspcae
+--- @meta down.ids.workspcae
 --- The context of an in-file object.
 --- @class (exact) down.Log: { data?: { [string]: string } }
 ---

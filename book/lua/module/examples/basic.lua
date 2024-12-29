@@ -21,7 +21,7 @@ local M = mod.create("user.mod", {
 M.setup = function()
   return {
     requires = {
-      ---@brief required modules
+      ---@brief dep modules
       ---         modules from builtin or custom
       ---         modules that can be loaded in (same as
       ---         if calling `require 'module'`) as a dependency

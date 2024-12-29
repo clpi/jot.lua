@@ -84,7 +84,7 @@ J.data = {
 J.config = {
 
   ---@brief The default directory you might want to specify for Jupyter notebooks to be stored in.
-  ---@brief You may also wish to leverage the required "workspace" module to allow users to specify both
+  ---@brief You may also wish to leverage the dep "workspace" module to allow users to specify both
   ---@brief a specific workspace tey would like to associate with Jupyter notebooks, as well as a default
   ---@brief relative directory within that workspace.
   ---

@@ -17,7 +17,7 @@ Down.default = {
   -- ['data.log'] = {},
   ['lsp'] = {},
   ['cmd'] = {},
-  ['data.link'] = {},
+  ['link'] = {},
   -- ['cmd.back'] = {},
   -- ['data.history'] = {},
   ['tool.telescope'] = {},
@@ -59,6 +59,7 @@ end
 
 function Down:post_load()
   for _, l in pairs(self.mod.mods) do
+    self.event.load_cb(l)
     l.post_load()
   end
 end

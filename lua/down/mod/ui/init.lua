@@ -1,13 +1,9 @@
-local mod = require("down.mod")
+local mod = require "down.mod"
+local log = require 'down.util.log'
+
 ---@type down.Mod
-local M = mod.new('ui', {
-  -- "icon",
-  -- "win",
-  'win',
-  'sidebar',
-  'dashboard',
-  'popup',
-})
+local M = mod.new 'ui'
+
 M.load = function()
   for _, i in pairs(M.import) do
     M.data = vim.tbl_extend('force', M.data, i.data)
@@ -15,8 +11,8 @@ M.load = function()
 end
 M.setup = function()
   return {
-    namespace = vim.api.nvim_create_namespace('down.ui'),
-    requires = {},
+    namespace = vim.api.nvim_create_namespace 'down.mod.ui',
+    dependencies = {},
     loaded = true,
   }
 end
@@ -27,7 +23,7 @@ M.config = {
 }
 ---@class down.mod.ui.Data
 M.data = {
-  namespace = vim.api.nvim_create_namespace('down.ui'),
+  namespace = vim.api.nvim_create_namespace 'down.mod.ui',
   --- Returns a table in the form of { width, height } containing the width and height of the current window
   ---@param half boolean #If true returns a position that could be considered the center of the window
   get_window_size = function(half)
@@ -61,10 +57,8 @@ M.data = {
       width = 100,
       height = 100,
     })
-
     -- Get the current window's dimensions except halved
     local halved_window_size = M.data.get_window_size(true)
-
     -- If we want to center along the x axis then return a configuration that does so
     if user_options.center_x then
       config.row = config.row + halved_window_size[2] - math.floor(config.height / 2)
@@ -93,25 +87,20 @@ M.data = {
   ---@param  height number? the height of the new split
   ---@return number?, number? #Both the buffer ID and window ID
   new_split = function(name, config, height)
-    vim.validate({
+    vim.validate {
       name = { name, 'string' },
       { config, 'table', true },
       height = { height, 'number', true },
-    })
-
+    }
     local bufname = 'down://' .. name
-
     if vim.fn.bufexists(bufname) == 1 then ---@diagnostic disable-line
       log.error("Buffer '" .. name .. "' already exists")
       return
     end
-
-    vim.cmd('below new')
-
+    vim.cmd 'below new'
     if height then
       vim.api.nvim_win_set_height(0, height)
     end
-
     local buf = vim.api.nvim_win_get_buf(0)
 
     local base_options = {
@@ -121,10 +110,8 @@ M.data = {
       buflisted = false,
       filetype = 'markdown',
     }
-
     vim.api.nvim_buf_set_name(buf, bufname)
     vim.api.nvim_win_set_buf(0, buf)
-
     vim.api.nvim_win_set_option(0, 'list', false)
     vim.api.nvim_win_set_option(0, 'colorcolumn', '')
     vim.api.nvim_win_set_option(0, 'number', false)
@@ -156,12 +143,12 @@ M.data = {
   ---@param win_config table table of <option>=<value> keypairs for `nvim_open_win`, must provide `win`
   ---@return number?, number? #The buffer and window numbers of the vertical split
   new_vsplit = function(name, enter, buf_config, win_config)
-    vim.validate({
+    vim.validate {
       name = { name, 'string' },
       enter = { enter, 'boolean', true },
       { buf_config, 'table' },
-      win_({ win_config, 'table' }),
-    })
+      window = { win_config, 'table' },
+    }
 
     local buf = vim.api.nvim_create_buf(false, true)
 
@@ -174,20 +161,14 @@ M.data = {
     }
 
     vim.api.nvim_buf_set_name(buf, 'down://' .. name)
-
     local win_options = {
       vertical = true,
     }
     win_options = vim.tbl_deep_extend('keep', win_options, win_config)
     local window = vim.api.nvim_open_win(buf, enter, win_options)
-
     vim.api.nvim_set_option_value('number', false, { win = window })
     vim.api.nvim_set_option_value('relativenumber', false, { win = window })
-
-    -- Merge the user provided options with the base options and apply them to the new buffer
     M.data.apply_buffer_options(buf, vim.tbl_extend('keep', buf_config or {}, base_options))
-
-    -- Make sure to clean up the window if the user leaves the popup at any time
     vim.api.nvim_create_autocmd({ 'BufDelete', 'WinClosed' }, {
       buffer = buf,
       once = true,
@@ -213,9 +194,7 @@ M.data = {
       )
       return
     end
-
     local namespace = vim.api.nvim_create_namespace('down://display/' .. name)
-
     local buf = (function()
       name = 'display/' .. name
 
@@ -231,13 +210,10 @@ M.data = {
         return buf
       end
     end)()
-
     vim.api.nvim_win_set_buf(0, buf)
-
     local length = vim.fn.len(vim.tbl_filter(function(elem)
       return vim.tbl_isempty(elem) or (elem[3] == nil and true or elem[3])
     end, content))
-
     vim.api.nvim_buf_set_lines(
       buf,
       0,
@@ -245,16 +221,12 @@ M.data = {
       false,
       vim.split(('\n'):rep(length), '\n', { plain = true })
     )
-
     local line_number = 1
     local buffer = {}
-
     for i, text_info in ipairs(content) do
       if not vim.tbl_isempty(text_info) then
         local newline = text_info[3] == nil and true or text_info[3]
-
         table.insert(buffer, { text_info[1], text_info[2] or 'Normal' })
-
         if i == #content or newline then
           vim.api.nvim_buf_set_extmark(0, namespace, line_number - 1, 0, {
             virt_text_pos = 'overlay',
@@ -267,15 +239,11 @@ M.data = {
         line_number = line_number + 1
       end
     end
-
     vim.keymap.set('n', '<Esc>', vim.cmd.bdelete, { buffer = buf, silent = true })
     vim.keymap.set('n', 'q', vim.cmb.bdelete, { buffer = buf, silent = true })
-
     vim.api.nvim_buf_set_option(buf, 'modifiable', false)
-
     local cached_virtualedit = vim.opt.virtualedit:get()
     vim.opt.virtualedit = 'all'
-
     vim.api.nvim_create_autocmd({ 'BufLeave', 'BufDelete' }, {
       buffer = buf,
       callback = function()
@@ -284,10 +252,8 @@ M.data = {
         pcall(vim.api.nvim_buf_delete, buf, { force = true })
       end,
     })
-
-    vim.cmd(([[
-            autocmd BufLeave,BufDelete <buffer=%s> set virtualedit=%s | silent! bd! %s
-        ]]):format(buf, cached_virtualedit[1] or '', buf))
+    vim.cmd([[autocmd BufLeave,BufDelete <buffer=%s> set virtualedit=%s | silent! bd! %s]])
+        :format(buf, cached_virtualedit[1] or '', buf)
 
     return { buffer = buf, namespace = namespace }
   end,
@@ -306,17 +272,14 @@ M.data = {
       { config, 'table', true },
       opts = { opts, 'table', true },
     })
-
     vim.tbl_deep_extend('keep', config or {}, {
       ft = 'markdown',
     })
-
     opts = vim.tbl_deep_extend(
       'force',
       { keys = true, del_on_autocmd = { 'BufLeave', 'BufDelete', 'BufUnload' } },
       opts or {}
     )
-
     if not vim.tbl_contains({ 'nosplit', 'vsplitl', 'vsplitr', 'split' }, split_type) then
       log.error(
         "Unable to create display. Expected one of 'vsplitl', 'vsplitr', 'split' or 'nosplit', got"
@@ -325,7 +288,6 @@ M.data = {
       )
       return
     end
-
     local buf = (function()
       name = 'down/' .. name .. '.md'
 
@@ -341,24 +303,19 @@ M.data = {
         return buf
       end
     end)()
-
     vim.api.nvim_win_set_buf(0, buf)
-
     if opts.keys == true then
       vim.keymap.set('n', '<Esc>', vim.cmd.bdelete, { buffer = buf, silent = true })
       vim.keymap.set('n', 'q', vim.cmd.bdelete, { buffer = buf, silent = true })
     end
-
     M.data.apply_buffer_options(buf, config or {})
-
     if opts.del_on_autocmd and #opts.del_on_autocmd ~= 0 then
       vim.cmd(
         'autocmd '
-        .. table.concat(opts.del_on_autocmd, ',')
+        .. opts.del_on_autocmd:concat ','
         .. (' <buffer=%s> silent! bd! %s'):format(buf, buf)
       )
     end
-
     return buf
   end,
 }

@@ -3,62 +3,66 @@ local B = {}
 
 ---@class down.mod.data.bookmark.Config
 B.config = {
-  workspace = "default",
+  workspace = 'default',
 
-  file = "bookmark",
+  file = 'bookmark',
 }
 
 ---@class down.mod.data.bookmark.Data
 B.data = {
   bookmarks = {
-    default = {
-
-    }
-  }
+    default = {},
+  },
 }
 
 ---@return down.mod.Setup
 B.setup = function()
   return {
     loaded = true,
-    requires = {
+    dependencies = {
       'data',
       'workspace',
       'cmd',
-    }
+    },
   }
 end
 
-B.load = function()
-  B.required["cmd"].add_commands_from_table({
-    bookmark = {
-      args = 1,
-      name = "bookmark",
-      subcommands = {
-        list = {
-          name = "bookmark.list",
-          args = 1,
-        },
-        add = {
-          name = "bookmark.add",
-          args = 1,
-        },
-        remove = {
-          name = "bookmark.remove",
-          args = 1,
-        },
-      }
-    }
-  })
-end
+B.commands = {
+  bookmark = {
+    args = 1,
+    name = 'bookmark',
+    callback = function(e) end,
+    subcommands = {
+      list = {
+        name = 'bookmark.list',
+        args = 1,
+        callback = function(e) end,
+      },
+      add = {
+        name = 'bookmark.add',
+        args = 1,
+        callback = function(e) end,
+      },
+      remove = {
+        name = 'bookmark.remove',
+        args = 1,
+        callback = function(e) end,
+      },
+    },
+  },
+}
 
-B.handle = function(e)
-  local es = e.split
-  if es[2] == "bookmark" then
-    print("es2")
-  elseif es[2] == "bookmark.list" then
-    print('es2 list')
-  end
-end
+B.load = function() end
+
+-- B.handle = {
+--   cmd = {
+--     bookmark = {
+--       __call = B.commands.bookmark.callback,
+--       list = B.commands.bookmark.subcommands.list.callback,
+--       remove = B.commands.bookmark.subcommands.remove.callback,
+--       add = B.commands.bookmark.subcommands.add.callback,
+--     },
+--   },
+-- }
 
 return B

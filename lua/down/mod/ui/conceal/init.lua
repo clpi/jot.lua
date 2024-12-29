@@ -9,7 +9,7 @@ M.border = require("down.mod.ui.conceal.border")
 M.setup = function()
   return {
     loaded = true,
-    requires = {},
+    dependencies = {},
   }
 end
 

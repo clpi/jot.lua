@@ -20,7 +20,7 @@ E.commands = {
 E.setup = function()
   return {
     loaded = true,
-    requires = {
+    dependencies = {
       'tool.treesitter',
       'cmd',
       'workspace',
@@ -36,11 +36,11 @@ E.data = {}
 
 E.handle = function(e) end
 
-E.subscribed = {
+E.handle = {
   cmd = {
-    ['data.encrypt'] = true,
-    ['data.encrypt.insert'] = true,
-    ['data.encrypt.update'] = true,
+    ['data.encrypt'] = function(e) end,
+    ['data.encrypt.insert'] = function(e) end,
+    ['data.encrypt.update'] = function(e) end,
   },
 }
 

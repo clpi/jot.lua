@@ -1,20 +1,24 @@
 local config = require 'down.config'
+local log = require 'down.util.log'
 local mod = require 'down.mod'
 local util = require 'down.util'
 
 ---@class down.mod.data.Link: down.Mod
-local Link = mod.new('data.link')
+local Link = mod.new 'link'
 
-local tsu = require 'nvim-treesitter.ts_utils'
+local tsu_ok, tsu = pcall(require, 'nvim-treesitter.ts_utils')
 local ts = vim.treesitter
 local tsq = vim.treesitter.query
 
+--- @return down.mod.Setup
 Link.setup = function()
-  return {
+  return { ---@type down.mod.Setup
     loaded = true,
-    requires = {
+    dependencies = {
+      'cmd', --- For commands
+      'data.history', --- For history storage
       'tool.treesitter', --- For treesitter node parsing
-      'workspace',       --- For checking filetype and index file names of current workspace
+      'workspace', --- For checking filetype and index file names of current workspace
     },
   }
 end
@@ -30,21 +34,64 @@ Link.maps = {
   {
     'n',
     '<CR>',
-    '<ESC>:<C-U>lua require("down.mod.data.link").data.follow.link()<CR>',
+    '<ESC>:<C-U>lua require("down.mod.link").data.follow.link()<CR>',
     'Follow link',
+  },
+  {
+    'n',
+    '<S-TAB>',
+    '<ESC>:<C-U>lua require("down.mod.link").data.goto_prev_link()<CR>',
+    'Go to previous link',
+  },
+  {
+    'n',
+    '<TAB>',
+    '<ESC>:<C-U>lua require("down.mod.link").data.goto_next_link()<CR>',
+    'Go to next link',
   },
 }
 
-Link.load = function()
-end
+Link.commands = {
+  link = {
+    name = 'link',
+    args = 1,
+    condition = 'markdown',
+    callback = function(e)
+      log.trace 'Link.commands.link: Callback'
+      local cmd = e.body[1]
+    end,
+    subcommands = {
+      next = {
+        name = 'link.next',
+        args = 0,
+        condition = 'markdown',
+        callback = Link.data.goto_next_link,
+      },
+      previous = {
+        name = 'link.previous',
+        args = 0,
+        condition = 'markdown',
+        callback = Link.data.goto_prev_link,
+      },
+      select = {
+        name = 'link.select',
+        args = 0,
+        condition = 'markdown',
+        callback = Link.data.select_link,
+      },
+    },
+  },
+}
 
----@class down.mod.data.link.Data
+Link.load = function() end
+
+---@class down.mod.link.Data
 Link.data = {
   parser = function() end,
   mk = {},
   follow = {},
-  ---@enum down.mod.data.link.Type
-  ---@alias down.mod.data.link.Tyoe
+  ---@enum down.mod.link.Type
+  ---@alias down.mod.link.Tyoe
   ---| "local"
   ---| "web"
   ---| "heading"
@@ -56,23 +103,23 @@ Link.data = {
 }
 
 Link.data.dir = function(dir)
-  return vim.fn.expand('%:p:h')
+  return vim.fn.expand '%:p:h'
 end
 
 Link.data.cwd = function(path)
-  return vim.fn.expand('%:p:h') .. config.pathsep .. (path or '')
+  return vim.fn.expand '%:p:h' .. config.pathsep .. (path or '')
 end
 
 Link.data.mk.dir = function(path)
-  return vim.fn.mkdir(vim.fn.expand('%:p:h') .. config.pathsep .. path, 'p')
+  return vim.fn.mkdir(vim.fn.expand '%:p:h' .. config.pathsep .. path, 'p')
 end
 
 Link.data.mk.file = function(path)
   if path:sub(-3) == '.md' then
     return Link.data.cwd(path)
   elseif path:sub(-1) == config.pathsep then
-    Link.data.mkdir(path)
-    io.write(path .. 'index' .. '.md', vim.fn.expand('%:p') .. 'index.md')
+    Link.data.mk.dir(path)
+    io.write(path .. 'index' .. '.md', vim.fn.expand '%:p' .. 'index.md')
   else
     return Link.data.cwd(path .. '.md')
   end
@@ -87,11 +134,11 @@ Link.data.resolve = function(ln)
   elseif ch == '#' then
     return ln:sub(2), 'heading'
   elseif ch == '~' then
-    return os.getenv('HOME') .. config.pathsep .. ln:sub(2), 'local'
+    return os.getenv 'HOME' .. config.pathsep .. ln:sub(2), 'local'
   elseif ln:sub(1, 8) == 'https://' or ln:sub(1, 7) == 'http://' then
     return ln, 'web'
   else
-    return vim.fn.expand('%:p:h') .. config.pathsep .. ln, 'local'
+    return vim.fn.expand '%:p:h' .. config.pathsep .. ln, 'local'
   end
 end
 
@@ -114,6 +161,52 @@ Link.data.next_node = function(node)
   return next, next:type()
 end
 
+Link.data.next_link = function(node)
+  local next = tsu.get_next_node(node)
+  if not next then
+    return
+  end
+  if Link.data.destination(next) ~= nil then
+    return next
+  end
+  return Link.data.next_link(next)
+end
+
+Link.data.prev_link = function(node)
+  local prev = tsu.get_prev_node(node)
+  if not prev then
+    return
+  end
+  if Link.data.destination(prev) ~= nil then
+    return prev
+  end
+  return Link.data.prev_link(prev)
+end
+
+Link.data.goto_next_link = function()
+  local node, nodety = Link.data.cursor()
+  local next = Link.data.next_link(node)
+  if next then
+    tsu.goto_node(next)
+  end
+end
+
+Link.data.goto_prev_link = function()
+  local node, nodety = Link.data.cursor()
+  local prev = Link.data.prev_link(node)
+  if prev then
+    tsu.goto_node(prev)
+  end
+end
+
+Link.data.select_link = function()
+  local node, nodety = Link.data.cursor()
+  local dest = Link.data.destination(node)
+  if dest then
+    vim.fn.setreg('*', dest)
+  end
+end
+
 Link.data.text = function(node)
   return vim.split(ts.get_node_text(node, 0), '\n')[1]
 end
@@ -121,51 +214,45 @@ end
 Link.data.ref = function(node)
   local link_label = Link.data.text(node)
   for _, captures, _ in
-  Link.required['tool.treesitter'].query([[
+    Link.dep['tool.treesitter'].query([[
     (link_reference_definition
       (link_label) @label (#eq? @label "]] .. link_label .. [[")
       (link_destination) @link_destination
-    )]], 'markdown')
+    )]]),
+    'markdown'
   do
-    local capture = vim.treesitter.get_node_text(captures[2], 0)
-    return string.gsub(capture, '[<>]', '')
+    local capture = ts.get_node_text(captures[2], 0)
+    return capture:gsub('[<>]', '')
   end
 end
 
 Link.data.query = function(n, lang)
-  local lt = vim.treesitter.get_parser(0, lang or vim.bo.filetype)
-  local st = lt:parse()[1]
-  local sr = st:root()
-  local pq = vim.treesitter.query.parse(lang or vim.bo.filetype, n)
-  return pq:iter_matches(sr, 0)
+  lang = lang or vim.bo.filetype
+  local lt = ts.get_parser(0, lang):parse()[1]:root()
+  local pq = tsq.parse(lang, n)
+  return pq:iter_matches(lt, 0)
 end
 
 --- Checks whether a node is a wikilink, and if not, checks if parent is a wikilink
 --- If either are, then returns the link destination, otherwise nil
 --- @return string|nil
 Link.data.iswikilink = function(node, parent)
-  if not node and not parent then
-    return nil
+  if node and parent then
+    return ts.get_node_text(parent, 0):iswikilink()
   elseif node and not parent then
-    -- print('node and not parent: ', node:type(), Link.data.text(node))
-    local wikilink = vim.treesitter.get_node_text(node, 0):iswikilink()
-    if wikilink then
-      return wikilink
-    else
-    end
+    return ts.get_node_text(node, 0):iswikilink()
   else
-    -- print(node:type(), Link.data.text(node))
-    -- print(parent:type(), Link.data.text(parent))
-    local wikilink = vim.treesitter.get_node_text(parent, 0):iswikilink()
-    if wikilink then
-      return wikilink
-    end
     return nil
   end
 end
 
-Link.data.destination = function()
-  local node, nodety = Link.data.cursor()
+Link.data.destination = function(nd)
+  local node, nodety
+  if not nd then
+    node, nodety = Link.data.cursor()
+  else
+    node, nodety = node, node:type()
+  end
   local parent = node:parent()
   local wikilink = Link.data.iswikilink(node, parent)
   if wikilink then
@@ -208,12 +295,11 @@ Link.data.destination = function()
         return Link.data.ref(nc)
       end
     end
-  else
-    return
   end
+  return
 end
 
----@class down.mod.data.link.Config
+---@class down.mod.link.Config
 Link.config = {}
 
 Link.data.follow.loc = function(ln)
@@ -223,10 +309,12 @@ Link.data.follow.loc = function(ln)
     local ix = path .. 'index' .. '.md'
     path = path:sub(1, -2)
     if vim.fn.glob(path) == '' then
-      vim.fn.mkdir(vim.fn.fnameescape(path), 'p')
-      return vim.cmd(string.format('edit %s', vim.fn.fnameescape(ix)))
+      local dir, file = vim.fn.fnameescape(path), vim.fn.fnameescape(ix)
+      vim.fn.mkdir(dir, 'p')
+      Link.dep['data.history'].push(file)
+      return vim.cmd(('edit %s'):format(file))
     else
-      return vim.cmd(string.format('edit %s', vim.fn.fnameescape(ix)))
+      return vim.cmd(('edit %s'):format(vim.fn.fnameescape(ix)))
     end
   end
   if path:sub(-3) ~= '.md' then
@@ -238,9 +326,9 @@ Link.data.follow.loc = function(ln)
     mod_ln = path
   end
   if mod_ln and line then
-    vim.cmd(string.format('silent! %s +%s %s', 'e', line, vim.fn.fnameescape(mod_ln)))
+    vim.cmd(('silent! %s +%s %s'):format('e', line, vim.fn.fnameescape(mod_ln)))
   elseif mod_ln and not line then
-    vim.cmd(string.format('silent! %s %s', 'e', vim.fn.fnameescape(mod_ln)))
+    vim.cmd(('silent! %s %s'):format('e', vim.fn.fnameescape(mod_ln)))
   end
 end
 Link.data.follow.heading = function(ln)
@@ -249,6 +337,7 @@ Link.data.follow.heading = function(ln)
   vim.fn.search('\\c^#\\+ *' .. ln, 'ew')
 end
 Link.data.follow.web = function(ln)
+  ---TODO: vim.fn.open
   if config.os == 'linux' then
     vim.fn.system('xdg-open ' .. vim.fn.shellescape(ln))
   elseif config.os == 'mac' then

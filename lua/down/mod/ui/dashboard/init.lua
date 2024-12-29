@@ -3,7 +3,7 @@ local D = require("down.mod").new("ui.dashboard")
 D.setup = function()
   return {
     loaded = true,
-    requires = {},
+    dependencies = {},
   }
 end
 

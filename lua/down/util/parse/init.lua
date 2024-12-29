@@ -25,7 +25,7 @@ local function parse_datetime(text)
   for _, p in ipairs(patterns) do
     local match = { text:match(p.pattern) }
     if #match > 0 then
-      return { type = p.type, value = table.concat(match, " ") }
+      return { type = p.id, value = table.concat(match, " ") }
     end
   end
 

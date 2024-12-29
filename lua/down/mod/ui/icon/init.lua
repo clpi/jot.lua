@@ -11,7 +11,7 @@ local M = mod.new("ui.icon", {
 M.setup = function()
   return {
     loaded = true,
-    requires = {
+    dependencies = {
       "tool.treesitter",
     },
   }
@@ -1151,7 +1151,7 @@ local function prettify_range(bufid, row_start_0b, row_end_0bex)
   -- TODO: optimize
   row_end_0bex = math.min(row_end_0bex + 1, vim.api.nvim_buf_line_count(bufid))
 
-  local tsm = M.required["tool.treesitter"]
+  local tsm = M.dep["tool.treesitter"]
   local document_root = tsm.get_document_root(bufid)
   assert(document_root)
 
@@ -1474,15 +1474,15 @@ local event_handlers = {
 }
 
 M.handle = function(event)
-  if not M.data.enabled and (event.type ~= "cmd.events.icon.toggle") then
+  if not M.data.enabled and (event.id ~= "cmd.events.icon.toggle") then
     return
   end
-  return event_handlers[event.type](event)
+  return event_handlers[event.id](event)
 end
 
 M.load = function()
   local icon =
-    M.import[M.name .. "." .. M.config.icon].config["icon_" .. M.config.icon]
+    M.import[M.id .. "." .. M.config.icon].config["icon_" .. M.config.icon]
   if not icon then
     log.error(
       ("Unable to load icon preset '%s' - such a preset does not exist"):format(
@@ -1499,7 +1499,7 @@ M.load = function()
     M.config.custom or {}
   )
 
-  -- M.required["core.autocommands"].enable_autocommand("BufNewFile")
+  -- M.dep["core.autocommands"].enable_autocommand("BufNewFile")
 
   mod.await("cmd", function(downcmd)
     downcmd.add_commands_from_table({

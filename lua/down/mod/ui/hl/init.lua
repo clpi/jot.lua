@@ -374,7 +374,7 @@ M.config = {
 }
 
 M.setup = function()
-  return { loaded = true, requires = {} }
+  return { loaded = true, dependencies = {} }
 end
 
 M.load = function()

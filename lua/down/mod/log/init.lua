@@ -4,41 +4,62 @@ local lib = require 'down.util.lib'
 local log = require 'down.util.log'
 local mod = require 'down.mod'
 
-local M = require 'down.mod'.new('log')
+local M = mod.new 'log'
+
+M.load = function() end
 
 M.commands = {
   log = {
     min_args = 1,
     max_args = 2,
+    name = 'log',
+    callback = function(e)
+      log.trace(('log %s'):format(e.body))
+    end,
     subcommands = {
-      index = { args = 0, name = 'log.index' },
-      month = { max_args = 1, name = 'log.month' },
-      tomorrow = { args = 0, name = 'log.tomorrow' },
-      yesterday = { args = 0, name = 'log.yesterday' },
-      new = { args = 0, name = 'log.new' },
-      custom = { max_args = 1, name = 'log.custom' }, -- format :yyyy-mm-dd
-      template = { args = 0, name = 'log.template' },
-      toc = {
-        args = 1,
-        name = 'log.toc',
-        subcommands = {
-          open = { args = 0, name = 'log.toc.open' },
-          update = { args = 0, name = 'log.toc.update' },
-        },
+      index = {
+        args = 0,
+        name = 'log.index',
+        callback = M.data.open_index,
+      },
+      month = {
+        max_args = 1,
+        name = 'log.month',
+        callback = M.data.open_month,
+      },
+      tomorrow = {
+        args = 0,
+        name = 'log.tomorrow',
+        callback = M.data.log_tomorrow,
+      },
+      yesterday = {
+        args = 0,
+        callback = M.data.log_yesterday,
+        name = 'log.yesterday',
+      },
+      new = {
+        args = 0,
+        callback = M.data.log_new,
+        name = 'log.new',
+      },
+      custom = {
+        callback = M.data.calendar_months,
+        max_args = 1,
+        name = 'log.custom',
+      }, -- format :yyyy-mm-dd
+      template = {
+        args = 0,
+        name = 'log.template',
+        callback = M.data.create_template,
       },
     },
   },
 }
-M.load = function()
-  if M.config.strategies[M.config.strategy] then
-    M.config.strategy = M.config.strategies[M.config.strategy]
-  end
-end
 
 M.setup = function()
   return {
-    loaded = true,
-    requires = {
+    loaded = function(e) end,
+    dependencies = {
       'ui.calendar',
       'ui.popup',
       'edit.inline',
@@ -46,11 +67,10 @@ M.setup = function()
       'ui.progress',
       'workspace',
       'tool.treesitter',
+      'cmd',
     },
   }
 end
-
--- M.set = M.data.set
 
 ---@class data.log.Config
 M.config = {
@@ -74,13 +94,7 @@ M.config = {
   template_name = 'template.md',
 
   -- Whether to apply the template file to new log entries.
-  use_template = true,
-
-  -- Formatter function used to generate the toc file.
-  -- Receives a table that contains tables like { yy, mm, dd, link, title }.
-  --
-  -- The function must return a table of strings.
-  toc_format = nil,
+  use_template = function(e) end,
 }
 
 M.config.strategies = {
@@ -92,9 +106,31 @@ M.config.strategies = {
 M.data = {
   data = {},
   logs = {},
-  version = '0.1.0',
 
   count = 0,
+  calendar_months = function(e)
+    if not e.content[1] then
+      local calendar = mod.get_mod('ui.calendar')
+      if not calendar then
+        log.error('[ERROR]: `base.calendar` is not loaded! Said M is dep for this operation.')
+        return
+      end
+      M.dep['ui.calendar'].select({
+        callback = vim.schedule_wrap(function(osdate)
+          M.data.open_log(
+            nil,
+            string.format('%04d', osdate.year)
+            .. '-'
+            .. string.format('%02d', osdate.month)
+            .. '-'
+            .. string.format('%02d', osdate.day)
+          )
+        end),
+      })
+    else
+      M.data.open_log(nil, e.content[1])
+    end
+  end,
   get_log = function() end,
   get_logs = function() end,
   open_index = function() end,
@@ -103,8 +139,8 @@ M.data = {
   ---@param custom_date? string #A YYYY-mm-dd string that specifies a date to open the log at instead
   open_log = function(time, custom_date)
     -- TODO(vhyrro): Change this to use down dates!
-    local workspace = M.config.workspace or M.required['workspace'].get_current_workspace()[1]
-    local workspace_path = M.required['workspace'].get_workspace(workspace)
+    local workspace = M.config.workspace or M.dep['workspace'].get_current_workspace()[1]
+    local workspace_path = M.dep['workspace'].get_workspace(workspace)
     local folder_name = M.config.log_folder
     local template_name = M.config.template_name
 
@@ -125,24 +161,23 @@ M.data = {
 
     local path = os.date(
       type(M.config.strategy) == 'function' and M.config.strategy(os.date('*t', time))
-        or M.config.strategy,
+      or M.config.strategy,
       time
     )
 
-    local log_file_exists = M.required['workspace'].file_exists(
-      workspace_path .. '/' .. folder_name .. config.pathsep .. path
-    )
+    local log_file_exists =
+        M.dep['workspace'].file_exists(workspace_path .. '/' .. folder_name .. config.pathsep .. path)
 
-    M.required['workspace'].new_file(folder_name .. config.pathsep .. path, workspace)
+    M.dep['workspace'].new_file(folder_name .. config.pathsep .. path, workspace)
 
-    M.required['workspace'].new_file(folder_name .. config.pathsep .. path, workspace)
+    M.dep['workspace'].new_file(folder_name .. config.pathsep .. path, workspace)
 
     if
-      not log_file_exists
-      and M.config.use_template
-      and M.required['workspace'].file_exists(
-        workspace_path .. '/' .. folder_name .. '/' .. template_name
-      )
+        not log_file_exists
+        and M.config.use_template
+        and M.dep['workspace'].file_exists(
+          workspace_path .. '/' .. folder_name .. '/' .. template_name
+        )
     then
       vim.cmd(
         '$read ' .. workspace_path .. '/' .. folder_name .. '/' .. template_name .. '| silent! w'
@@ -152,13 +187,13 @@ M.data = {
 
   --- Opens a log entry for tomorrow's date
   log_tomorrow = function()
-    -- M.required['ui.progress'].start()
-    M.required['ui.win'].new_new()
+    -- M.dep['ui.progress'].start()
+    M.dep['ui.win'].new_new()
   end,
 
   --- Opens a log entry for yesterday's date
   log_yesterday = function()
-    M.required['ui.win'].win(0)
+    M.dep['ui.win'].win(0)
   end,
 
   --- Opens a log entry for new's date
@@ -180,21 +215,21 @@ M.data = {
     local folder_name = M.config.log_folder
     local template_name = M.config.template_name
 
-    M.required['workspace'].new_file(
+    M.dep['workspace'].new_file(
       folder_name .. config.pathsep .. template_name,
-      workspace or M.required['workspace'].get_current_workspace()[1]
+      workspace or M.dep['workspace'].get_current_workspace()[1]
     )
   end,
 
   --- Opens the toc file
   open_toc = function()
-    local workspace = M.config.workspace or M.required['workspace'].get_current_workspace()[1]
+    local workspace = M.config.workspace or M.dep['workspace'].get_current_workspace()[1]
     local index = mod.mod_config('workspace').index
     local folder_name = M.config.log_folder
 
     -- If the toc exists, open it, if not, create it
-    if M.required['workspace'].file_exists(folder_name .. config.pathsep .. index) then
-      M.required['workspace'].open_file(workspace, folder_name .. config.pathsep .. index)
+    if M.dep['workspace'].file_exists(folder_name .. config.pathsep .. index) then
+      M.dep['workspace'].open_file(workspace, folder_name .. config.pathsep .. index)
     else
       M.data.new_toc()
     end
@@ -202,9 +237,9 @@ M.data = {
 
   --- Creates or updates the toc file
   create_toc = function()
-    local workspace = M.config.workspace or M.required['workspace'].get_current_workspace()[1]
+    local workspace = M.config.workspace or M.dep['workspace'].get_current_workspace()[1]
     local index = mod.mod_config('workspace').index
-    local workspace_path = M.required['workspace'].get_workspace(workspace)
+    local workspace_path = M.dep['workspace'].get_workspace(workspace)
     local workspace_name_for_link = M.config.workspace or ''
     local folder_name = M.config.log_folder
 
@@ -229,8 +264,8 @@ M.data = {
     -- Gets the title from the metadata of a file, must be called in a vim.schedule
     local get_title = function(file)
       local buffer =
-        vim.fn.bufadd(workspace_path .. config.pathsep .. folder_name .. config.pathsep .. file)
-      local meta = M.required['workspace'].get_document_metadata(buffer)
+          vim.fn.bufadd(workspace_path .. config.pathsep .. folder_name .. config.pathsep .. file)
+      local meta = M.dep['workspace'].get_document_metadata(buffer)
       return meta.title
     end
 
@@ -288,16 +323,16 @@ M.data = {
                         tonumber(mname),
                         tonumber(file[1]),
                         '{:$'
-                          .. workspace_name_for_link
-                          .. config.pathsep
-                          .. M.config.log_folder
-                          .. config.pathsep
-                          .. name
-                          .. config.pathsep
-                          .. mname
-                          .. config.pathsep
-                          .. file[1]
-                          .. ':}',
+                        .. workspace_name_for_link
+                        .. config.pathsep
+                        .. M.config.log_folder
+                        .. config.pathsep
+                        .. name
+                        .. config.pathsep
+                        .. mname
+                        .. config.pathsep
+                        .. file[1]
+                        .. ':}',
                         title,
                       })
                     end)
@@ -331,12 +366,12 @@ M.data = {
                 parts[2],
                 parts[3],
                 '{:$'
-                  .. workspace_name_for_link
-                  .. config.pathsep
-                  .. M.config.log_folder
-                  .. config.pathsep
-                  .. file[1]
-                  .. ':}',
+                .. workspace_name_for_link
+                .. config.pathsep
+                .. M.config.log_folder
+                .. config.pathsep
+                .. file[1]
+                .. ':}',
                 title,
               })
             end)
@@ -346,34 +381,34 @@ M.data = {
         vim.schedule(function()
           -- Gets a base format for the entries
           local format = M.config.toc_format
-            or function(entries)
-              local months_text = M.data.months
-              -- Convert the entries into a certain format to be written
-              local output = {}
-              local current_year
-              local current_month
-              for _, entry in ipairs(entries) do
-                -- Don't print the year and month if they haven't changed
-                if not current_year or current_year < entry[1] then
-                  current_year = entry[1]
-                  current_month = nil
-                  table.insert(output, '* ' .. current_year)
-                end
-                if not current_month or current_month < entry[2] then
-                  current_month = entry[2]
-                  table.insert(output, '** ' .. months_text[current_month])
+              or function(entries)
+                local months_text = require 'down.mod.note.util'.months
+                -- Convert the entries into a certain format to be written
+                local output = {}
+                local current_year
+                local current_month
+                for _, entry in ipairs(entries) do
+                  -- Don't print the year and month if they haven't changed
+                  if not current_year or current_year < entry[1] then
+                    current_year = entry[1]
+                    current_month = nil
+                    table.insert(output, '* ' .. current_year)
+                  end
+                  if not current_month or current_month < entry[2] then
+                    current_month = entry[2]
+                    table.insert(output, '** ' .. months_text[current_month])
+                  end
+
+                  -- Prints the file link
+                  table.insert(output, '   ' .. entry[4] .. string.format('[%s]', entry[5]))
                 end
 
-                -- Prints the file link
-                table.insert(output, '   ' .. entry[4] .. string.format('[%s]', entry[5]))
+                return output
               end
 
-              return output
-            end
-
-          M.required['workspace'].new_file(
+          M.dep['workspace'].new_file(
             folder_name .. config.pathsep .. index,
-            workspace or M.required['workspace'].get_current_workspace()[1]
+            workspace or M.dep['workspace'].get_current_workspace()[1]
           )
 
           -- The current buffer now must be the toc file, so we set our toc entries there
@@ -385,67 +420,16 @@ M.data = {
   end,
 }
 
-M.handle = function(event)
-  if event.split_type[1] == 'cmd' then
-    if event.split_type[2] == 'log.index' then
-      M.data.open_index()
-      -- pop.new(())
-    elseif event.split_type[2] == 'log.month' then
-      M.data.open_month()
-    elseif event.split_type[2] == 'log.tomorrow' then
-      M.data.log_tomorrow()
-    elseif event.split_type[2] == 'log.yesterday' then
-      M.data.log_yesterday()
-    elseif event.split_type[2] == 'log.custom' then
-      if not event.content[1] then
-        local calendar = mod.get_mod('ui.calendar')
-
-        if not calendar then
-          log.error(
-            '[ERROR]: `base.calendar` is not loaded! Said M is required for this operation.'
-          )
-          return
-        end
-
-        M.required['calendar'].select({
-          callback = vim.schedule_wrap(function(osdate)
-            M.data.open_log(
-              nil,
-              string.format('%04d', osdate.year)
-                .. '-'
-                .. string.format('%02d', osdate.month)
-                .. '-'
-                .. string.format('%02d', osdate.day)
-            )
-          end),
-        })
-      else
-        M.data.open_log(nil, event.content[1])
-      end
-    elseif event.split_type[2] == 'log.new' then
-      M.data.log_new()
-    elseif event.split_type[2] == 'log.template' then
-      M.data.new_template()
-    elseif event.split_type[2] == 'log.toc.open' then
-      M.data.open_toc()
-    elseif event.split_type[2] == 'log.toc.update' then
-      M.data.new_toc()
-    end
-  end
-end
-
-M.subscribed = {
-  cmd = {
-    ['log.index'] = true,
-    ['log.month'] = true,
-    ['log.yesterday'] = true,
-    ['log.tomorrow'] = true,
-    ['log.new'] = true,
-    ['log.custom'] = true,
-    ['log.template'] = true,
-    ['log.toc.update'] = true,
-    ['log.toc.open'] = true,
-  },
-}
+-- M.handle = {
+--   cmd = {
+--     ['log.index'] = M.data.open_index,
+--     ['log.month'] = M.data.open_month,
+--     ['log.yesterday'] = M.data.log_yesterday,
+--     ['log.tomorrow'] = M.data.log_tomorrow,
+--     ['log.new'] = M.data.log_new,
+--     ['log.custom'] = function(e) end,
+--     ['log.template'] = M.data.new_template,
+--   },
+-- }
 
 return M

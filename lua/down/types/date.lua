@@ -1,4 +1,4 @@
---- @meta down.types.date
+--- @meta down.ids.date
 ---
 --- The time part of the datetime.
 --- @class (exact) down.Time Time

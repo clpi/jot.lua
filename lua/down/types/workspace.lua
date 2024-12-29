@@ -1,4 +1,4 @@
---- @meta down.types.workspcae
+--- @meta down.ids.workspcae
 
 --- The local config for setting up workspaces.
 --- @alias down.Workspace down.store.KindId

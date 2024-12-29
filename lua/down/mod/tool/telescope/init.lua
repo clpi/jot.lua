@@ -7,7 +7,7 @@ M.setup = function()
   if tok then
     return {
       loaded = true,
-      requires = { 'workspace' },
+      dependencies = { 'workspace' },
     }
   else
     return {
@@ -59,33 +59,29 @@ M.data.load_pickers = function()
   M.data.pickers = r
   return r
 end
-M.subscribed = {
-  cmd = {
-    ['find.files'] = true,
-    ['find'] = true,
-    ['find.links'] = true,
-    ['find.tags'] = true,
-    ['find.workspace'] = true,
-  },
-}
 M.commands = {
   find = {
     args = 0,
     name = 'find',
+    callback = require 'telescope._extensions.down.picker.files',
     subcommands = {
       links = {
+        callback = require 'telescope._extensions.down.picker.links',
         name = 'find.links',
         args = 0,
       },
       tags = {
+        callback = require 'telescope._extensions.down.picker.tags',
         name = 'find.tags',
         args = 0,
       },
       files = {
+        callback = require 'telescope._extensions.down.picker.files',
         name = 'find.files',
         args = 0,
       },
       workspace = {
+        callback = require 'telescope._extensions.down.picker.workspace',
         name = 'find.workspace',
         args = 0,
       },
@@ -96,7 +92,7 @@ M.load = function()
   assert(tok)
   M.data.load_pickers()
   if tok then
-    t.load_extension('down')
+    t.load_extension 'down'
     for _, pic in ipairs(M.config.enabled) do
       vim.keymap.set('n', '<plug>down.telescope.' .. pic .. '', M.data.pickers[pic])
     end
@@ -106,34 +102,21 @@ M.load = function()
 end
 
 M.maps = {
-  { 'n', ',df', '<cmd>Telescope down files<CR>', 'Telescope down files' },
-  { 'n', ',dt', '<cmd>Telescope down tags<CR>', 'Telescope down tags' },
-  { 'n', ',dk', '<cmd>Telescope down links<CR>', 'Telescope down links' },
+  { 'n', ',df', '<cmd>Telescope down files<CR>',     'Telescope down files' },
+  { 'n', ',dF', '<cmd>Telescope down<CR>',           'Telescope down' },
+  { 'n', ',dt', '<cmd>Telescope down tags<CR>',      'Telescope down tags' },
+  { 'n', ',dk', '<cmd>Telescope down links<CR>',     'Telescope down links' },
   { 'n', ',dW', '<cmd>Telescope down workspace<CR>', 'Telescope down workspaces' },
 }
 
-M.handle = function(event)
-  if event.split[1] == 'cmd' then
-    if event.split[2] == 'find' then
-      require('telescope._extensions.down.picker.files')()
-    elseif event.split[2] == 'find.files' then
-      if M.config.enabled['files'] ~= nil then
-        require('telescope._extensions.down.picker.files')()
-      end
-    elseif event.split[2] == 'find.tags' then
-      if M.config.enabled['tags'] ~= nil then
-        require('telescope._extensions.down.picker.tags')()
-      end
-    elseif event.split[2] == 'find.links' then
-      if M.config.enabled['links'] ~= nil then
-        require('telescope._extensions.down.picker.links')()
-      end
-    elseif event.split[2] == 'find.workspace' then
-      if M.config.enabled['workspace'] ~= nil then
-        require('telescope._extensions.down.picker.workspace')()
-      end
-    end
-  end
-end
+-- M.handle = {
+--   cmd = {
+--     ['find'] =
+--     ['find.files'] = require('telescope._extensions.down.picker.files'),
+--     ['find.tags'] = require('telescope._extensions.down.picker.tags'),
+--     ['find.workspace'] = require('telescope._extensions.down.picker.workspace'),
+--     ['find.links'] = require('telescope._extensions.down.picker.links'),
+--   },
+-- }
 
 return M

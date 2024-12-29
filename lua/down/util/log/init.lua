@@ -19,31 +19,35 @@ local vl, a, lvl, ext = vim.log, vim.api, vim.log.levels, vim.tbl_deep_extend
 
 --- User config section
 --- @type down.log.Config
-local default_config = {
-  plugin = 'down',
+local default_config = function(plug)
+  return {
+    plugin = plug or 'down',
 
-  use_console = true,
+    use_console = false,
 
-  highlights = true,
+    highlights = true,
 
-  use_file = true,
+    use_file = true,
 
-  level = 'trace',
+    level = 'trace',
 
-  ---@type number
-  lvl = vim.log.levels.TRACE,
+    outfile = string.format('%s/%s.log', a.nvim_call_function('stdpath', { 'data' }), plug or 'down'),
 
-  modes = {
-    trace = { hl = 'Comment', level = lvl.TRACE },
-    debug = { hl = 'Comment', level = lvl.DEBUG },
-    info = { hl = 'None', level = lvl.INFO },
-    warn = { hl = 'WarningMsg', level = lvl.WARN },
-    error = { hl = 'ErrorMsg', level = lvl.ERROR },
-    fatal = { hl = 'ErrorMsg', level = 5 },
-  },
+    ---@type number
+    lvl = vim.log.levels.TRACE,
 
-  float_precision = 0.01,
-}
+    modes = {
+      trace = { hl = 'Comment', level = lvl.TRACE },
+      debug = { hl = 'Comment', level = lvl.DEBUG },
+      info = { hl = 'None', level = lvl.INFO },
+      warn = { hl = 'WarningMsg', level = lvl.WARN },
+      error = { hl = 'ErrorMsg', level = lvl.ERROR },
+      fatal = { hl = 'ErrorMsg', level = 5 },
+    },
+
+    float_precision = 0.01,
+  }
+end
 
 local Log = {
   levels = {
@@ -54,52 +58,35 @@ local Log = {
     error = 4,
     fatal = 5,
   },
-  config = default_config,
+  config = default_config('down'),
 }
 
 Log.get_default_config = function()
-  return default_config
-end
-Log.get_base_config = function()
-  return default_config
+  return default_config('down')
 end
 
 -- local unpack = unpack or table.unpack
 
 Log.debug = function(...)
-  if vim.log.levels.DEBUG >= Log.config.lvl then
-    Log.at_level('debug', Log.config.modes['debug'], Log.format, ...)
-  end
+  Log.at_level('debug', Log.config.modes['debug'], Log.format, ...)
 end
 Log.warn = function(...)
-  if vim.log.levels.WARN >= Log.config.lvl then
-    Log.at_level('warn', Log.config.modes['warn'], Log.format, ...)
-  end
+  Log.at_level('warn', Log.config.modes['warn'], Log.format, ...)
 end
 Log.info = function(...)
-  if vim.log.levels.INFO >= Log.config.lvl then
-    Log.at_level('info', Log.config.modes['info'], Log.format, ...)
-  end
+  Log.at_level('info', Log.config.modes['info'], Log.format, ...)
 end
 Log.error = function(...)
-  if vim.log.levels.ERROR >= Log.config.lvl then
-    Log.at_level('error', Log.config.modes['error'], Log.format, ...)
-  end
+  Log.at_level('error', Log.config.modes['error'], Log.format, ...)
 end
 Log.fatal = function(...)
-  if 5 >= Log.config.lvl then
-    Log.at_level('fatal', Log.config.modes['fatal'], Log.format, ...)
-  end
+  Log.at_level('fatal', Log.config.modes['fatal'], Log.format, ...)
 end
 Log.trace = function(...)
-  if vim.log.levels.TRACE >= Log.config.lvl then
-    Log.at_level('trace', Log.config.modes['trace'], Log.format, ...)
-  end
+  Log.at_level('trace', Log.config.modes['trace'], Log.format, ...)
 end
 
 Log.at_level = function(level, level_config, message_maker, ...)
-  local outfile =
-    string.format('%s/%s.log', a.nvim_call_function('stdpath', { 'data' }), Log.config.plugin)
   if Log.levels[level] < Log.levels[Log.config.level] then
     return
   end
@@ -115,28 +102,28 @@ Log.at_level = function(level, level_config, message_maker, ...)
 
     if Log.config.highlights and level_config.hl then
       (vim.schedule_wrap(function()
-        -- vim.cmd(string.format('echohl %s', level_config.hl))
+        vim.cmd(string.format('echohl %s', level_config.hl))
       end))()
     end
 
     (vim.schedule_wrap(function()
-      -- vim.notify(
-      --   string.format('[%s] %s', Log.config.plugin, vim.fn.escape(v, '"')),
-      --   level_config.level
-      -- )
-      -- vim.cmd(string.format([[echom "[%s] %s"]], config.plugin, vim.fn.escape(v, '"')))
+      vim.notify(
+        string.format('[%s] %s', Log.config.plugin, vim.fn.escape(v, '"')),
+        level_config.level
+      )
+      -- vim.cmd(string.format([[echom [%s] %s]], Log.config.plugin, vim.fn.escape(v, '"')))
     end))()
 
     if Log.config.highlights and level_config.hl then
       (vim.schedule_wrap(function()
-        -- vim.cmd('echohl NONE')
+        vim.cmd('echohl NONE')
       end))()
     end
   end
 
   -- Output to log file
   if Log.config.use_file then
-    local fp = assert(io.open(outfile, 'a'))
+    local fp = assert(io.open(Log.config.outfile, 'a'))
     local str = string.format('[%-6s%s] %s: %s\n', nameupper, os.date(), lineinfo, msg)
     fp:write(str)
     fp:close()
@@ -178,7 +165,7 @@ end
 --- @param cfg down.log.Config
 --- @param standalone boolean
 Log.new = function(cfg, standalone)
-  cfg = vim.tbl_deep_extend('force', default_config, cfg)
+  cfg = vim.tbl_deep_extend('force', default_config('down'), cfg)
   cfg.plugin = 'down' -- Force the plugin name to be down
   Log.config = cfg
   for m, v in ipairs(cfg.modes) do

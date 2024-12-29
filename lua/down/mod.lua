@@ -19,7 +19,7 @@ local Mod = {
       loaded = true,
       replaces = {},
       merge = false,
-      requires = {},
+      dependencies = {},
     }
   end,
   load = function()
@@ -31,34 +31,63 @@ local Mod = {
   opts = {},
   maps = {},
   commands = {},
-  handle = function(e)
-    -- print('load' .. e)
-  end,
-  name = '',
-  namespace = '',
+  handle = {},
+  id = '',
+  namespace = vim.api.nvim_create_namespace('down.mod'),
   data = {},
   config = {},
   events = {},
-  subscribed = {},
-  required = {},
+  dep = {},
   import = {},
   tests = {},
 }
 
----@type metatable
 Mod.data.metatable = {
-  __index = function(self, k)
-    return self.required[k]
-  end,
-  __newindex = function(self, k, v)
-    self.data[k] = v
-  end,
-  __eq = function(m1, m2)
-    return m1.name == m2.name
-  end,
-  __call = function(self, fun, ...)
-    return self.data[fun](...)
-  end,
+  ---@type metatable
+  handle = {
+    __index = function(self, k)
+      if type(k) == 'table' then
+        if k.split then
+          return self[k.split[1]][k.split[2]]
+        end
+        return self[k[1]][k[2]]
+      elseif type(k) == 'string' then
+        local ks = string.split(k, '%.')
+        if #ks == 1 then
+          return self[ks[1]]
+        end
+        return self[ks[1]][ks[2]]
+      end
+      return self[k]
+    end,
+    __newindex = function(self, k, v)
+      self[k] = v
+    end,
+    __call = function(self, e, ...)
+      if e then
+        if self[e] and type(self[e]) == 'function' then
+          return self[e](e)
+        end
+        return self[e](e)
+      end
+      return self(e)
+    end,
+  },
+  ---@type metatable
+  mod = {
+    __index = function(self, k)
+      return self.dep[k]
+    end,
+    __newindex = function(self, k, v)
+      self.data[k] = v
+    end,
+    __eq = function(m1, m2)
+      return m1.id == m2.id
+    end,
+    __call = function(self, fun, ...)
+      return self.data[fun](...)
+    end,
+  },
 }
 
 Mod.mods = {}
@@ -78,7 +107,7 @@ Mod.default = {
       loaded = true,
       replaces = {},
       merge = false,
-      requires = {},
+      dependencies = {},
     }
   end,
   ---@return down.Mod
@@ -95,16 +124,14 @@ Mod.default = {
       end,
       opts = {},
       maps = {},
-      handle = function(e)
-        -- print('load' .. e)
-      end,
-      name = n,
+      -- handle = setmetatable({}, Mod.data.metatable.handle),
+      handle = {},
+      id = n,
       namespace = vim.api.nvim_create_namespace('down.mod.' .. n),
       data = {},
       config = {},
       events = {},
-      subscribed = {},
-      required = {},
+      dep = {},
       import = {},
       tests = {},
     }, Mod.data.metatable)
@@ -135,11 +162,11 @@ Mod.delete = function(mod)
   return nil
 end
 
---- @param m down.Mod.Mod The actual init to load.
---- @return down.Mod|nil # Whether the init successfully loaded.
+--- @param m down.Mod.Mod The actual mod to load.
+--- @return down.Mod|nil # Whether the mod successfully loaded.
 Mod.load_mod_from_table = function(m, cfg)
-  if Mod.mods[m.name] ~= nil then
-    return Mod.mods[m.name]
+  if Mod.mods[m.id] ~= nil then
+    return Mod.mods[m.id]
   end
   local mod_load = m.setup and m.setup() or Mod.default.setup()
   ---@type down.Mod
@@ -147,23 +174,21 @@ Mod.load_mod_from_table = function(m, cfg)
   if mod_load.replaces and mod_load.replaces ~= '' then
     mod_to_replace = vim.deepcopy(Mod.mods[mod_load.replaces])
   end
-  Mod.mods[m.name] = m
-  if mod_load.requires and vim.tbl_count(mod_load.requires) then
-    for _, req in pairs(mod_load.requires) do
+  Mod.mods[m.id] = m
+  if mod_load.dependencies and vim.tbl_count(mod_load.dependencies) then
+    for _, req in pairs(mod_load.dependencies) do
       if not Mod.is_loaded(req) then
         if not Mod.load_mod(req) then
-          return Mod.delete(m.name)
+          return Mod.delete(m.id)
         end
-      else
-        log.trace('already loaded ' .. m.name)
       end
-      m.required[req] = Mod.mods[req].data
+      m.dep[req] = Mod.mods[req].data
     end
   end
   if mod_to_replace then
-    m.name = mod_to_replace.name
+    m.id = mod_to_replace.id
     if mod_to_replace.replaced then
-      return Mod.delete(m.name)
+      return Mod.delete(m.id)
     end
     if mod_load.merge then
       m = vim.tbl_deep_extend('force', m, mod_to_replace)
@@ -171,7 +196,7 @@ Mod.load_mod_from_table = function(m, cfg)
     m.replaced = true
   end
   Mod.mod_load(m)
-  return Mod.mods[m.name]
+  return Mod.mods[m.id]
 end
 
 --- @param modn string
@@ -189,9 +214,9 @@ function Mod.check_mod(modn)
   return modl
 end
 
---- @param modn string A path to a init on disk. A path in down is '.', not '/'.
---- @param cfg table? A config that reflects the structure of `down.config.user.setup["init.name"].config`.
---- @return down.Mod|nil # Whether the init was successfully loaded.
+--- @param modn string A path to a mod on disk. A path in down is '.', not '/'.
+--- @param cfg table? A config that reflects the structure of `down.config.user.setup["mod.id"].config`.
+--- @return down.Mod|nil # Whether the mod was successfully loaded.
 function Mod.load_mod(modn, cfg)
   if Mod.mods[modn] then
     if cfg ~= nil then
@@ -209,54 +234,54 @@ function Mod.load_mod(modn, cfg)
   return Mod.load_mod_from_table(modl)
 end
 
---- Has the same principle of operation as load_mod_from_table(), except it then sets up the parent init's "required" table, allowing the parent to access the child as if it were a dependency.
+--- Has the same principle of operation as load_mod_from_table(), except it then sets up the parent mod's "dep" table, allowing the parent to access the child as if it were a dependency.
 --- @param md down.Mod A valid table as returned by mod.new()
---- @param parent_mod string|down.Mod If a string, then the parent is searched for in the loaded mod. If a table, then the init is treated as a valid init as returned by mod.new()
+--- @param parent_mod string|down.Mod If a string, then the parent is searched for in the loaded mod. If a table, then the mod is treated as a valid mod as returned by mod.new()
 function Mod.load_mod_as_dependency_from_table(md, parent_mod)
   if Mod.load_mod_from_table(md) then
     if type(parent_mod) == 'string' then
-      Mod.mods[parent_mod].required[md.name] = md.data
+      Mod.mods[parent_mod].dep[md.id] = md.data
     elseif type(parent_mod) == 'table' then
-      parent_mod.required[md.name] = md.data
+      parent_mod.dep[md.id] = md.data
     end
   end
 end
 
---- Normally loads a init, but then sets up the parent init's "required" table, allowing the parent init to access the child as if it were a dependency.
---- @param modn string A path to a init on disk. A path  in down is '.', not '/'
---- @param parent_mod string The name of the parent init. This is the init which the dependency will be attached to.
---- @param cfg? table A config that reflects the structure of down.config.user.setup["init.name"].config
+--- Normally loads a mod, but then sets up the parent mod's "dep" table, allowing the parent mod to access the child as if it were a dependency.
+--- @param modn string A path to a mod on disk. A path  in down is '.', not '/'
+--- @param parent_mod string The name of the parent mod. This is the mod which the dependency will be attached to.
+--- @param cfg? table A config that reflects the structure of down.config.user.setup["mod.id"].config
 function Mod.load_mod_as_dependency(modn, parent_mod, cfg)
   if Mod.load_mod(modn, cfg) and Mod.is_loaded(parent_mod) then
-    Mod.mods[parent_mod].required[modn] = Mod.mod_config(modn)
+    Mod.mods[parent_mod].dep[modn] = Mod.mod_config(modn)
   end
 end
 
---- Returns the init.config table if the init is loaded
---- @param modn string The name of the init to retrieve (init must be loaded)
+--- Returns the mod.config table if the mod is loaded
+--- @param modn string The name of the mod to retrieve (mod must be loaded)
 --- @return table?
 function Mod.mod_config(modn)
   if not Mod.is_loaded(modn) then
-    log.trace('Attempt to get init config with name' .. modn .. 'failed - init is not loaded.')
+    log.trace('Attempt to get mod config with name' .. modn .. 'failed - mod is not loaded.')
     return
   end
   return Mod.mods[modn].config
 end
 
---- Retrieves the public API exposed by the init.
+--- Retrieves the public API exposed by the mod.
 --- @generic T
---- @param modn `T` The name of the init to retrieve.
+--- @param modn `T` The name of the mod to retrieve.
 --- @return T?
 function Mod.get_mod(modn)
   if not Mod.is_loaded(modn) then
-    log.trace('Attempt to get init with name' .. modn .. 'failed - init is not loaded.')
+    log.trace('Attempt to get mod with name' .. modn .. 'failed - mod is not loaded.')
     return
   end
   return Mod.mods[modn].data
 end
 
---- Returns true if init with name modn is loaded, false otherwise
---- @param modn string The name of an arbitrary init
+--- Returns true if mod with name modn is loaded, false otherwise
+--- @param modn string The name of an arbitrary mod
 --- @return down.Mod|nil
 function Mod.is_loaded(modn)
   if Mod.mods[modn] ~= nil then
@@ -265,8 +290,8 @@ function Mod.is_loaded(modn)
   return nil
 end
 
---- Executes `callback` once `init` is a valid and loaded init, else the callback gets instantly executed.
---- @param modn string The name of the init to listen for.
+--- Executes `callback` once `mod` is a valid and loaded mod, else the callback gets instantly executed.
+--- @param modn string The name of the mod to listen for.
 --- @param callback fun(mod_public_table: table)
 function Mod.await(modn, cb)
   if Mod.is_loaded(modn) then
@@ -277,14 +302,15 @@ function Mod.await(modn, cb)
   Event.callback('mod_loaded', function(_, m)
     cb(m.data)
   end, function(event)
-    return event.body.name == modn
+    return event.body.id == modn
   end)
 end
 
 ---@param m down.Mod
 function Mod.load_opts(m)
   if m.opts then
-    for i, k in ipairs(m.opts) do
+    for i, k in pairs(m.opts) do
+      vim.bo[i] = k
     end
   end
 end
@@ -311,6 +337,7 @@ end
 function Mod.mod_load(m)
   Mod.load_maps(m)
   Mod.load_opts(m)
+  Event.load_cb(m)
   if m.load then
     m.load()
   end
@@ -321,7 +348,7 @@ Mod.get = function(m)
   if ok then
     return pc
   else
-    log.error('U.load_mod: could not load mod ' .. 'down.mod.' .. m)
+    log.error('Mod.get: could not load mod ' .. 'down.mod.' .. m)
     return nil
   end
 end
@@ -337,59 +364,119 @@ end
 
 ---@param m down.Mod
 Mod.test = function(m)
+  log.info("Mod.test: Performing tests for ", m.id, ": ")
   if m.tests then
     for tn, test in m.tests do
-      log.info('Running test ', tn, ' for ', m.name, ':')
-      test(m)
+      log.info('Mod.test: Running test ', tn, ' for ', m.id, ': ', test(m))
     end
   end
 end
 
-Mod.handle_event = function(e)
-  for m, mod in pairs(Mod.mods) do
-    if mod.subscribed[e.type] then
-      mod.subscribed[e.type]()
-    end
+---@param cmds down.Commands
+---@return boolean
+Mod.handle_cmd = function(self, e, cmd, cmds, ...)
+  log.trace("Mod.handle_cmd: Handling cmd ", cmd, " for mod ", self.id)
+  if not cmds or type(cmds) ~= 'table' or not cmds[cmd] then
+    return false
   end
+  local cc = cmds[cmd]
+  if cc.name and cc.name == cmd and cc.callback then
+    if not self.handle then
+      self.handle = {}
+    end
+    if not self.handle['cmd'] then
+      self.handle['cmd'] = {}
+    end
+    if not self.handle['cmd'][cmd] then
+      self.handle['cmd'][cmd] = cc.callback
+    end
+    cc.callback(e)
+    return true
+  elseif cc.subcommands then
+    return Mod.handle_cmd(self, e, cmd, cc.subcommands, ...)
+  end
+  return false
+end
+
+--- @param e down.Event
+--- @param self down.Mod
+--- @param ... any
+--- @return boolean
+Mod.handle_event = function(self, e, ...)
+  log.trace("Mod.handle_event: Handling event ", e.id, " for mod ", self.id)
+  if self.handle and self.handle[e.split[1]] and self.handle[e.split[1]][e.split[2]] then
+    self.handle[e.split[1]][e.split[2]](e)
+    return true
+  elseif e.split[1] == 'cmd' then
+    return Mod.handle_cmd(self, e, e.split[2], self.commands, ...)
+  end
+  return false
 end
 
 --- @param m down.Mod.Mod
---- @param name string
+--- @param id string
 --- @param body table
 --- @param ev? table
 --- @return down.Event?
-function Mod.new_event(m, type, body, ev)
-  return Event.new(m, type, body, ev)
+function Mod.new_event(m, id, body, ev)
+  return Event.new(m, id, body, ev)
 end
 
----@type fun(module: down.Mod.Mod, name: string): down.Event
+---@type fun(module: down.Mod.Mod, id: string): down.Event
 ---@return down.Event
-function Mod.define_event(module, name)
-  return Event.define(module, name)
+function Mod.define_event(module, nid)
+  return Event.define(module, nid)
 end
 
+---@param e down.Event
 function Mod.broadcast(e)
-  Event.broadcast_to(e, Mod.mods)
+  Event.handle(e)
+  log.trace("Mod.broadcast: Broadcasting event", e.id)
+  for mn, m in pairs(Mod.mods) do
+    if Mod.handle_event(m, e) then
+      log.trace('Mod.broadcast: Broadcast success: ', e.id, ' to mod ', mn)
+    end
+  end
 end
 
-return setmetatable(Mod, {
-  ---@param self down.mod.base.Base
-  ---@param modname string
-  __call = function(self, modname, ...)
-    return self.new(modname, ...)
-  end,
-  -- --- @param self down.mod.base.Base
-  -- --- @param modname string A path to a init on disk. A path in down is '.', not '/'.
-  -- --- @param modcfg table? A config that reflects the structure of `down.config.user.setup["init.name"].config`.
-  -- --- @return boolean # Whether the init was successfully loaded.
-  -- __index = function(self, modname)
-  --   return self.load_mod(modname)
-  -- end,
-  -- --- @param self down.Mod
-  -- --- @param modn string A path to a init on disk. A path in down is '.', not '/'.
-  -- --- @param cfg table? A config that reflects the structure of `down.config.user.setup["init.name"].config`.
-  -- --- @return boolean # Whether the init was successfully loaded.
-  -- __newindex = function(self, modn, value)
-  --   return self.load_mod(modn, value)
-  -- end,
-})
+--- Returns an event template defined in `mod.events`.
+--- @param m down.Mod.Mod A reference to the mod invoking the function
+--- @param id string A full path to a valid event type (e.g. `mod.events.some_event`)
+--- @return down.Event?
+function Mod.get_event(self, id)
+  local split = Event.split_id(id)
+  if not split then
+    log.warn('Unable to get event template for event' .. tid .. 'and mod' .. self.id)
+    return
+  end
+  log.trace('Returning' .. split[2] .. 'for mod' .. split[1])
+  return self.events[split[2]]
+end
+
+return Mod
+-- ---@param self down.mod.base.Base
+-- ---@param modname string
+-- __call = function(self, modname, sub)
+--   return self.new(modname, sub or {})
+-- end,
+-- __index = function(self, k)
+--   return self.mods[k]
+-- end,
+-- __newindex = function(self, k, v)
+--   self.mods[k] = v
+-- end,
+-- --- @param self down.mod.base.Base
+-- --- @param modname string A path to a mod on disk. A path in down is '.', not '/'.
+-- --- @param modcfg table? A config that reflects the structure of `down.config.user.setup["mod.id"].config`.
+-- --- @return boolean # Whether the mod was successfully loaded.
+-- __index = function(self, modname)
+--   return self.load_mod(modname)
+-- end,
+-- --- @param self down.Mod
+-- --- @param modn string A path to a mod on disk. A path in down is '.', not '/'.
+-- --- @param cfg table? A config that reflects the structure of `down.config.user.setup["mod.id"].config`.
+-- --- @return boolean # Whether the mod was successfully loaded.
+-- __newindex = function(self, modn, value)
+--   return self.load_mod(modn, value)
+-- end,
+-- })

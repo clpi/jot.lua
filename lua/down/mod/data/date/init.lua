@@ -143,7 +143,7 @@ M.config = {
 M.setup = function()
   ---@type down.mod.Setup
   return {
-    requires = {
+    dependencies = {
 
     },
     loaded = true,

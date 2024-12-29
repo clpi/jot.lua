@@ -1,8 +1,7 @@
----@meta down.types.event
+---@meta down.ids.event
 ---
 --- @class (exact) down.Event
----   @field type string The type of the event. Exists in the format of `category.name`.
----   @field topic string The type of the event. Exists in the format of `category.name`.
+---   @field id string The type of the event. Exists in the format of `category.id`.
 ---   @field split string[] The event type, just split on every `.` character, e.g. `{ "category", "name" }`.
 ---   @field body? table|any The content of the event. The data found here is specific to each individual event. Can be thought of as the payload.
 ---   @field ref string The name of the init that triggered the event.

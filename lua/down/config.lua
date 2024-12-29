@@ -21,12 +21,8 @@ end
 local Config = {
   --- Start in dev mode
   dev = false,
-  log = {},
-  log_config = {
-    level = 'trace',
-    lvl = 0,
-  },
-
+  ---@type down.log.Config
+  log = require 'down.util.log'.config,
   workspace = {
     default = vim.fn.getcwd(0),
   },
@@ -100,7 +96,8 @@ function Config.setup(self, user, default, ...)
   if self.started or not user or vim.tbl_isempty(user) then
     return false
   end
-  self.log = log.new(self.log_config, true)
+  log.new(self.log, false)
+  log.info("Config.setup: Log started")
   user = vim.tbl_deep_extend('force', user, default)
   self.user = vim.tbl_deep_extend('force', self.user, user)
   if self.user.hook then

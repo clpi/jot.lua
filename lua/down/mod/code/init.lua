@@ -1,4 +1,5 @@
-local mod = require('down.mod')
+local mod = require 'down.mod'
+local log = require 'down.util.log'
 
 --- @class down.mod.Code: down.Mod
 local Code = mod.new('code', { 'snippet', 'run' })
@@ -21,17 +22,32 @@ Code.commands = {
     name = "code",
     condition = "markdown",
     args = 1,
+    callback = function(e)
+      log.trace(('Code.commands.code callback: %s'):format(e.body))
+    end,
     subcommands = {
       edit = {
         args = 0,
+        condition = 'markdown',
+        callback = function(e)
+          log.trace(('Code.commands.edit cb: %s'):format(e.body))
+        end,
         name = "code.edit",
       },
       run = {
         args = 0,
+        condition = 'markdown',
+        callback = function(e)
+          log.trace(('Code.commands.run cb: %s'):format(e.body))
+        end,
         name = "code.run",
       },
       save = {
         args = 0,
+        condition = 'markdown',
+        callback = function(e)
+          log.trace(('Code.commands.save cb: %s'):format(e.body))
+        end,
         name = "code.save",
       }
     }
@@ -44,8 +60,9 @@ end
 Code.setup = function()
   return {
     loaded = true,
-    requires = {
+    dependencies = {
       'cmd',
+      'data',
       'workspace',
     },
   }

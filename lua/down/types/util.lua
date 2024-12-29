@@ -1,4 +1,4 @@
----@meta data.types.util
+---@meta data.ids.util
 ---
 --- The data object for workspaces.
 --- @class (exact) down.HasInfo: down.Tagged, down.HasScope, down.HasMetadata The info object.
@@ -35,7 +35,7 @@
 ---
 --- @class (exact) down.Flagged: { flags?: down.Flag[] } Has tags
 ---
---- @class (exact) down.NameUri: down.HasUri, down.HasName Has data store with list of values
+--- @class (exact) down.idUri: down.HasUri, down.HasName Has data store with list of values
 ---
 --- @class (exact) down.HasList<V>: { data?: { [number]: V } } Has data list
 ---

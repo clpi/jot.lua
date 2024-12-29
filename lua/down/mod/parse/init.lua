@@ -3,7 +3,7 @@ local P = require 'down.mod'.create('parse')
 P.setup = function()
   return {
     loaded = true,
-    requires = {
+    dependencies = {
       'tool.treesitter'
     }
   }

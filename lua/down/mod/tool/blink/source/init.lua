@@ -43,7 +43,7 @@ function Src:get_completiosn(ctx, cb)
       ---@type blink.cmp.CompletionItem
       completion = completion
       local item = {
-        kind = require("blink.cmp.types").CompletionItemKind.Lsp,
+        kind = require("blink.cmp.ids").CompletionItemKind.Lsp,
         -- label = "cmp",
         label = completion.displayText,
         insertTextFormat = vim.lsp.protocol.InsertTextFormat.PlainText,

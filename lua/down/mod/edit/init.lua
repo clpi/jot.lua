@@ -1,13 +1,13 @@
 ---@type down.Mod
 local M = require('down.mod').new('edit', {
-  'toc',
+  -- 'toc',
   -- 'task',
   -- "fold",
   -- "inline",
   -- "syntax",
   'cursor',
   'indent',
-  'link',
+  -- 'link',
 })
 local down = require('down')
 local config, lib, log, mod = down.cfg, down.lib, down.log, down.mod
@@ -15,7 +15,7 @@ local config, lib, log, mod = down.cfg, down.lib, down.log, down.mod
 M.setup = function()
   return {
     loaded = true,
-    requires = { 'edit.link' },
+    dependencies = {},
   }
 end
 
@@ -164,7 +164,7 @@ M.data.go_to_heading = function(anchor_text, reverse)
           continue = false
         else
           -- Format current heading to see if it matches our search term
-          local heading_as_anchor = M.required['link'].formatLink(line[1], nil, 2)
+          local heading_as_anchor = M.dep['link'].formatLink(line[1], nil, 2)
           if anchor_text == heading_as_anchor then
             -- Set a mark
             vim.api.nvim_buf_set_mark(0, '`', position[1], position[2], {})
@@ -324,10 +324,10 @@ M.data.yankAsAnchorLink = function(full_path)
   local line = vim.api.nvim_buf_get_lines(0, row - 1, row, false)
   -- See if the line starts with a hash
   local is_heading = string.find(line[1], '^#')
-  local is_bracketed_span = M.required.link.getBracketedSpanPart()
+  local is_bracketed_span = M.dep.link.getBracketedSpanPart()
   if is_heading then
     -- Format the line as an anchor link
-    local anchor_link = M.required.link.formatLink(line[1])
+    local anchor_link = M.dep.link.formatLink(line[1])
     anchor_link = string.gsub(anchor_link[1], '"', '\\"')
     if full_path then
       -- Get the full buffer name and insert it before the hash
@@ -341,7 +341,7 @@ M.data.yankAsAnchorLink = function(full_path)
       vim.cmd('let @"="' .. anchor_link .. '"')
     end
   elseif is_bracketed_span then
-    local name = M.required.link.getBracketedSpanPart('text')
+    local name = M.dep.link.getBracketedSpanPart('text')
     local attr = is_bracketed_span
     local anchor_link
     if name and attr then

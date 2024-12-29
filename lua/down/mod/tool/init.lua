@@ -46,7 +46,7 @@ end
 
 --- Generic setup function for tool submodules
 --- @param ext string: the tool to setup
---- @param req table<string>: the modules required by the tool module
+--- @param req table<string>: the modules dep by the tool module
 --- @return down.mod.Setup
 E.data.setup = function(ext, req)
   local ok, e = E.data.has(ext)
@@ -68,7 +68,7 @@ E.setup = function()
   }
   return {
     loaded = true,
-    requires = enabled
+    dependencies = enabled
   }
 end
 

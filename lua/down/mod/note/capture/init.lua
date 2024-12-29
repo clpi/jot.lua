@@ -1,14 +1,14 @@
 ---@type down.Mod
-local M = require "down.mod".new("note.capture")
+local M = require 'down.mod'.new('note.capture')
 
 ---@return down.mod.Setup
 M.setup = function()
   ---@type down.mod.Setup
   return {
     loaded = true,
-    requires = {
-      "cmd",
-      "workspace",
+    dependencies = {
+      'cmd',
+      'workspace',
     },
   }
 end
@@ -23,9 +23,9 @@ M.config = {}
 M.events = {}
 
 ---@class down.mod.note.capture.Subscribed
-M.subscribed = {
+M.handle = {
   cmd = {
-    ["capture"] = true,
+    ['capture'] = true,
   },
 }
 

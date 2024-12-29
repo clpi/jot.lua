@@ -14,7 +14,7 @@ function lib.match(value, compare)
     end
 
     -- Set the comparison function
-    -- A comparison function may be required for more complex
+    -- A comparison function may be dep for more complex
     -- data types that need to be compared against another static value.
     -- The default comparison function compares booleans as strings to ensure
     -- that boolean comparisons work as intended.

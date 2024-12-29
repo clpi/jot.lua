@@ -3,7 +3,7 @@ local tu = require('nvim-treesitter.ts_utils')
 
 function L.setup()
   return {
-    requires = {
+    dependencies = {
       'tool.treesitter',
       'workspace',
     },

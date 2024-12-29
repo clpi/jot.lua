@@ -12,7 +12,7 @@ end
 
 M.setup = function()
   return {
-    requires = {
+    dependencies = {
       'ui.calendar',
       'data.time',
     },
@@ -26,13 +26,9 @@ M.data = {
 
   setup = function(ui_info, mode, date, options)
     options.distance = options.distance or 4
-
     local view = M.data.new_view_instance()
-
     view.current_mode = mode
-
     view:render_view(ui_info, date, nil, options)
-
     do
       vim.keymap.set('n', 'q', function()
         vim.api.nvim_buf_delete(ui_info.buffer, { force = true })
@@ -40,41 +36,41 @@ M.data = {
 
       -- TODO: Make cursor wrapping behaviour rable
       vim.keymap.set('n', 'l', function()
-        local new_date = reformat_time({
+        local new_date = reformat_time {
           year = date.year,
           month = date.month,
           day = date.day + 1 * vim.v.count1,
-        })
+        }
         view:render_view(ui_info, new_date, date, options)
         date = new_date
       end, { buffer = ui_info.buffer })
 
       vim.keymap.set('n', 'h', function()
-        local new_date = reformat_time({
+        local new_date = reformat_time {
           year = date.year,
           month = date.month,
           day = date.day - 1 * vim.v.count1,
-        })
+        }
         view:render_view(ui_info, new_date, date, options)
         date = new_date
       end, { buffer = ui_info.buffer })
 
       vim.keymap.set('n', 'j', function()
-        local new_date = reformat_time({
+        local new_date = reformat_time {
           year = date.year,
           month = date.month,
           day = date.day + 7 * vim.v.count1,
-        })
+        }
         view:render_view(ui_info, new_date, date, options)
         date = new_date
       end, { buffer = ui_info.buffer })
 
       vim.keymap.set('n', 'k', function()
-        local new_date = reformat_time({
+        local new_date = reformat_time {
           year = date.year,
           month = date.month,
           day = date.day - 7 * vim.v.count1,
-        })
+        }
         view:render_view(ui_info, new_date, date, options)
         date = new_date
       end, { buffer = ui_info.buffer })
@@ -92,31 +88,31 @@ M.data = {
       end, { buffer = ui_info.buffer })
 
       vim.keymap.set('n', 'L', function()
-        local new_date = reformat_time({
+        local new_date = reformat_time {
           year = date.year,
           month = date.month + vim.v.count1,
           day = date.day,
-        })
+        }
         view:render_view(ui_info, new_date, date, options)
         date = new_date
       end, { buffer = ui_info.buffer })
 
       vim.keymap.set('n', 'H', function()
-        local new_date = reformat_time({
+        local new_date = reformat_time {
           year = date.year,
           month = date.month - vim.v.count1,
           day = date.day,
-        })
+        }
         view:render_view(ui_info, new_date, date, options)
         date = new_date
       end, { buffer = ui_info.buffer })
 
       vim.keymap.set('n', 'm', function()
-        local new_date = reformat_time({
+        local new_date = reformat_time {
           year = date.year,
           month = date.month + vim.v.count1,
           day = 1,
-        })
+        }
         view:render_view(ui_info, new_date, date, options)
         date = new_date
       end, { buffer = ui_info.buffer })
@@ -125,53 +121,53 @@ M.data = {
         if date.day > 1 then
           date.month = date.month + 1
         end
-        local new_date = reformat_time({
+        local new_date = reformat_time {
           year = date.year,
           month = date.month - vim.v.count1,
           day = 1,
-        })
+        }
         view:render_view(ui_info, new_date, date, options)
         date = new_date
       end, { buffer = ui_info.buffer })
 
       vim.keymap.set('n', 'y', function()
-        local new_date = reformat_time({
+        local new_date = reformat_time {
           year = date.year + vim.v.count1,
           month = date.month,
           day = date.day,
-        })
+        }
         view:render_view(ui_info, new_date, date, options)
         date = new_date
       end, { buffer = ui_info.buffer })
 
       vim.keymap.set('n', 'Y', function()
-        local new_date = reformat_time({
+        local new_date = reformat_time {
           year = date.year - vim.v.count1,
           month = date.month,
           day = date.day,
-        })
+        }
         view:render_view(ui_info, new_date, date, options)
         date = new_date
       end, { buffer = ui_info.buffer })
 
       vim.keymap.set('n', '$', function()
         local new_day = date.day - (lib.number_wrap(date.wday - 1, 1, 7) - 1) + 6
-        local new_date = reformat_time({
+        local new_date = reformat_time {
           year = date.year,
           month = date.month,
           day = new_day,
-        })
+        }
         view:render_view(ui_info, new_date, date, options)
         date = new_date
       end, { buffer = ui_info.buffer })
 
       local start_of_week = function()
         local new_day = date.day - (lib.number_wrap(date.wday - 1, 1, 7) - 1)
-        local new_date = reformat_time({
+        local new_date = reformat_time {
           year = date.year,
           month = date.month,
           day = new_day,
-        })
+        }
         view:render_view(ui_info, new_date, date, options)
         date = new_date
       end
@@ -180,7 +176,7 @@ M.data = {
       vim.keymap.set('n', '_', start_of_week, { buffer = ui_info.buffer })
 
       vim.keymap.set('n', 't', function()
-        local new_date = os.date('*t')
+        local new_date = os.date '*t'
 
         view:render_view(ui_info, new_date, date, options)
         date = new_date
@@ -191,42 +187,42 @@ M.data = {
         if end_of_current_month > date.day then
           date.month = date.month - 1
         end
-        local new_date = reformat_time({
+        local new_date = reformat_time {
           year = date.year,
           month = date.month + vim.v.count1,
           day = M.data.get_month_length(date.month + vim.v.count1, date.year),
-        })
+        }
         view:render_view(ui_info, new_date, date, options)
         date = new_date
       end, { buffer = ui_info.buffer })
 
       vim.keymap.set('n', 'E', function()
-        local new_date = reformat_time({
+        local new_date = reformat_time {
           year = date.year,
           month = date.month - vim.v.count1,
           day = M.data.get_month_length(date.month - vim.v.count1, date.year),
-        })
+        }
         view:render_view(ui_info, new_date, date, options)
         date = new_date
       end, { buffer = ui_info.buffer })
 
       vim.keymap.set('n', 'w', function()
-        local new_date = reformat_time({
+        local new_date = reformat_time {
           year = date.year,
           month = date.month,
           day = date.day + 7 * vim.v.count1,
-        })
+        }
         new_date.day = new_date.day - (lib.number_wrap(new_date.wday - 1, 1, 7) - 1)
         view:render_view(ui_info, new_date, date, options)
         date = new_date
       end, { buffer = ui_info.buffer })
 
       vim.keymap.set('n', 'W', function()
-        local new_date = reformat_time({
+        local new_date = reformat_time {
           year = date.year,
           month = date.month,
           day = date.day - 7 * vim.v.count1,
-        })
+        }
         new_date.day = new_date.day - (lib.number_wrap(new_date.wday - 1, 1, 7) - 1)
         view:render_view(ui_info, new_date, date, options)
         date = new_date
@@ -236,7 +232,7 @@ M.data = {
       for i = 1, 12 do
         table.insert(
           months,
-          (os.date('%B', os.time({ year = 2000, month = i, day = 1 })) --[[@as string]]):lower()
+          (os.date('%B', os.time { year = 2000, month = i, day = 1 }) --[[@as string]]):lower()
         )
       end
 
@@ -279,11 +275,11 @@ M.data = {
               skip_next = false
             end
 
-            local new_date = reformat_time({
+            local new_date = reformat_time {
               year = date.year,
               month = m,
               day = date.day,
-            })
+            }
             view:render_view(ui_info, new_date, date, options)
             date = new_date
             break
@@ -302,11 +298,11 @@ M.data = {
             else
               skip_next = false
             end
-            local new_date = reformat_time({
+            local new_date = reformat_time {
               year = date.year,
               month = m,
               day = date.day,
-            })
+            }
             view:render_view(ui_info, new_date, date, options)
             date = new_date
             break
@@ -317,21 +313,21 @@ M.data = {
       vim.keymap.set('n', 'g', function()
         local day = math.min(vim.v.count1, M.data.get_month_length(date.month, date.year))
 
-        local new_date = reformat_time({
+        local new_date = reformat_time {
           year = date.year,
           month = date.month,
           day = day,
-        })
+        }
         view:render_view(ui_info, new_date, date, options)
         date = new_date
       end, { buffer = ui_info.buffer, nowait = true })
 
       vim.keymap.set('n', 'G', function()
-        local new_date = reformat_time({
+        local new_date = reformat_time {
           year = date.year,
           month = date.month,
           day = M.data.get_month_length(date.month, date.year),
-        })
+        }
         view:render_view(ui_info, new_date, date, options)
         date = new_date
       end, { buffer = ui_info.buffer })
@@ -339,11 +335,11 @@ M.data = {
       vim.keymap.set('n', 'd', function()
         local n = vim.v.count1
         local weekday = math.min(n, 7)
-        local new_date = reformat_time({
+        local new_date = reformat_time {
           year = date.year,
           month = date.month,
           day = date.day + (weekday - lib.number_wrap(date.wday - 1, 1, 7)),
-        })
+        }
         view:render_view(ui_info, new_date, date, options)
         date = new_date
       end, { buffer = ui_info.buffer, nowait = true })
@@ -576,7 +572,7 @@ M.data = {
         vim.keymap.set({ 'n', 'i' }, '<CR>', function()
           local line = vim.api.nvim_buf_get_lines(buffer, 0, -1, true)[1]
 
-          local parsed_date = M.required['time'].parse_date(line)
+          local parsed_date = M.dep['time'].parse_date(line)
 
           if type(parsed_date) == 'string' then
             log.error('[ERROR]:', parsed_date)
@@ -585,7 +581,7 @@ M.data = {
 
           quit()
 
-          local lua_date = M.required['time'].to_lua_date(parsed_date)
+          local lua_date = M.dep['time'].to_lua_date(parsed_date)
 
           local should_redraw = false
 
@@ -602,8 +598,8 @@ M.data = {
   end,
 
   namespaces = {
-    logical = vim.api.nvim_create_namespace('down/calendar/logical'),
-    decorational = vim.api.nvim_create_namespace('down/calendar/decorational'),
+    logical = vim.api.nvim_create_namespace 'down.mod.ui.calendar.logical',
+    decorational = vim.api.nvim_create_namespace 'down.mod.ui.calendar.decorational',
   },
 
   set_extmark = function(ui_info, namespace, row, col, length, virt_text, alignment, extra)
@@ -689,11 +685,11 @@ M.data = {
       render_month_banner = function(self, ui_info, date, weekday_banner_extmark_id)
         local month_name = os.date(
           '%B',
-          os.time({
+          os.time {
             year = date.year,
             month = date.month,
             day = date.day,
-          })
+          }
         )
         ---@cast month_name string
         local month_length = vim.api.nvim_strwidth(month_name)
@@ -732,7 +728,7 @@ M.data = {
         local weekdays = {}
         local weekdays_string_length = 0
         for i = 1, 7 do
-          local weekday = os.date('%a', os.time({ year = 2000, month = 5, day = i }))
+          local weekday = os.date('%a', os.time { year = 2000, month = 5, day = i })
           ---@cast weekday string
           local truncated = util.truncate_by_cell(weekday, 2)
           local truncated_length = vim.api.nvim_strwidth(truncated)
@@ -787,7 +783,7 @@ M.data = {
           -- [day of month] = <day of week>,
         }
 
-        local current_date = os.date('*t')
+        local current_date = os.date '*t'
 
         local month, year = target_date.month, target_date.year
 
@@ -796,11 +792,11 @@ M.data = {
         for i = 1, days_in_current_month do
           days_of_month[i] = tonumber(os.date(
             '%u',
-            os.time({
+            os.time {
               year = year,
               month = month,
               day = i,
-            })
+            }
           ))
         end
 
@@ -879,22 +875,22 @@ M.data = {
         for i = 1, months_to_render do
           weekday_banner = self:render_weekday_banner(ui_info, i, options.distance)
 
-          local positive_target_date = reformat_time({
+          local positive_target_date = reformat_time {
             year = date.year,
             month = date.month + i,
             day = 1,
-          })
+          }
 
           self:render_month_banner(ui_info, positive_target_date, weekday_banner)
           self:render_month(ui_info, positive_target_date, weekday_banner)
 
           weekday_banner = self:render_weekday_banner(ui_info, i * -1, options.distance)
 
-          local negative_target_date = reformat_time({
+          local negative_target_date = reformat_time {
             year = date.year,
             month = date.month - i,
             day = 1,
-          })
+          }
 
           self:render_month_banner(ui_info, negative_target_date, weekday_banner)
           self:render_month(ui_info, negative_target_date, weekday_banner)
@@ -1057,7 +1053,7 @@ M.data = {
     -- the meaty stuff, but will come in handy for rendering decorational
     -- elements.
     local fill = {}
-    local filler = string.rep(' ', ui_info.width)
+    local filler = (' '):rep(ui_info.width)
 
     for i = 1, ui_info.height do
       fill[i] = filler
@@ -1141,7 +1137,7 @@ M.data = {
       callback = quit,
     })
 
-    local namespace = vim.api.nvim_create_namespace('down/calendar-help')
+    local namespace = vim.api.nvim_create_namespace 'down.mod.ui.calendar.help'
     vim.api.nvim_buf_set_option(buffer, 'modifiable', false)
 
     vim.api.nvim_buf_set_extmark(buffer, namespace, 0, 0, {
@@ -1151,7 +1147,7 @@ M.data = {
 }
 
 M.load = function()
-  M.required['ui.calendar'].add_view(M.data.view_name, M.data)
+  M.dep['ui.calendar'].add_view(M.data.view_name, M.data)
 end
 
 return M

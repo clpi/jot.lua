@@ -1,21 +1,25 @@
-local down = require("down")
-local config = require("down.config")
+local down = require "down"
+local config = require "down.config"
 local log = require "down.util.log"
 local mod = require "down.mod"
 local lib = require "down.util.lib"
 local util = require "down.util"
+local tsu_ok, tsu = pcall(require, "nvim-treesitter.ts_utils")
+local install = require "nvim-treesitter.install"
+local shell = require "nvim-treesitter.shell_command_selectors"
+local u = require "nvim-treesitter.utils"
+local ntp = require "nvim-treesitter.parsers"
+local loc = require "nvim-treesitter.locals"
 
+local ts = vim.treesitter
 local vt = vim.treesitter
 local q = vt.query
-
 local hi = vt.highlight
-local u = require("nvim-treesitter.utils")
-local loc = require("nvim-treesitter.locals")
-local tsu = require("nvim-treesitter.ts_utils")
 
-local M = require("down.mod").new("tool.treesitter")
+---@class down.mod.tool.Treesitter: down.Mod
+local M = mod.new "tool.treesitter"
 
----@class down.tool.treesitter.Data
+---@class down.mod.tool.treesitter.Data
 M.data = {
   ts_utils = nil,
   heading = [[
@@ -82,14 +86,13 @@ M.load = function()
   --     },
   --   })
   -- end)
-  local success, ts_utils = pcall(require, "nvim-treesitter.ts_utils")
 
-  assert(success, "Unable to load nvim-treesitter.ts_utils :(")
+  assert(tsu_ok, "Unable to load nvim-treesitter.ts_utils")
 
   if M.config.configure_parsers then
     -- luacheck: push ignore
 
-    local parser_configs = require("nvim-treesitter.parsers").get_parser_configs()
+    local parser_configs = ntp.get_parser_configs()
 
     -- parser_configs.down = {
     -- install_info = M.config.parser_configs.down,
@@ -154,7 +157,7 @@ M.config = {
   configure_parsers = true,
   --- If true will automatically install down parsers if they are not present.
   -- install_parsers = true,
-  --- Configurations for each parser as required by `nvim-treesitter`.
+  --- Configurations for each parser as dep by `nvim-treesitter`.
   --  If you would like to tweak your parser configs you may do so here.
   -- parser_configs = {
   -- Configuration for the mainline down parser.
@@ -184,7 +187,7 @@ M.data = {
   parse = function(language, query)
     local result = M.data.queries[query]
     if result == nil then
-      result = vim.treesitter.query.parse(language, query)
+      result = ts.query.parse(language, query)
       M.data.queries[query] = result
     end
     return result
@@ -198,7 +201,7 @@ M.data = {
     end
 
     local query = ''
-    local files = vim.treesitter.query.get_files(language, 'injections')
+    local files = ts.query.get_files(language, 'injections')
     for _, file in ipairs(files) do
       local f = io.open(file, 'r')
       if f ~= nil then
@@ -207,7 +210,7 @@ M.data = {
       end
     end
     query = query .. injection.query
-    pcall(vim.treesitter.query.set, language, 'injections', query)
+    pcall(ts.query.set, language, 'injections', query)
   end,
   --- Gives back an instance of `nvim-treesitter.ts_utils`
   ---@return table #`nvim-treesitter.ts_utils`
@@ -300,7 +303,7 @@ M.data = {
     end
 
     -- Do we need to go through each tree? lol
-    vim.treesitter.get_parser(opts.buf, opts.ft):for_each_tree(function(tree)
+    ts.get_parser(opts.buf, opts.ft):for_each_tree(function(tree)
       table.insert(result, M.data.search_tree(tree, node_type))
     end)
 
@@ -317,8 +320,8 @@ M.data = {
       filetype = "markdown"
     end
 
-    local contents = io.open(path, "r"):read("*a")
-    local tree = vim.treesitter.get_string_parser(contents, filetype):parse()[1]
+    local contents = io.open(path, "r"):read "*a"
+    local tree = ts.get_string_parser(contents, filetype):parse()[1]
     if not (tree or tree.root) then
       return {}
     end
@@ -331,13 +334,13 @@ M.data = {
 
     if text:sub(-1) ~= "\n" then text = text .. "\n" end
 
-    for line in text:gmatch("(.-)\n") do
+    for line in text:gmatch "(.-)\n" do
       if not leading_spaces then
-        leading_spaces = line:match("^%s+");
+        leading_spaces = line:match "^%s+"
       end
 
-      line = line:gsub("^" .. leading_spaces, "");
-      _l = _l .. line .. "\n";
+      line = line:gsub("^" .. leading_spaces, "")
+      _l = _l .. line .. "\n"
     end
 
     _l = _l:gsub("(\n)$", "");
@@ -372,7 +375,7 @@ M.data = {
   ---@param callback function
   ---@param ts_tree any #Optional syntax tree ---@diagnostic disable-line -- TODO: type error workaround <pysan3>
   tree_map = function(callback, ts_tree)
-    local tree = ts_tree or vim.treesitter.get_parser(0, "markdown"):parse()[1]
+    local tree = ts_tree or ts.get_parser(0, "markdown"):parse()[1]
 
     local root = tree:root()
 
@@ -384,7 +387,7 @@ M.data = {
   ---@param callback function Executes with each node as parameter, can return false to stop recursion
   ---@param ts_tree any #Optional syntax tree ---@diagnostic disable-line -- TODO: type error workaround <pysan3>
   tree_map_rec = function(callback, ts_tree)
-    local tree = ts_tree or vim.treesitter.get_parser(0, "markdown"):parse()[1]
+    local tree = ts_tree or ts.get_parser(0, "markdown"):parse()[1]
 
     local root = tree:root()
 
@@ -493,7 +496,7 @@ M.data = {
 
     if cursor_to_second then
       -- set jump location
-      vim.cmd("normal! m'")
+      vim.cmd "normal! m'"
 
       local char_delta = 0
       local line_delta = 0
@@ -551,7 +554,7 @@ M.data = {
       return iterate(parent)
     end
 
-    vim.treesitter.get_parser(buf, "markdown"):for_each_tree(function(tree)
+    ts.get_parser(buf, "markdown"):for_each_tree(function(tree)
       -- Iterate over all top-level children and attempt to find a match
       return iterate(tree:root()) ---@diagnostic disable-line -- TODO: type error workaround <pysan3>
     end)
@@ -573,7 +576,7 @@ M.data = {
     end
 
     -- Do we need to go through each tree? lol
-    vim.treesitter.get_parser(opts.buf, opts.ft):for_each_tree(function(tree)
+    ts.get_parser(opts.buf, opts.ft):for_each_tree(function(tree)
       -- Get the root for that tree
       local root
       if opts.parent then
@@ -664,7 +667,7 @@ M.data = {
             return nil
           end
         end
-        content[i] = string.rep(" ", content_start_column - start_column) .. line
+        content[i] = (" "):rep((content_start_column - start_column) .. line)
       else
         content[i] = line:sub(1 + start_column)
       end
@@ -719,9 +722,9 @@ M.data = {
 
     local parser
     if type(src) == "string" then
-      parser = vim.treesitter.get_string_parser(src, filetype)
+      parser = ts.get_string_parser(src, filetype)
     else
-      parser = vim.treesitter.get_parser(src or 0, filetype)
+      parser = ts.get_parser(src or 0, filetype)
     end
 
     local tree = parser:parse()[1]
@@ -768,7 +771,7 @@ M.data = {
       return
     end
 
-    local first_char = (vim.api.nvim_buf_get_lines(buf, line, line + 1, true)[1] or ""):match("^(%s+)[^%s]")
+    local first_char = (vim.api.nvim_buf_get_lines(buf, line, line + 1, true)[1] or ""):match "^(%s+)[^%s]"
     first_char = first_char and first_char:len() or 0
 
     local descendant = document_root:descendant_for_range(line, first_char, line, first_char + 1) ---@diagnostic disable-line -- TODO: type error workaround <pysan3>
@@ -907,7 +910,7 @@ M.data = {
 
     local meta_source = M.data.get_node_text(meta_node, iter_src)
 
-    local markdown_inline_parser = vim.treesitter.get_string_parser(meta_source, "markdown_inline")
+    local markdown_inline_parser = ts.get_string_parser(meta_source, "markdown_inline")
 
     local markdown_inline_tree = markdown_inline_parser:parse()[1]
 
@@ -974,15 +977,15 @@ M.data = {
       if vim.fn.bufnr(source) ~= -1 then ---@diagnostic disable-line
         source = vim.uri_to_bufnr(vim.uri_from_fname(source))
       else
-        iter_src = io.open(source, "r"):read("*a")
-        down_parser = vim.treesitter.get_string_parser(iter_src, "markdown")
+        iter_src = io.open(source, "r"):read "*a"
+        down_parser = ts.get_string_parser(iter_src, "markdown")
       end
     end
     if type(source) == "number" then
       if source == 0 then
         source = vim.api.nvim_get_current_buf()
       end
-      down_parser = vim.treesitter.get_parser(source, "markdown")
+      down_parser = ts.get_parser(source, "markdown")
       iter_src = source
     end
 
@@ -992,13 +995,10 @@ M.data = {
 
 -- this fixes the problem of installing down ts parsers on macOS without resorting to using gcc
 local function install_down_ts()
-  local install = require("nvim-treesitter.install")
-
-  if vim.fn.has("macunix") == 1 then
+  if vim.fn.has "macunix" == 1 then
     -- https://github.com/nvim-down/tree-sitter-down/issues/7
     -- (we have to force clang to c++11 mode on macOS manually)
 
-    local shell = require("nvim-treesitter.shell_command_selectors")
 
     -- save the original functions
     local select_executable = shell.select_executable
@@ -1016,7 +1016,8 @@ local function install_down_ts()
 
     -- install down parsers
     local ok, err = pcall(function()
-      install.commands.TSInstallSync["run!"]("markdown")
+      install.commands.TSInstallSync["run!"] "markdown"
+      install.commands.TSInstallSync["run!"] "markdown_inline"
     end)
 
     -- no matter what, restore the defaults back
@@ -1028,15 +1029,16 @@ local function install_down_ts()
       error(err)
     end
   else
-    install.commands.TSInstallSync["run!"]("markdown")
+    install.commands.TSInstallSync["run!"] "markdown"
+    install.commands.TSInstallSync["run!"] "markdown_inline"
   end
 end
 
 M.data.query = function(query, lang)
-  local tsp = vim.treesitter.get_parser(0, lang or vim.bo.filetype)
+  local tsp = ts.get_parser(0, lang or vim.bo.filetype)
   local tss = tsp:parse()[1]
   local tsr = tss:root()
-  local tpq = vim.treesitter.query.parse(lang or vim.bo.filetype, query)
+  local tpq = ts.query.parse(lang or vim.bo.filetype, query)
   return tpq:iter_matches(tsr, 0)
 end
 M.data.icon = {}
@@ -1048,38 +1050,38 @@ M.data.quote = [[
 ]]
 M.data.icon.quote = "┃"
 M.data.parser = function()
-  return vim.treesitter.get_parser(0)
+  return ts.get_parser(0)
 end
 
 M.data.cursor = function()
-  return require "nvim-treesitter.ts_utils".get_node_at_cursor()
+  return tsu.get_node_at_cursor()
 end
 
 M.data.root = function()
   local lang = vim.bo.filetype
-  local langtree = vim.treesitter.get_parser(0, lang)
+  local langtree = ts.get_parser(0, lang)
   local tree = langtree:parse()
   local root = tree[1]:root()
   return tree, root
 end
 
-M.handle = function(event)
+M.handler = function(event)
   if event.split[2] == "sync" then
     local ok, err = pcall(install_down_ts)
 
     if not ok then
-      utils.notify(string.format([[Unable to auto-install down parser: %s]], err), vim.log.levels.WARN)
+      utils.notify(('Unable to auto-install down parser: %s'):format(err), vim.log.levels.WARN)
     end
-
-    local install = require("nvim-treesitter.install")
-    install.commands.TSInstallSync["run!"]("markdown")
-    install.commands.TSInstallSync["run!"]("markdown_inline")
+    install.commands.TSInstallSync["run!"] "markdown"
+    install.commands.TSInstallSync["run!"] "markdown_inline"
   end
 end
 
-M.subscribed = {
+M.handle = {
   cmd = {
-    ['tool.treesitter'] = true,
+    ['tool.treesitter'] = function()
+
+    end
   },
 }
 

@@ -1,4 +1,4 @@
----@meta  data.types.file
+---@meta  data.ids.file
 ---
 --- Uri is a string that represents a file path.
 --- @alias down.Uri string Uri

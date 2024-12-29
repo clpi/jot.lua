@@ -1,18 +1,19 @@
-local down = require('down')
+local down = require 'down'
+local mod = require 'down.mod'
 local util = require 'down.util'
-local mod = down.mod
+local log = require 'down.util.log'
 
-local G = require 'down.mod'.new('ui.calendar')
+local G = mod.new 'ui.calendar'
 
-G.maps = function()
-  vim.keymap.set('n', ',d.', '<CMD>Down calendar<CR>')
-  vim.keymap.set('n', ',do', '<CMD>Down calendar<CR>')
-  vim.keymap.set('n',',dl', '<CMD>Down calendar<CR>')
-end
-
+G.maps = {
+  { 'n', ',d.', '<CMD>Down calendar<CR>', 'Open calendar' },
+  { 'n', ',do', '<CMD>Down calendar<CR>' },
+  { 'n', ',dl', '<CMD>Down calendar<CR>' },
+}
 G.setup = function()
   return {
-    requires = {
+    loaded = true,
+    dependencies = {
       'ui',
       'ui.calendar.day',
       'ui.calendar.month',
@@ -31,11 +32,11 @@ G.data = {
   get_mode = function(name, callback)
     if G.data.modes[name] ~= nil then
       local cur_mode = G.data.modes[name](callback)
-      cur_mode.name = name
+      cur_mode.id = name
       return cur_mode
     end
 
-    print('Error: mode not set or not available')
+    log.error 'Error: mode not set or not available'
   end,
 }
 
@@ -45,7 +46,7 @@ G.data.get_view = function(name)
     return G.data.view[name]
   end
 
-  print('Error: view not set or not available')
+  log.error 'Error: view not set or not available'
 end
 
 G.data.extract_ui_info = function(buffer, window)
@@ -68,7 +69,7 @@ end
 G.data.open_window = function(options)
   local MIN_HEIGHT = 14
 
-  local buffer, window = G.required['ui'].new_split(
+  local buffer, window = G.dep['ui'].new_split(
     'ui.calendar-' .. tostring(os.clock()):gsub('%.', '-'),
     {},
     options.height or MIN_HEIGHT + (options.padding or 0)
@@ -112,7 +113,7 @@ G.data.new_calendar = function(buffer, window, options)
 
   local v = G.data.get_view(options.view or 'month')
 
-  v.setup(ui_info, mode, options.date or os.date('*t'), options)
+  v.setup(ui_info, mode, options.date or os.date '*t', options)
 end
 
 G.data.open = function(options)
@@ -167,7 +168,7 @@ G.load = function()
           return true
         else
           if os.time(date) <= os.time(self.range_start) then
-            print('Error: you should choose a date that is after the starting day.')
+            log.error 'Error: you should choose a date that is after the starting day.'
             return false
           end
 

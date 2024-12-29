@@ -5,7 +5,7 @@ local M = mod.new("ui.prompt")
 M.setup = function()
   return {
     loaded = true,
-    requires = {},
+    dependencies = {},
   }
 end
 

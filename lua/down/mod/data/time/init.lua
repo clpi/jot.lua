@@ -1,14 +1,13 @@
-local down = require("down")
-local util = require("down.util")
-local mod = require("down.mod")
-local lib = require("down.util.lib")
-local u = require("down.mod.data.time.util")
+local down = require('down')
+local util = require('down.util')
+local mod = require('down.mod')
+local lib = require('down.util.lib')
+local u = require('down.mod.data.time.util')
 
-local M = mod.new("data.time")
+local M = mod.new('data.time')
 
 -- NOTE: Maybe encapsulate whole date parser in a single PEG grammar?
-local _, time_regex =
-    pcall(vim.re.compile, [[{%d%d?} ":" {%d%d} ("." {%d%d?})?]])
+local _, time_regex = pcall(vim.re.compile, [[{%d%d?} ":" {%d%d} ("." {%d%d?})?]])
 
 ---@alias Date {weekday: {name: string, number: number}?, day: number?, month: {name: string, number: number}?, year: number?, timezone: string?, time: {hour: number, minute: number, second: number?}?}
 
@@ -18,16 +17,16 @@ M.data = {
     return setmetatable(date_table, {
       __tostring = function()
         local function d(str)
-          return str and (tostring(str) .. " ") or ""
+          return str and (tostring(str) .. ' ') or ''
         end
 
         return vim.trim(
-          d(date_table.weekday and date_table.weekday.name)
-          .. d(date_table.day)
-          .. d(date_table.month and date_table.month.name)
-          .. d(date_table.year and string.format("%04d", date_table.year))
-          .. d(date_table.time and tostring(date_table.time))
-          .. d(date_table.timezone)
+          d(date_table.weekday and date_table.weekday.id)
+            .. d(date_table.day)
+            .. d(date_table.month and date_table.month.id)
+            .. d(date_table.year and string.format('%04d', date_table.year))
+            .. d(date_table.time and tostring(date_table.time))
+            .. d(date_table.timezone)
         )
       end,
     })
@@ -36,8 +35,8 @@ M.data = {
   ---@param parsed_date Date #The date to convert
   ---@return osdate #A Lua date
   to_lua_date = function(parsed_date)
-    local now = os.date("*t") --[[@as osdate]]
-    local parsed = os.time(vim.tbl_deep_extend("force", now, {
+    local now = os.date('*t') --[[@as osdate]]
+    local parsed = os.time(vim.tbl_deep_extend('force', now, {
       day = parsed_date.day,
       month = parsed_date.month and parsed_date.month.number or nil,
       year = parsed_date.year,
@@ -45,7 +44,7 @@ M.data = {
       min = parsed_date.time and parsed_date.time.minute,
       sec = parsed_date.time and parsed_date.time.second,
     }) --[[@as osdateparam]])
-    return os.date("*t", parsed) --[[@as osdate]]
+    return os.date('*t', parsed) --[[@as osdate]]
   end,
 
   --- Converts a lua `osdate` to a down date.
@@ -56,18 +55,12 @@ M.data = {
     -- TODO: Extract into a function to get weekdays (have to hot recalculate every time because the user may change locale
     local weekdays = {}
     for i = 1, 7 do
-      table.insert(
-        weekdays,
-        os.date("%A", os.time({ year = 2000, month = 5, day = i })):lower()
-      ) ---@diagnostic disable-line -- TODO: type error workaround <pysan3>
+      table.insert(weekdays, os.date('%A', os.time({ year = 2000, month = 5, day = i })):lower()) ---@diagnostic disable-line -- TODO: type error workaround <pysan3>
     end
 
     local months = {}
     for i = 1, 12 do
-      table.insert(
-        months,
-        os.date("%B", os.time({ year = 2000, month = i, day = 1 })):lower()
-      ) ---@diagnostic disable-line -- TODO: type error workaround <pysan3>
+      table.insert(months, os.date('%B', os.time({ year = 2000, month = i, day = 1 })):lower()) ---@diagnostic disable-line -- TODO: type error workaround <pysan3>
     end
 
     -- os.date("*t") returns wday with Sunday as 1, needs to be
@@ -92,13 +85,13 @@ M.data = {
       }, {
         __tostring = function()
           if not include_time then
-            return ""
+            return ''
           end
 
           return tostring(osdate.hour)
-              .. ":"
-              .. tostring(string.format("%02d", osdate.min))
-              .. (osdate.sec ~= 0 and ("." .. tostring(osdate.sec)) or "")
+            .. ':'
+            .. tostring(string.format('%02d', osdate.min))
+            .. (osdate.sec ~= 0 and ('.' .. tostring(osdate.sec)) or '')
         end,
       }) or nil,
     })
@@ -110,31 +103,25 @@ M.data = {
   parse_date = function(input)
     local weekdays = {}
     for i = 1, 7 do
-      table.insert(
-        weekdays,
-        os.date("%A", os.time({ year = 2000, month = 5, day = i })):lower()
-      ) ---@diagnostic disable-line -- TODO: type error workaround <pysan3>
+      table.insert(weekdays, os.date('%A', os.time({ year = 2000, month = 5, day = i })):lower()) ---@diagnostic disable-line -- TODO: type error workaround <pysan3>
     end
 
     local months = {}
     for i = 1, 12 do
-      table.insert(
-        months,
-        os.date("%B", os.time({ year = 2000, month = i, day = 1 })):lower()
-      ) ---@diagnostic disable-line -- TODO: type error workaround <pysan3>
+      table.insert(months, os.date('%B', os.time({ year = 2000, month = i, day = 1 })):lower()) ---@diagnostic disable-line -- TODO: type error workaround <pysan3>
     end
 
     local output = {}
 
-    for down in vim.gsplit(input, "%s+") do
+    for down in vim.gsplit(input, '%s+') do
       if down:len() == 0 then
         goto continue
       end
 
-      if down:match("^-?%d%d%d%d+$") then
+      if down:match('^-?%d%d%d%d+$') then
         output.year = tonumber(down)
-      elseif down:match("^%d+%w*$") then
-        output.day = tonumber(down:match("%d+"))
+      elseif down:match('^%d+%w*$') then
+        output.day = tonumber(down:match('%d+'))
       elseif vim.list_contains(u.tz, down:upper()) then
         output.timezone = down:upper()
       else
@@ -168,8 +155,8 @@ M.data = {
 
           local count = vim.tbl_count(valid_months)
           if count > 1 then
-            return "Ambiguous month name! Possible interpretations: "
-                .. table.concat(vim.tbl_keys(valid_months), ",")
+            return 'Ambiguous month name! Possible interpretations: '
+              .. table.concat(vim.tbl_keys(valid_months), ',')
           elseif count == 1 then
             local valid_month_name, valid_month_number = next(valid_months)
 
@@ -183,7 +170,7 @@ M.data = {
         end
 
         do
-          down = down:match("^([^,]+),?$")
+          down = down:match('^([^,]+),?$')
 
           local valid_weekdays = {}
 
@@ -196,11 +183,10 @@ M.data = {
 
           local count = vim.tbl_count(valid_weekdays)
           if count > 1 then
-            return "Ambiguous weekday name! Possible interpretations: "
-                .. table.concat(vim.tbl_keys(valid_weekdays), ",")
+            return 'Ambiguous weekday name! Possible interpretations: '
+              .. table.concat(vim.tbl_keys(valid_weekdays), ',')
           elseif count == 1 then
-            local valid_weekday_name, valid_weekday_number =
-                next(valid_weekdays)
+            local valid_weekday_name, valid_weekday_number = next(valid_weekdays)
 
             output.weekday = {
               name = lib.title(valid_weekday_name),
@@ -211,9 +197,9 @@ M.data = {
           end
         end
 
-        return "Unidentified string: `"
-            .. down
-            .. "` - make sure your locale and language are set correctly if you are using a language other than English!"
+        return 'Unidentified string: `'
+          .. down
+          .. '` - make sure your locale and language are set correctly if you are using a language other than English!'
       end
 
       ::continue::
@@ -224,22 +210,22 @@ M.data = {
 
   insert_date = function(insert_mode)
     local function callback(input)
-      if input == "" or not input then
+      if input == '' or not input then
         return
       end
 
       local output
 
-      if type(input) == "table" then
+      if type(input) == 'table' then
         output = tostring(M.data.to_date(input))
       else
         output = M.data.parse_date(input)
 
-        if type(output) == "string" then
+        if type(output) == 'string' then
           utils.notify(output, vim.log.levels.ERROR)
 
           vim.ui.input({
-            prompt = "Date: ",
+            prompt = 'Date: ',
             default = input,
           }, callback)
 
@@ -249,41 +235,43 @@ M.data = {
         output = tostring(output)
       end
 
-      vim.api.nvim_put({ "{@ " .. output .. "}" }, "c", false, true)
+      vim.api.nvim_put({ '{@ ' .. output .. '}' }, 'c', false, true)
 
       if insert_mode then
         vim.cmd.startinsert()
       end
     end
 
-    if Mod.is_mod_loaded("ui.calendar") then
+    if Mod.is_mod_loaded('ui.calendar') then
       vim.cmd.stopinsert()
-      Mod.get_mod("ui.calendar")
-          .select({ callback = vim.schedule_wrap(callback) })
+      Mod.get_mod('ui.calendar').select({ callback = vim.schedule_wrap(callback) })
     else
       vim.ui.input({
-        prompt = "Date: ",
+        prompt = 'Date: ',
       }, callback)
     end
   end,
 }
 
-M.maps = function()
-  vim.keymap.set(
-    "",
-    "<Plug>(down.time.insert-date)",
-    lib.wrap(M.data.insert_date, false)
-  )
-  vim.keymap.set(
-    "i",
-    "<Plug>(down.time.insert-date.insert-mode)",
-    lib.wrap(M.data.insert_date, true)
-  )
-end
+M.maps = {
+  {
+    '',
+    '<Plug>(down.time.insert-date)',
+    lib.wrap(M.data.insert_date, true),
+    'Insert date',
+  },
+  {
+    'i',
+    '<Plug>(down.time.insert-date.insert-mode)',
+    lib.wrap(M.data.insert_date, false),
+    'Insert date',
+  },
+}
 
 function M.setup()
   return {
-    laoded = true
+    loaded = true,
+    dependencies = { 'cmd' },
   }
 end
 

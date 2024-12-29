@@ -1,4 +1,4 @@
---- @meta    down.types.config
+--- @meta    down.ids.config
 --- @brief   Provides core data types
 --- @version <5.2,JIT
 ---

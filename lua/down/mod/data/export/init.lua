@@ -20,7 +20,7 @@ E.commands = {
 E.setup = function()
   return {
     loaded = true,
-    requires = {
+    dependencies = {
       'tool.treesitter',
       'cmd',
       'workspace',
@@ -36,10 +36,10 @@ E.data = {}
 
 E.handle = function(e) end
 
-E.subscribed = {
+E.handle = {
   cmd = {
-    ['data.export.insert'] = true,
-    ['data.export.update'] = true,
+    ['data.export.insert'] = function(e) end,
+    ['data.export.update'] = function(e) end,
   },
 }
 

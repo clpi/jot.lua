@@ -6,24 +6,19 @@ local Store = mod.new('data.store')
 Store.setup = function()
   return {
     loaded = true,
-    requires = {
+    dependencies = {
       'data',
-    }
+    },
   }
 end
 
 --- @class down.mod.data.store.Config
-Store.config = {
-
-}
+Store.config = {}
 
 --- @class down.mod.data.store.Data
-Store.data = {
-
-}
+Store.data = {}
 
 ---@type down.mod.Handler
-Store.handle = function(ev)
-end
+Store.handle = {}
 
 return Store

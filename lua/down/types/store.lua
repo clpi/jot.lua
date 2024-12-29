@@ -1,4 +1,4 @@
---- @meta    down.types.store
+--- @meta    down.ids.store
 --- @brief   Provides core data types
 --- @version <5.2,JIT
 ---
@@ -96,7 +96,7 @@
 ---
 --- @brief down.store ----------------------
 ---
---- @alias down.store.Name string The name associated with the vault of a certain kind
+--- @alias down.store.id string The name associated with the vault of a certain kind
 ---
 --- @alias down.store.Index integer The index in the list of vault
 ---

@@ -21,7 +21,7 @@ M.setup = function()
   -- end)
   return {
     loaded = true,
-    requires = { "workspace", "cmd" },
+    dependencies = { "workspace", "cmd" },
   }
 end
 

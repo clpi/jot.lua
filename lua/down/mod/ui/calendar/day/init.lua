@@ -5,7 +5,7 @@ local D = require("down.mod").new("ui.calendar.day")
 D.setup = function()
   return { ---@type down.mod.Setup
     loaded = true,
-    requires = {
+    dependencies = {
 
     }
   }
