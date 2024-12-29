@@ -8,9 +8,11 @@
 
 --- The context of an in-file object.
 --- @class (exact) down.Context context of in-file object
----   @field public loc? down.Position location
----   @field public root? down.Id  root node in file scope
----   @field public parent? down.Id  parent node in file scope
+---   @field public position? down.Position location
+---   @field public buf? number
+---   @field public win? number
+---   @field public file? down.Id  root node in file scope
+---   @field public dir? down.Id  root node in file scope
 ---   @field public scope? down.Scope in file scope
 ---
 --- The scope of an entity.

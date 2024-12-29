@@ -1,10 +1,12 @@
 ---@meta down.types.mod
 ---
+--- @alias down.mod.Handler fun(event: down.Event)
+---
+--- @alias down.mod.SetupFun fun(): down.mod.Setup
+---
 --- @class (exact) down.Mod
----   @field public [string]? down.mod.Data
 ---   @field hook? fun(arguments?: string)    A user-defined function that is invoked whenever down starts up. May be used to e.g. set custom keybindings.
 ---   @field config? down.mod.Config The config for the mod.
----   @field events? down.mod.Events Describes all information related to events for this mod.
 ---   @field import? table<string, down.Mod> Imported submod of the given mod. Contrary to `required`, which only exposes the public API of a mod, imported mod can be accessed in their entirety.
 ---   @field cmds? fun() Function that adds all the commands for the mod.
 ---   @field opts? fun() Function that adds all the options for the mod.
@@ -22,6 +24,9 @@
 ---   @field replaced? boolean If `true`, this means the mod is a replacement for a base mod. This flag is set automatically whenever `setup().replaces` is set to a value.
 ---   @field handle fun(event: down.Event) A callback that is invoked any time an event the mod has subscribed to has fired.
 ---   @field test? fun() Function that is invoked when the mod is being tested.
+---   @field public events? down.mod.Events
+---   @field public subscribed? down.mod.Events
+-- ---   @field public [string]? down.mod.Data
 ---
 --- @class (exact) down.mod.Setup: {
 ---   [string]?: { [string]?: any },
@@ -29,17 +34,15 @@
 ---   requires?: string[],
 ---   replaces?: string,
 ---   merge?: boolean,
----   wants?: string[] }
 ---   @field public [string]? any
 ---
---- @class (exact) down.mod.Events
----   @field defined? { [string]: down.Event }              Lists all events by this init.
----   @field subscribed? { [string]: { [string]: boolean } } Lists the events that the init is subscribed to.
----   @field public [string]? down.Event
+--- @class (exact) down.mod.Events: { [string]: down.Event }
 ---
 --- The entire mod configuration
 --- @alias down.config.Mod
 ---   | down.mod.Lsp
+---   | down.mod.Code
+---   | down.mod.Parse
 ---   | down.mod.Edit
 ---   | down.mod.Data
 ---   | down.mod.Cmd
@@ -59,6 +62,21 @@
 ---   | down.mod.workspace.Config
 ---   | down.mod.note.Config
 ---   | down.mod.ui.Config
+---   | down.mod.parse.Config
+---   | down.mod.code.Config
+---
+--- The entire mod configuration
+--- @alias down.Mod.Mod
+---   | down.mod.Lsp
+---   | down.mod.Code
+---   | down.mod.Parse
+---   | down.mod.Edit
+---   | down.mod.Data
+---   | down.mod.Cmd
+---   | down.mod.Tool
+---   | down.mod.Workspace
+---   | down.mod.Note
+---   | down.mod.Ui
 ---
 --- @alias down.Mod.Data
 ---   | down.mod.lsp.Data
@@ -69,6 +87,8 @@
 ---   | down.mod.workspace.Data
 ---   | down.mod.note.Data
 ---   | down.mod.ui.Data
+---   | down.mod.parse.Data
+---   | down.mod.code.Data
 ---
 --- @alias down.Mod.Config
 ---   | down.mod.lsp.Config
@@ -80,6 +100,8 @@
 ---   | down.mod.workspace.Config
 ---   | down.mod.note.Config
 ---   | down.mod.ui.Config
+---   | down.mod.parse.Config
+---   | down.mod.code.Config
 ---
 --- The base configuration
 --- @class (exact) down.config.BaseConfig: {

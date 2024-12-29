@@ -1,9 +1,9 @@
----@type down.Mod
+---@class down.mod.data.Date: down.Mod
 local M = require "down.mod".new("data.date", {
 })
 
 --- The date data structure.
---- @class down.data.date.Data Data
+--- @class down.mod.data.date.Data Data
 M.data = {
 
 }

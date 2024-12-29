@@ -1,4 +1,5 @@
 local Path = require('pathlib')
+local Event = require('down.event')
 local config = require 'down.config'
 local log = require 'down.util.log'
 local util = require 'down.mod.workspace.util'
@@ -14,10 +15,9 @@ local M = mod.new('workspace')
 
 ---@class down.mod.workspace.Config
 M.config = {
+  --- default workspace
   default = 'default',
-  -- The list of active down workspaces.
-  -- There is always an inbuilt workspace called `default`, whose loc is
-  -- set to the Neovim current working directory on boot.
+  --- List of workspaces
   workspaces = {
     default = vim.fn.getcwd(0),
     cwd = vim.fn.getcwd(0),
@@ -103,8 +103,8 @@ M.data = {
     if not w then
       return
     end
-    for path in w:fs_iterdir(true, 20) do
-      if path:is_file(true) and path:suffix() == '.md' then
+    for p in w:fs_iterdir(true, 20) do
+      if p:is_file(true) and path:suffix() == '.md' then
         table.insert(res, path)
       end
     end
@@ -241,10 +241,10 @@ M.data = {
     end
 
     -- Broadcast the wschanged event with all the necessary information
-    mod.broadcast(
+    Event.broadcast_to(
       assert(
-        mod.new_event(M, 'workspace.events.wschanged', { old = current_ws, new = new_workspace })
-      )
+        Event.new(M, 'workspace.events.wschanged', { old = current_ws, new = new_workspace })
+      ), mod.mods
     )
 
     return true
@@ -263,7 +263,7 @@ M.data = {
     -- Set the new workspace and its path accordingly
     M.config.workspaces[wsname] = wspath
     -- Broadcast the wsadded event with the newly added workspace as the body
-    mod.broadcast(assert(mod.new_event(M, 'workspace.events.wsadded', { wsname, wspath })))
+    mod.broadcast(assert(Event.new(M, 'workspace.events.wsadded', { wsname, wspath })))
 
     -- Sync autocompletions so the user can see the new workspace
     M.data.sync()
@@ -331,28 +331,28 @@ M.data = {
   select = function(prompt, fmt, fn)
     local workspaces = M.data.get_workspaces()
     local format = fmt
-      or function(item)
-        local current = M.data.get_current_workspace()
-        if item == current then
-          return '• ' .. item
+        or function(item)
+          local current = M.data.get_current_workspace()
+          if item == current then
+            return '• ' .. item
+          end
+          return item
         end
-        return item
-      end
     local func = fn
-      or function(item, idx)
-        local current = M.data.get_current_workspace()
-        print(item, idx)
-        if item == current then
-          utils.notify('Already in workspace ' .. current)
+        or function(item, idx)
+          local current = M.data.get_current_workspace()
           print(item, idx)
-          M.data.open_workspace(item)
-        else
-          print(item, idx)
-          M.data.set_workspace(item)
-          M.data.open_workspace(item)
-          utils.notify('Workspace set to ' .. item)
+          if item == current then
+            utils.notify('Already in workspace ' .. current)
+            print(item, idx)
+            M.data.open_workspace(item)
+          else
+            print(item, idx)
+            M.data.set_workspace(item)
+            M.data.open_workspace(item)
+            utils.notify('Workspace set to ' .. item)
+          end
         end
-      end
     return vim.ui.select(vim.tbl_keys(workspaces), {
       prompt = prompt or 'Select workspace',
       format_items = format,
@@ -404,7 +404,7 @@ M.data = {
     -- Broadcast file creation event
     local bufnr = M.data.get_file_bufnr(destination:tostring())
     mod.broadcast(
-      assert(mod.new_event(M, 'workspace.events.file_created', { buffer = bufnr, opts = opts }))
+      assert(Event.new(M, 'workspace.events.file_created', { buffer = bufnr, opts = opts }))
     )
 
     if not opts.no_open then
@@ -633,7 +633,7 @@ M.handle = function(event)
         local new_workspace = M.data.get_workspace(event.body[1])
 
         if not new_workspace then
-          new_workspace = M.data.select()
+          M.data.select()
         end
 
         utils.notify('New workspace: ' .. event.body[1] .. ' -> ' .. new_workspace)
@@ -661,10 +661,10 @@ end
 
 ---@class down.mod.workspace.Events
 M.events = {
-  wschanged = mod.define_event(M, 'wschanged'),
-  wsadded = mod.define_event(M, 'wsadded'),
-  wscache_empty = mod.define_event(M, 'wscache_empty'),
-  file_created = mod.define_event(M, 'file_created'),
+  wschanged = Event.define(M, 'wschanged'),
+  wsadded = Event.define(M, 'wsadded'),
+  wscache_empty = Event.define(M, 'wscache_empty'),
+  file_created = Event.define(M, 'file_created'),
 }
 
 ---@class down.mod.workspace.Subscribed

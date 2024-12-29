@@ -14,7 +14,7 @@ Link.setup = function()
     loaded = true,
     requires = {
       'tool.treesitter', --- For treesitter node parsing
-      'workspace',       --- For checking filetype and index file names of current workspace
+      'workspace', --- For checking filetype and index file names of current workspace
     },
   }
 end
@@ -73,11 +73,12 @@ end
 ---@param ln string
 ---@return string, "local" | "web" | "heading"
 Link.data.resolve = function(ln)
-  if ln:sub(1, 1) == config.pathsep then
+  local ch = ln:sub(1, 1)
+  if ch == config.pathsep then
     return ln, 'local'
-  elseif ln:sub(1, 1) == '#' then
+  elseif ch == '#' then
     return ln:sub(2), 'heading'
-  elseif ln:sub(1, 1) == '~' then
+  elseif ch == '~' then
     return os.getenv('HOME') .. config.pathsep .. ln:sub(2), 'local'
   elseif ln:sub(1, 8) == 'https://' or ln:sub(1, 7) == 'http://' then
     return ln, 'web'
@@ -112,7 +113,7 @@ end
 Link.data.ref = function(node)
   local link_label = Link.data.text(node)
   for _, captures, _ in
-  Link.required['tool.treesitter'].query([[
+    Link.required['tool.treesitter'].query([[
     (link_reference_definition
       (link_label) @label (#eq? @label "]] .. link_label .. [[")
       (link_destination) @link_destination
@@ -135,19 +136,24 @@ end
 --- If either are, then returns the link destination, otherwise nil
 --- @return string|nil
 Link.data.iswikilink = function(node, parent)
-  if not node then
+  if not node and not parent then
     return nil
-  elseif not parent then
+  elseif node and not parent then
+    -- print('node and not parent: ', node:type(), Link.data.text(node))
     local wikilink = vim.treesitter.get_node_text(node, 0):iswikilink()
     if wikilink then
       return wikilink
+    else
     end
+  else
+    -- print(node:type(), Link.data.text(node))
+    -- print(parent:type(), Link.data.text(parent))
+    local wikilink = vim.treesitter.get_node_text(parent, 0):iswikilink()
+    if wikilink then
+      return wikilink
+    end
+    return nil
   end
-  local wikilink = vim.treesitter.get_node_text(parent, 0):iswikilink()
-  if wikilink then
-    return wikilink
-  end
-  return nil
 end
 
 Link.data.destination = function()

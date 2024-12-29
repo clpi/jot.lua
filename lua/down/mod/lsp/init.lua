@@ -19,8 +19,6 @@ end
 Lsp.load = function()
   -- local autocmd = Lsp.data.ft('*.{md,dn,dd}')
   local autocmd = Lsp.data.ft('markdown')
-  local autocmd = Lsp.data.ft('docdown')
-  local autocmd = Lsp.data.ft('down')
   -- local autocmd = Lsp.data.ft('*.dd')
   -- local autocmd = Lsp.data.ft('*.dn')
   Lsp.required['cmd'].add_commands_from_table({

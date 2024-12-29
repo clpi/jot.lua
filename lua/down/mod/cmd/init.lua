@@ -64,7 +64,8 @@ M.data = {
         return
       elseif not check_condition(ref.condition) then
         log.error(
-          ('Error when executing `:Down %s` - the command is currently disabled. Some commands will only become available under certain conditions, e.g. being within a `.down` file!'):format(
+          ('Error when executing `:Down %s` - the command is currently disabled. Some commands will only become available under certain conditions, e.g. being within a `.down` file!')
+          :format(
             table.concat(vim.list_slice(args, 1, i), ' ')
           )
         )
@@ -103,7 +104,8 @@ M.data = {
 
     if not ref.name then
       log.error(
-        ("Error when executing `:down %s` - the ending command didn't have a `name` variable associated with it! This is an implementation error on the developer's side, so file a report to the author of the mod."):format(
+        ("Error when executing `:down %s` - the ending command didn't have a `name` variable associated with it! This is an implementation error on the developer's side, so file a report to the author of the mod.")
+        :format(
           data.args
         )
       )
@@ -113,6 +115,7 @@ M.data = {
     if not M.events[ref.name] then
       M.events[ref.name] = mod.define_event(M, ref.name)
     end
+
 
     mod.broadcast(
       assert(
@@ -206,11 +209,11 @@ M.data = {
 
     -- TODO: Fix `:down m <tab>` giving invalid completions
     local keys = ref and vim.tbl_keys(ref.subcommands or {})
-      or (
-        vim.tbl_filter(function(key)
-          return key:find(splitcmd[#splitcmd])
-        end, vim.tbl_keys(last_valid_ref.subcommands or {}))
-      )
+        or (
+          vim.tbl_filter(function(key)
+            return key:find(splitcmd[#splitcmd])
+          end, vim.tbl_keys(last_valid_ref.subcommands or {}))
+        )
     table.sort(keys)
 
     do
@@ -309,8 +312,8 @@ M.data = {
     if not err then
       log.warn(
         'Could not load command'
-          .. name
-          .. 'for init base.cmd - the corresponding mod.lua file does not exist.'
+        .. name
+        .. 'for init base.cmd - the corresponding mod.lua file does not exist.'
       )
       return
     end
@@ -375,6 +378,7 @@ M.config = {
 
 M.post_load = M.data.sync
 
+---@type down.mod.Handler
 M.handle = function(event)
   if event.type == 'cmd.events.mod.setup' then
     local ok = pcall(mod.load_mod, event.content[1])
@@ -433,7 +437,7 @@ M.handle = function(event)
     mods_popup:mount()
   end
 end
----@class down.mod.cmd.Subscribed
+---@class down.mod.cmd.Subscribed: down.mod.Subscribed
 M.subscribed = {
   cmd = {
     -- ["mod.new"] = true,

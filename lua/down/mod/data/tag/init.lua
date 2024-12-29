@@ -1,4 +1,5 @@
 local mod = require("down.mod")
+local Tag = require("down.mod.data.tag.tag")
 local M = require("down.mod").new("data.tag")
 
 ---@return down.mod.Setup
@@ -31,7 +32,38 @@ M.setup = function()
 end
 
 ---@class down.mod.data.tag.Data
-M.data = {}
+M.data = {
+  tags = {
+    global = {
+
+    },
+    workspace = {
+
+    },
+    document = {
+
+    }
+  }
+}
+
+--- Parse a single line for tag instances
+--- @param ln string
+--- @return string[]
+M.data.parse_ln = function(ln)
+  local tags = {}
+  for tag in ln:gmatch("#%S+") do
+    table.insert(tags, tag)
+  end
+  print(tags)
+  return tags
+end
+
+M.data.parse = function(text)
+  tags = {}
+  for ln in text:gmatch("[^\n]+") do
+    M.data.parse_ln(ln)
+  end
+end
 
 ---@class down.mod.data.tag.Config
 M.config = {}

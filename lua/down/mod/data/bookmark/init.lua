@@ -17,6 +17,7 @@ B.data = {
   }
 }
 
+---@return down.mod.Setup
 B.setup = function()
   return {
     loaded = true,
@@ -59,3 +60,5 @@ B.handle = function(e)
     print('es2 list')
   end
 end
+
+return B

@@ -27,9 +27,10 @@ local Config = {
   pathsep = osinfo == 'windows' and '\\' or '/',
   load = {
     maps = function()
-      vim.keymap.set('n', ',dw', '<CMD>Down<CR>', { silent = true })
-      vim.keymap.set('n', ',D', '<CMD>Down<CR>', { silent = true })
-      vim.keymap.set('n', '~', '<CMD>Down<CR>', { silent = true })
+      map.n(',dd', '<CMD>Down<CR>')
+      map.n(',D', '<CMD>Down<CR>')
+      map.n('~', '<CMD>Down<CR>')
+      map.n('|', '<CMD>Down<CR>')
     end,
     opts = function()
       vim.o.conceallevel = 2

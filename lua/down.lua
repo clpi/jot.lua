@@ -25,14 +25,14 @@ Down.default = {
 --- Load the user configuration, and load into config
 --- defined modules specifieed and workspaces
 --- @param user down.config.User user config to load
---- @param ... any The arguments to pass into an optional user hook
+--- @param ... string The arguments to pass into an optional user hook
 function Down.setup(user, ...)
-  Down.config.setup(Down.config, user, Down.default)
-  Down.start(Down)
+  Down.config:setup(user, Down.default, ...)
+  Down:start()
 end
 
 function Down:start()
-  self.mod.load_mod('workspace', self.config.user.workspace or {})
+  Down.mod.load_mod('workspace', self.config.user.workspace or {})
   for name, usermod in pairs(self.config.user) do
     if type(usermod) == 'table' then
       if name == 'lsp' and self.config.dev == false then
@@ -66,23 +66,8 @@ end
 ---@param e string
 ---@param ... any
 function Down:broadcast(e, ...)
-  self.mod.broadcast({ ---@type down.Event
-    type = e, ---@diagnostic disable-line
-    split = {
-      e,
-    },
-
-    file = vim.fn.expand('%:p'),
-    dir = vim.fn.getcwd(),
-    topic = e,
-    ref = 'Down:broadcast',
-    broadcast = true,
-    line = vim.api.nvim_get_current_line(),
-    position = vim.api.nvim_win_get_position(0),
-    buf = vim.api.nvim_get_current_buf(),
-    win = vim.api.nvim_get_current_win(),
-    mode = vim.fn.mode(),
-  })
+  local ev = self.event.define("down", e or "started") ---@type down.Event
+  self.event.broadcast_to(ev, Down.mod.mods)
 end
 
 --- Test all modules loaded

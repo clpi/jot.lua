@@ -1,37 +1,21 @@
 local mod = require('down.mod')
 local config = require("down.config")
 
----@type down.Mod
-local M = mod.new('data', {
-  -- "log",
-  -- "store",
-  -- "task",
-  -- "mod",
-  -- "sync",
-  -- "dirs",
-  -- "tag",
-  -- "clipboard",
-  -- "media",
-  -- "template",
-  -- "metadata",
-  -- "todo",
-  -- "task",
-  -- "save"
-  -- "code",
-})
+---@class down.mod.Data: down.Mod
+local M = mod.new('data', {})
 
 ---@type down.Store<down.File>
 M.data.files = {
   store = {},
 }
 
+--- @return down.mod.Setup
 M.setup = function()
   vim.api.nvim_create_autocmd('VimLeavePre', {
     callback = function()
       M.data.flush()
     end,
   })
-
   M.data.sync()
   ---@type down.mod.Setup
   return {
@@ -40,16 +24,47 @@ M.setup = function()
   }
 end
 
+M.load = function()
+
+end
+
 ---@class down.mod.data.Config
 M.config = {
   path = vim.fn.stdpath('data') .. '/down.mpack',
+  dir = {
+    vim = vim.fs.joinpath(vim.fn.stdpath('data'), 'down/'),
+    home = vim.fs.joinpath(os.getenv("HOME") or "~/", ".down/"),
+  },
+  file = {
+    vim = vim.fs.joinpath(vim.fn.stdpath('data'), 'down/', 'down.json'),
+    home = vim.fs.joinpath(os.getenv("HOME") or "~/", ".down/", 'down.json'),
+  }
 }
 ---@class down.mod.data.Data
 M.data = {
   data = {}
 }
+
 M.data.concat = function(p1, p2)
   return table.concat({ p1, config.pathsep, p2 })
+end
+
+--- @param path string
+--- @param cond? fun(name: string, ends: string): boolean
+--- @return table<string>
+M.data.files = function(path, cond)
+  local f = {}
+  local dir = path or vim.fs.root(vim.fn.cwd(), ".down/")
+  for name, type in vim.fs.dir(dir) do
+    if type == 'file' and cond or name:endswith(".md") then
+      table.insert(f, name)
+    elseif type == 'directory' and not name:startswith(".") then
+      local fs = M.data.get_files(M.data.concat(path, name))
+      for _, v in ipairs(fs) do
+        table.insert(f, v)
+      end
+    end
+  end
 end
 
 M.data.directory_map = function(path, callback)

@@ -1,7 +1,7 @@
 local uv, lu, fn = vim.loop or vim.uv, vim.lsp.util, vim.fn
+local Event = require 'down.event'
 local util = require 'down.util'
 local utils = require 'down.util'
-local cb = require('down.util.event.callback')
 local config = require('down.config')
 local log = require('down.util.log')
 
@@ -11,94 +11,107 @@ local log = require('down.util.log')
 --- @TODO: Merge Module.data with Module, Module.config as subfield for all modules
 ---        which have class then of down.mod.[Mod] as M
 
----@class down.mod.base.Base: down.Mod
+---@class down.Mod
 local Mod = {
-  count = 0,
-  mods = {},
-  ---@class down.mod.base.Config
+  setup = function()
+    return {
+      loaded = true,
+      replaces = {},
+      merge = false,
+      requires = {},
+    }
+  end,
+  cmds = function() end,
+  load = function()
+    -- print 'default load n'
+  end,
+  test = function() end,
+  post_load = function()
+    -- print('postload' .. n)
+  end,
+  opts = function() end,
+  maps = function() end,
+  handle = function(e)
+    -- print('load' .. e)
+  end,
+  name = '',
+  namespace = '',
+  data = {},
   config = {},
-  --- @class down.mod.base.Data
-  --- @field mods { [string]: down.Mod }
-  --- @field count integer
-  default = {
-    ---@type fun():down.mod.Setup
-    setup = function()
-      return {
-        loaded = true,
-        replaces = {},
-        merge = false,
-        requires = {},
-        wants = {},
-      }
-    end,
-  },
+  events = {},
+  subscribed = {},
+  required = {},
+  import = {},
+  tests = {},
 }
 
----@type fun(modn: string, type:string, body: string): down.Event
-Mod.default.event = function(modn, name, body)
-  return {
-    payload = body,
-    topic = name,
-    type = modn .. '.events.' .. name,
-    ref = modn,
-    split = {},
-    body = body,
-    broadcast = true,
-    position = vim.api.nvim_win_get_cursor(0),
-    file = vim.fn.expand('%:p'),
-    dir = vim.fn.getcwd(),
-    line = vim.api.nvim_get_current_line(),
-    buf = vim.api.nvim_get_current_buf(),
-    win = vim.api.nvim_get_current_win(),
-    mode = vim.fn.mode(),
-  }
-end
+Mod.mods = {}
 
----@return down.Mod
-Mod.default.mod = function(n)
-  ---@type down.Mod
-  return setmetatable({
-    setup = Mod.default.setup,
-    cmds = function() end,
-    load = function()
-      -- print 'default load n'
-    end,
-    test = function() end,
-    post_load = function()
-      -- print('postload' .. n)
-    end,
-    opts = function() end,
-    maps = function() end,
-    handle = function(e)
-      -- print('load' .. e)
-    end,
-    name = n,
-    namespace = vim.api.nvim_create_namespace('down.mod.' .. n),
-    data = {},
-    config = {},
-    events = {},
-    subscribed = {},
-    required = {},
-    import = {},
-    tests = {},
-  }, {
-    __call = function(self, fun, ...)
-      return self.data[fun](...)
-    end,
-    -- __index = function(self, k)
-    --   return self.required[k]
-    -- end,
-    __newindex = function(self, k, v)
-      self.data[k] = v
-    end,
-    __eq = function(m1, m2)
-      return m1.name == m2.name
-    end,
-    -- __tostring = function(m)
-    --   return m.name
-    -- end,
-  })
-end
+Mod.default = {
+  mods = {
+    'tool.telescope',
+    'lsp',
+    'note',
+    'workspace',
+    'data.log',
+    'data.template',
+  },
+  ---@type fun():down.mod.Setup
+  setup = function()
+    return {
+      loaded = true,
+      replaces = {},
+      merge = false,
+      requires = {},
+    }
+  end,
+  ---@return down.Mod
+  mod = function(n)
+    ---@type down.Mod
+    return setmetatable({
+      setup = Mod.setup,
+      cmds = function() end,
+      load = function()
+        -- print 'default load n'
+      end,
+      test = function() end,
+      post_load = function()
+        -- print('postload' .. n)
+      end,
+      opts = function() end,
+      maps = function() end,
+      handle = function(e)
+        -- print('load' .. e)
+      end,
+      name = n,
+      namespace = vim.api.nvim_create_namespace('down.mod.' .. n),
+      data = {},
+      config = {},
+      events = {},
+      subscribed = {},
+      required = {},
+      import = {},
+      tests = {},
+    }, {
+      __call = function(self, fun, ...)
+        return self.data[fun](...)
+      end,
+      -- __index = function(self, k)
+      --   return self.required[k]
+      -- end,
+      __newindex = function(self, k, v)
+        self.data[k] = v
+      end,
+      __eq = function(m1, m2)
+        return m1.name == m2.name
+      end,
+      -- __tostring = function(m)
+      --   return m.name
+      -- end,
+    })
+  end
+}
+
 
 --- @param nm string
 --- @param im? string[]
@@ -117,26 +130,14 @@ Mod.new = function(nm, im)
   return n
 end
 
----@param m down.Mod
-Mod.pre_run = function(m)
-  m.setup = function()
-    return { loaded = true }
-  end
-  if m.cmds then
-    m.cmds()
-  end
-  if m.maps then
-    m.maps()
-  end
-end
-
+--- @param mod string
 ---@return nil
 Mod.delete = function(mod)
   Mod.mods[mod] = nil
   return nil
 end
 
---- @param m down.Mod The actual init to load.
+--- @param m down.Mod.Mod The actual init to load.
 --- @return down.Mod|nil # Whether the init successfully loaded.
 Mod.load_mod_from_table = function(m, cfg)
   if Mod.mods[m.name] ~= nil then
@@ -149,21 +150,6 @@ Mod.load_mod_from_table = function(m, cfg)
     mod_to_replace = vim.deepcopy(Mod.mods[mod_load.replaces])
   end
   Mod.mods[m.name] = m
-
-  if mod_load.wants and not vim.tbl_isempty(mod_load.wants) then
-    for _, req in ipairs(mod_load.wants) do
-      if not Mod.is_loaded(req) then
-        if config.user[req] then
-          if not Mod.load_mod(req) then
-            return Mod.delete(m.name)
-          end
-        else
-          return Mod.delete(m.name)
-        end
-      end
-      m.required[req] = Mod.mods[req].data
-    end
-  end
   if mod_load.requires and vim.tbl_count(mod_load.requires) then
     for _, req in pairs(mod_load.requires) do
       if not Mod.is_loaded(req) then
@@ -186,9 +172,23 @@ Mod.load_mod_from_table = function(m, cfg)
     end
     m.replaced = true
   end
-  Mod.count = Mod.count + 1
   Mod.mod_load(m)
   return Mod.mods[m.name]
+end
+
+--- @param modn string
+--- @return down.config.Mod?
+function Mod.check_mod(modn)
+  local modl = require('down.mod.' .. modn)
+  if not modl then
+    log.error('Mod.load_mod: could not load mod ' .. modn)
+    return nil
+  end
+  if modl == true then
+    log.error('did not return valid mod: ' .. modn)
+    return nil
+  end
+  return modl
 end
 
 --- @param modn string A path to a init on disk. A path in down is '.', not '/'.
@@ -201,15 +201,8 @@ function Mod.load_mod(modn, cfg)
     end
     return Mod.mods[modn]
   end
-  local modl = require('down.mod.' .. modn)
-  if not modl then
-    log.error('Mod.load_mod: could not load mod ' .. modn)
-    return nil
-  end
-  if modl == true then
-    log.error('did not return valid mod: ' .. modn)
-    return nil
-  end
+  local modl = Mod.check_mod(modn)
+  if not modl then return nil end
   if cfg and not vim.tbl_isempty(cfg) then
     modl.config = util.extend(modl.config, cfg)
   end
@@ -244,7 +237,7 @@ end
 --- @return table?
 function Mod.mod_config(modn)
   if not Mod.is_loaded(modn) then
-    log.trace('Attempt to get init config with name', modn, 'failed - init is not loaded.')
+    log.trace('Attempt to get init config with name' .. modn .. 'failed - init is not loaded.')
     return
   end
   return Mod.mods[modn].config
@@ -259,7 +252,6 @@ function Mod.get_mod(modn)
     log.trace('Attempt to get init with name' .. modn .. 'failed - init is not loaded.')
     return
   end
-
   return Mod.mods[modn].data
 end
 
@@ -289,142 +281,6 @@ function Mod.await(modn, callback)
   end)
 end
 
---- @param type string The full path of a init event
---- @return string[]?
-function Mod.split_event_type(type)
-  local start_str, end_str = type:find('%.events%.')
-
-  local split_event_type = { type:sub(0, start_str - 1), type:sub(end_str + 1) }
-
-  if #split_event_type ~= 2 then
-    log.warn('Invalid type name:', type)
-    return
-  end
-
-  return split_event_type
-end
-
---- Returns an event template defined in `init.events`.
---- @param m down.Mod A reference to the init invoking the function
---- @param type string A full path to a valid event type (e.g. `init.events.some_event`)
---- @return down.Event?
-function Mod.get_event_template(m, type)
-  if not Mod.is_loaded(m.name) then
-    log.info('Unable to get event of type' .. type .. 'with init' .. m.name)
-    return
-  end
-
-  local split = Mod.split_event_type(type)
-
-  if not split then
-    log.warn('Unable to get event template for event' .. type .. 'and init' .. m.name)
-    return
-  end
-
-  log.trace('Returning' .. split[2] .. 'for init' .. split[1])
-  return Mod.mods[m.name].events[split[2]]
-end
-
---- Creates a deep copy of the `mod.base_event` event and returns it with a custom type and referrer.
---- @param m down.Mod A reference to the init invoking the function.
---- @param name string A relative path to a valid event template.
---- @return down.Event
-function Mod.define_event(m, name)
-  return Mod.default.event(m.name, name, m)
-end
-
---- Returns a copy of the event template provided by a init.
---- @param m down.Mod A reference to the init invoking the function
---- @param type string A full path to a valid .vent type (e.g. `init.events.some_event`)
---- @param body table|any? The body of the event, can be anything from a string to a table to whatever you please.
---- @param ev? table The original event data.
---- @return down.Event? # New event.
-function Mod.new_event(m, type, body, ev)
-  -- Get the init that contains the event
-  local modn = Mod.split_event_type(type)[1]
-  -- Retrieve the template from init.events
-  local event_template = Mod.get_event_template(Mod.mods[modn] or { name = '' }, type)
-
-  if not event_template then
-    log.warn('Unable to create event of type' .. type .. '. Returning nil...')
-    return
-  end
-
-  -- Make a deep copy here - we don't want to override the actual base table!
-  local mn = vim.deepcopy(event_template)
-
-  mn.type = type
-  mn.body = body
-  mn.ref = m.name
-
-  -- Override all the important values
-  mn.split = assert(Mod.split_event_type(type))
-  mn.file = vim.fn.expand('%:t') --[[@as string]]
-  mn.dir = vim.fn.expand('%:p:h') --[[@as string]]
-  local bufid = ev and ev.buf or vim.api.nvim_get_current_buf()
-  local winid = assert(vim.fn.bufwinid(bufid))
-  if winid == -1 then
-    winid = vim.api.nvim_get_current_win()
-  end
-  -- vim.print(mn)
-  --
-  mn.position = vim.api.nvim_win_get_cursor(winid)
-  local row_1b = mn.position[1]
-  mn.line = vim.api.nvim_buf_get_lines(bufid, row_1b - 1, row_1b, true)[1]
-  mn.ref = m.name
-  mn.broadcast = true
-  mn.buf = bufid
-  mn.win = winid
-  mn.mode = vim.api.nvim_get_mode()
-  return mn
-end
-
---- Sends an event to all subscribed mod. The event contains the filename, filehead, cursor position and line body as a bonus.
---- @param event down.Event An event, usually created by `mod.new_event()`.
---- @param callback function? A callback to be invoked after all events have been asynchronously broadcast
-function Mod.broadcast(event, callback)
-  -- Broadcast the event to all mod
-  -- vim.print(event)
-  if not event.split then
-    log.error('Unable to broadcast event of type' .. event.type .. '- invalid event name')
-    return
-  end
-
-  cb.handle(event)
-
-  for _, cm in pairs(Mod.mods) do
-    if cm.subscribed and cm.subscribed[event.split[1]] then
-      local evt = cm.subscribed[event.split[1]][event.split[2]]
-      if evt ~= nil and evt == true then
-        cm.handle(event)
-      end
-    end
-  end
-  -- TODO: deprecate
-  if callback then
-    callback()
-  end
-end
-
---- @param recv string The name of a loaded init that will be the recipient of the event.
---- @param ev down.Event An event, usually created by `mod.new_event()`.
---- @return nil
-function Mod.send_event(recv, ev)
-  if not Mod.is_loaded(recv) then
-    log.warn('Unable to send event to init' .. recv .. '- the init is not loaded.')
-    return
-  end
-  ev.broadcast = false
-  cb.handle(ev)
-  local modl = Mod.mods[recv]
-  if modl.subscribed and modl.subscribed[ev.split[1]] then
-    local evt = modl.subscribed[ev.split[1]][ev.split[2]]
-    if evt ~= nil and evt == true then
-      modl.handle(ev)
-    end
-  end
-end
-
 ---@param m down.Mod
 function Mod.mod_load(m)
   if m.cmds then
@@ -440,15 +296,6 @@ function Mod.mod_load(m)
     m.load()
   end
 end
-
-Mod.default.mods = {
-  'tool.telescope',
-  'lsp',
-  'note',
-  -- 'workspace',
-  'data.log',
-  'data.template',
-}
 
 Mod.get = function(m)
   local path = 'down.mod.' .. m
@@ -468,6 +315,25 @@ Mod.modules = function(ms)
     modmap[module] = Mod.get(module)
   end
   return modmap
+end
+
+--- @param m down.Mod.Mod
+--- @param name string
+--- @param body table
+--- @param ev? table
+--- @return down.Event?
+function Mod.new_event(m, type, body, ev)
+  return Event.new(m, type, body, ev)
+end
+
+---@type fun(module: down.Mod.Mod, name: string): down.Event
+---@return down.Event
+function Mod.define_event(module, name)
+  return Event.define(module, name)
+end
+
+function Mod.broadcast(e)
+  Event.broadcast_to(e, Mod.mods)
 end
 
 return setmetatable(Mod, {
