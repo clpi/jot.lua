@@ -53,4 +53,10 @@ function string.isbool(self)
   return nil
 end
 
+--- @param self string self
+--- @return string
+function string:trim(self)
+  return self:gsub("^%s*(.-)%s*$", "%1")
+end
+
 return string
